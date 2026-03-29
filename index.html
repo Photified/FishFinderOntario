@@ -54,13 +54,53 @@
     .search-container input { flex: 1; background-color: var(--card-bg); color: var(--text-main); border: 1px solid #444; padding: 10px 15px; border-radius: 8px; outline: none; }
     .search-container button { background-color: var(--accent); color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; }
     
-    .slider-container { display: flex; overflow-x: auto; padding: 15px 20px; gap: 12px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    /* Centered horizontally automatically */
+    .slider-container { 
+      display: flex; 
+      overflow-x: auto; 
+      padding: 12px 20px; 
+      gap: 12px; 
+      scroll-snap-type: x mandatory; 
+      scrollbar-width: none; 
+      margin: 0 auto; 
+      width: max-content; 
+      max-width: 100%; 
+    }
     .slider-container::-webkit-scrollbar { display: none; }
     
-    .fish-btn { flex: 0 0 auto; scroll-snap-align: start; background-color: var(--card-bg); border: 2px solid transparent; border-radius: 24px; padding: 12px 10px; width: 85px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; position: relative; }
-    .fish-btn img { width: 55px; height: 55px; object-fit: contain; border-radius: 8px; }
-    .fish-btn span { font-size: 0.75rem; text-align: center; font-weight: 600; margin-top: 6px; }
-    .fish-btn.active { border-color: var(--accent); background-color: rgba(14, 165, 233, 0.15); transform: scale(1.05); z-index: 10; }
+    .fish-btn { 
+      background-color: var(--card-bg); 
+      border: 2px solid transparent; 
+      border-radius: 14px; 
+      padding: 10px 6px; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center;
+      cursor: pointer; 
+      transition: all 0.2s ease-in-out; 
+      position: relative;
+      z-index: 1;
+    }
+    .slider-container .fish-btn {
+      flex: 0 0 auto; 
+      width: 85px; 
+      scroll-snap-align: start; 
+    }
+    .grid .fish-btn {
+      width: 100%;
+    }
+    .fish-btn img { width: 45px; height: 45px; object-fit: contain; border-radius: 6px; }
+    .fish-btn span { font-size: 0.75rem; text-align: center; font-weight: 600; margin-top: 6px; line-height: 1.1; }
+    .grid .fish-btn span { font-size: 0.65rem; margin-top: 4px; }
+    
+    .fish-btn.active { 
+      border-color: var(--accent); 
+      background-color: rgba(14, 165, 233, 0.15); 
+      transform: scale(1.05); 
+      z-index: 10;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
     
     .filter-bar { padding: 0 20px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; border-bottom: 1px solid #333; margin-bottom: 15px; }
     .filter-bar select { background-color: var(--card-bg); color: var(--text-main); border: 1px solid #444; padding: 6px 10px; border-radius: 6px; outline: none; }
@@ -128,7 +168,8 @@
     /* --- ADVISOR SPECIFIC CSS --- */
     .advisor-section { padding: 0 20px; }
     .advisor-section h2 { font-family: 'Montserrat', sans-serif; font-size: 1.25rem; color: white; margin-bottom: 4px; margin-top: 15px; }
-    .advisor-label { font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-bottom: 8px; display: block; }
+    .advisor-label { font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-bottom: 8px; display: block; text-align: center; }
+    @media (min-width: 640px) { .advisor-label { text-align: left; } }
     
     .tab-bar { display: flex; border-bottom: 1px solid #333; margin-bottom: 15px; }
     .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--text-muted); font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
@@ -209,28 +250,28 @@
       </div>
     </div>
 
-    <div class="advisor-section" style="padding-right: 0;">
+    <div class="advisor-section">
       <label class="advisor-label">1. Target Species <a href="#" id="openProvinceModal" class="text-white hover:underline font-normal ml-2" style="font-size:0.7rem;">[Regulations]</a></label>
-      <div id="fish-selector" class="slider-container" style="padding: 0 0 15px 0;"></div>
-    </div>
-
-    <div class="advisor-section" style="padding-right: 0;">
-      <label class="advisor-label">2. Weather</label>
-      <div id="weather-selector" class="slider-container" style="padding: 0 0 15px 0;"></div>
-    </div>
-
-    <div class="advisor-section flex gap-4">
-      <div class="flex-1">
-        <label class="advisor-label">3. Clarity</label>
-        <div id="clarity-selector" class="grid grid-cols-2 gap-2"></div>
-      </div>
-      <div class="flex-1">
-        <label class="advisor-label">4. Temp</label>
-        <div id="temp-selector" class="grid grid-cols-2 gap-2"></div>
-      </div>
+      <div id="fish-selector" class="slider-container py-3"></div>
     </div>
 
     <div class="advisor-section mt-4">
+      <label class="advisor-label">2. Weather</label>
+      <div id="weather-selector" class="grid grid-cols-4 gap-2 md:gap-3 px-1 py-3"></div>
+    </div>
+
+    <div class="advisor-section flex gap-4 mt-4">
+      <div class="flex-1">
+        <label class="advisor-label">3. Clarity</label>
+        <div id="clarity-selector" class="grid grid-cols-2 gap-2 md:gap-3 px-1 py-3"></div>
+      </div>
+      <div class="flex-1">
+        <label class="advisor-label">4. Temp</label>
+        <div id="temp-selector" class="grid grid-cols-2 gap-2 md:gap-3 px-1 py-3"></div>
+      </div>
+    </div>
+
+    <div class="advisor-section mt-6">
       <button id="getRecommendation" class="btn-primary">Find Your Bait</button>
     </div>
     
@@ -588,7 +629,9 @@
           const imgSrc = fish.id === 'all' ? 'images/icon.png' : `images/${fish.id}.png`;
           btn.innerHTML = `<img src="${imgSrc}" alt="${fish.name}"><span>${fish.name}</span>`;
           btn.addEventListener('click', () => {
-            document.querySelectorAll('#fishSlider .fish-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#fishSlider .fish-btn').forEach(b => {
+                b.classList.remove('active');
+            });
             btn.classList.add('active');
             currentActiveSpecies = fish.id;
             if(lakesData.length > 0) findClosestLakes(fish.id); 
@@ -814,21 +857,19 @@
       const setupContent = document.getElementById('setupContent');
       const strategyContent = document.getElementById('strategyContent');
 
-      function createAdvisorButtons(container, data, getSelectedValue, onSelectCallback, dataKey, iconOnly = false) {
+      function createAdvisorButtons(container, data, getSelectedValue, onSelectCallback, dataKey) {
         container.innerHTML = '';
-        container.className = iconOnly ? "grid grid-cols-2 gap-2" : "slider-container";
-        
         for (const key in data) {
           const item = data[key];
           const btn = document.createElement('div');
           btn.className = `fish-btn ${key === getSelectedValue() ? 'active' : ''}`;
-          if(iconOnly) { btn.style.width = '100%'; btn.style.padding = '8px'; }
-          
           btn.dataset[dataKey] = key;
-          btn.innerHTML = `<img src="${item.imageSrc}" style="${iconOnly?'width:35px;height:35px;':''}" alt="${item.name}"><span style="${iconOnly?'font-size:0.7rem; margin-top:4px;':''}">${item.name}</span>`;
+          btn.innerHTML = `<img src="${item.imageSrc}" alt="${item.name}"><span>${item.name}</span>`;
           btn.addEventListener('click', () => { 
             onSelectCallback(key); 
-            container.querySelectorAll('.fish-btn').forEach(b => b.classList.remove('active')); 
+            container.querySelectorAll('.fish-btn').forEach(b => {
+               b.classList.remove('active');
+            }); 
             btn.classList.add('active'); 
           });
           container.appendChild(btn);
@@ -838,8 +879,8 @@
       if(typeof fishTypes !== 'undefined') {
         createAdvisorButtons(document.getElementById('fish-selector'), fishTypes, () => selectedFish, (k) => selectedFish = k, 'fish');
         createAdvisorButtons(document.getElementById('weather-selector'), weatherTypes, () => selectedWeather, (k) => selectedWeather = k, 'weather');
-        createAdvisorButtons(document.getElementById('clarity-selector'), clarityTypes, () => selectedClarity, (k) => selectedClarity = k, 'clarity', true);
-        createAdvisorButtons(document.getElementById('temp-selector'), tempTypes, () => selectedTemp, (k) => selectedTemp = k, 'temp', true);
+        createAdvisorButtons(document.getElementById('clarity-selector'), clarityTypes, () => selectedClarity, (k) => selectedClarity = k, 'clarity');
+        createAdvisorButtons(document.getElementById('temp-selector'), tempTypes, () => selectedTemp, (k) => selectedTemp = k, 'temp');
       }
 
       document.getElementById('getRecommendation').addEventListener('click', () => {
@@ -919,11 +960,11 @@
         if (areaStr) statsArray.push(`<span class="stat-item">🗺️ ${areaStr}</span>`);
         
         let statsTextHTML = '';
-        if (statsArray.length > 0) statsTextHTML = `<div class="lake-stats-grid justify-center mt-3">${statsArray.join('')}</div>`;
+        if (statsArray.length > 0) statsTextHTML = `<div class="lake-stats-grid justify-center mt-2">${statsArray.join('')}</div>`;
         
         let stockingContentHTML = '';
         if (lake.isStocked && lake.stockingInfo) {
-          stockingContentHTML = `<div class="stocking-info text-center mt-2 mb-0" style="border-left: none; border-radius: 6px;"><strong>Stocking Info:</strong><br>${lake.stockingInfo}</div>`;
+          stockingContentHTML = `<div class="stocking-info text-center mt-2 mb-0 text-xs w-full" style="border-left: none; border-radius: 6px; background: rgba(16, 185, 129, 0.1); color: #10b981;"><strong>Stocking Info:</strong><br>${lake.stockingInfo}</div>`;
         }
 
         // Update Lake Card UI
