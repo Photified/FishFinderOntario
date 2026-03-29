@@ -254,7 +254,7 @@
     </div>
 
     <div class="advisor-section">
-      <label class="advisor-label">1. Target Species <a href="#" id="openProvinceModal" class="text-white hover:underline font-normal ml-2" style="font-size:0.7rem;">[Regulations]</a></label>
+      <label class="advisor-label">1. Target Species</label>
       <div id="fish-selector" class="slider-container py-3"></div>
     </div>
 
@@ -370,6 +370,8 @@
           <option value="42.3149,-83.0364">Windsor</option>
         </select>
       </div>
+      
+      <button class="btn-secondary mb-3" id="openProvinceModal" style="margin-top: 0;">📜 Local Fishing Regulations</button>
       
       <div id="installGroup" style="display: none; margin-bottom: 15px;">
         <button class="btn-primary" id="installBtn">📲 Install App to Home Screen</button>
@@ -533,7 +535,7 @@
       });
 
       const provinceModal = document.getElementById('provinceModal');
-      document.getElementById('openProvinceModal').addEventListener('click', (e) => { e.preventDefault(); provinceModal.classList.add('open'); });
+      document.getElementById('openProvinceModal').addEventListener('click', (e) => { e.preventDefault(); provinceModal.classList.add('open'); settingsModal.classList.remove('open'); });
       document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'));
       document.getElementById('goToProvinceSite').addEventListener('click', () => { window.open(document.getElementById('provinceSelect').value, '_blank'); provinceModal.classList.remove('open'); });
 
@@ -785,7 +787,7 @@
                   <button class="note-btn" data-lakeid="${uniqueId}">📝 ${customNote ? 'Edit Note' : 'Add Note'}</button>
                 </div>
 
-                <button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Recommended Setup</button>
+                <button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Advisor Recommended Setup</button>
               </div>
             </div>`;
         });
