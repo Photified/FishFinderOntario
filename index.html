@@ -371,7 +371,7 @@
         </select>
       </div>
       
-      <button class="btn-secondary mb-3" id="openProvinceModal" style="margin-top: 0;">📜 Local Fishing Regulations</button>
+      <button class="btn-secondary mb-3" id="openRegulationsBtn" style="margin-top: 0;">📜 Local Fishing Regulations</button>
       
       <div id="installGroup" style="display: none; margin-bottom: 15px;">
         <button class="btn-primary" id="installBtn">📲 Install App to Home Screen</button>
@@ -421,29 +421,6 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="provinceModal">
-    <div class="modal-content">
-      <h2 class="text-xl font-bold mb-2 text-white">Local Guides</h2>
-      <select id="provinceSelect" class="w-full bg-gray-800 border border-gray-600 text-white rounded p-2 mb-4">
-        <option value="https://www.lioapplications.lrc.gov.on.ca/fishonline/index.html?viewer=fishonline.fishonline" selected>Ontario</option>
-        <option value="https://www2.gov.bc.ca/gov/content/environment/plants-animals-ecosystems/ecosystems/habitatwizard">British Columbia</option>
-        <option value="https://peche.faune.gouv.qc.ca/?lang=en">Québec</option>
-        <option value="https://www.albertaregulations.ca/fishingregs/">Alberta</option>
-        <option value="https://saskborder.com/fishing">Saskatchewan</option>
-        <option value="https://experience.arcgis.com/experience/2557cda82dcc4a348fbb71304cedcf6d">Manitoba</option>
-        <option value="https://www2.gnb.ca/content/gnb/en/departments/erd/fish-and-wildlife/content/go-fishing.html">New Brunswick</option>
-        <option value="https://www.fishnovascotia.ca/places">Nova Scotia</option>
-        <option value="https://www.princeedwardisland.ca/en/information/environment-energy-and-climate-action/angling-resources-and-information-centre">Prince Edward Island</option>
-        <option value="https://www.nfl.dfo-mpo.gc.ca/en/NL/AG/anglersguide">Newfoundland & Labrador</option>
-        <option value="https://yukon.ca/en/fishing">Yukon</option>
-        <option value="https://www.enr.gov.nt.ca/en/services/fishing/angling-guide">Northwest Territories</option>
-        <option value="https://www.gov.nu.ca/environment/information/fisheries-and-sealing">Nunavut</option>
-      </select>
-      <button class="btn-primary mb-2" id="goToProvinceSite">Go to Site</button>
-      <button class="btn-secondary" id="closeProvinceModal" style="margin-top:0;">Close</button>
-    </div>
-  </div>
-
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="recommendations-data.js"></script>
   <script src="shared-data.js"></script>
@@ -459,6 +436,24 @@
       if(viewId === 'view-map' && typeof map !== 'undefined') {
         setTimeout(() => map.invalidateSize(), 100);
       }
+    }
+
+    // Pass data from Map to Advisor
+    window.sendToAdvisor = function(speciesId) {
+      const speciesMap = {
+        'largemouthbass': 'largemouth', 'smallmouthbass': 'smallmouth', 'walleye': 'walleye', 'pike': 'pike', 'muskie': 'muskie', 'perch': 'perch',
+        'crappie': 'crappie', 'bluegill': 'bluegill', 'laketrout': 'laketrout', 'brooktrout': 'brooktrout', 'rainbowtrout': 'rainbowtrout', 'browntrout': 'browntrout',
+        'chinooksalmon': 'chinook', 'cohosalmon': 'coho', 'atlanticsalmon': 'atlantic', 'catfish': 'catfish', 'carp': 'carp', 'freshwaterdrum': 'drum',
+        'lakewhitefish': 'whitefish', 'splake': 'splake', 'sturgeon': 'sturgeon'
+      };
+      const translatedSpecies = speciesMap[speciesId] || speciesId || 'walleye';
+
+      const advisorBtn = document.querySelectorAll('.nav-btn')[1];
+      switchAppView('view-advisor', advisorBtn);
+      
+      const fishBtn = document.querySelector(`.fish-btn[data-fish="${translatedSpecies}"]`);
+      if(fishBtn) fishBtn.click();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -534,10 +529,11 @@
         window.location.reload(); 
       });
 
-      const provinceModal = document.getElementById('provinceModal');
-      document.getElementById('openProvinceModal').addEventListener('click', (e) => { e.preventDefault(); provinceModal.classList.add('open'); settingsModal.classList.remove('open'); });
-      document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'));
-      document.getElementById('goToProvinceSite').addEventListener('click', () => { window.open(document.getElementById('provinceSelect').value, '_blank'); provinceModal.classList.remove('open'); });
+      // Direct link to Ontario Fishing Regulations
+      document.getElementById('openRegulationsBtn').addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        window.open('https://www.lioapplications.lrc.gov.on.ca/fishonline/index.html?viewer=fishonline.fishonline', '_blank'); 
+      });
 
       // ==========================================
       // FISHFINDER MAP LOGIC
@@ -862,19 +858,21 @@
       const setupContent = document.getElementById('setupContent');
       const strategyContent = document.getElementById('strategyContent');
 
-      function createAdvisorButtons(container, data, getSelectedValue, onSelectCallback, dataKey) {
+      function createAdvisorButtons(container, data, getSelectedValue, onSelectCallback, dataKey, iconOnly = false) {
         container.innerHTML = '';
+        container.className = iconOnly ? "grid grid-cols-2 gap-2" : "slider-container";
+        
         for (const key in data) {
           const item = data[key];
           const btn = document.createElement('div');
           btn.className = `fish-btn ${key === getSelectedValue() ? 'active' : ''}`;
+          if(iconOnly) { btn.style.width = '100%'; btn.style.padding = '8px'; }
+          
           btn.dataset[dataKey] = key;
-          btn.innerHTML = `<img src="${item.imageSrc}" alt="${item.name}"><span>${item.name}</span>`;
+          btn.innerHTML = `<img src="${item.imageSrc}" style="${iconOnly?'width:35px;height:35px;':''}" alt="${item.name}"><span style="${iconOnly?'font-size:0.7rem; margin-top:4px;':''}">${item.name}</span>`;
           btn.addEventListener('click', () => { 
             onSelectCallback(key); 
-            container.querySelectorAll('.fish-btn').forEach(b => {
-               b.classList.remove('active');
-            }); 
+            container.querySelectorAll('.fish-btn').forEach(b => b.classList.remove('active')); 
             btn.classList.add('active'); 
           });
           container.appendChild(btn);
@@ -884,8 +882,8 @@
       if(typeof fishTypes !== 'undefined') {
         createAdvisorButtons(document.getElementById('fish-selector'), fishTypes, () => selectedFish, (k) => selectedFish = k, 'fish');
         createAdvisorButtons(document.getElementById('weather-selector'), weatherTypes, () => selectedWeather, (k) => selectedWeather = k, 'weather');
-        createAdvisorButtons(document.getElementById('clarity-selector'), clarityTypes, () => selectedClarity, (k) => selectedClarity = k, 'clarity');
-        createAdvisorButtons(document.getElementById('temp-selector'), tempTypes, () => selectedTemp, (k) => selectedTemp = k, 'temp');
+        createAdvisorButtons(document.getElementById('clarity-selector'), clarityTypes, () => selectedClarity, (k) => selectedClarity = k, 'clarity', true);
+        createAdvisorButtons(document.getElementById('temp-selector'), tempTypes, () => selectedTemp, (k) => selectedTemp = k, 'temp', true);
       }
 
       document.getElementById('getRecommendation').addEventListener('click', () => {
@@ -965,11 +963,11 @@
         if (areaStr) statsArray.push(`<span class="stat-item">🗺️ ${areaStr}</span>`);
         
         let statsTextHTML = '';
-        if (statsArray.length > 0) statsTextHTML = `<div class="lake-stats-grid justify-center mt-2">${statsArray.join('')}</div>`;
+        if (statsArray.length > 0) statsTextHTML = `<div class="lake-stats-grid justify-center mt-3">${statsArray.join('')}</div>`;
         
         let stockingContentHTML = '';
         if (lake.isStocked && lake.stockingInfo) {
-          stockingContentHTML = `<div class="stocking-info text-center mt-2 mb-0 text-xs w-full" style="border-left: none; border-radius: 6px; background: rgba(16, 185, 129, 0.1); color: #10b981;"><strong>Stocking Info:</strong><br>${lake.stockingInfo}</div>`;
+          stockingContentHTML = `<div class="stocking-info text-center mt-2 mb-0" style="border-left: none; border-radius: 6px;"><strong>Stocking Info:</strong><br>${lake.stockingInfo}</div>`;
         }
 
         // Update Lake Card UI
