@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fish Finder Ontario</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#006eb3">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    /* --- SHARED CSS --- */
+    :root {
+      --bg-color: #121212; --card-bg: #1e1e1e; --accent: #0ea5e9;
+      --text-main: #f1f5f9; --text-muted: #94a3b8;
+    }
+    body {
+      margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif;
+      background-color: var(--bg-color); color: var(--text-main);
+    }
+    
+    /* --- APP HEADER --- */
+    header { 
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 20px; background: linear-gradient(135deg, #006eb3 0%, #003e6d 100%); 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4); position: sticky; top: 0; z-index: 50;
+    }
+    .app-logo { width: 38px; height: 38px; border-radius: 8px; }
+    h1 { margin: 0; font-size: 1.3rem; color: #ffffff; font-weight: 700; flex: 1; text-align: center; font-family: 'Montserrat', sans-serif;}
+    .settings-btn { background: none; border: none; padding: 5px; cursor: pointer; display: flex; align-items: center; }
+    .settings-btn svg { width: 26px; height: 26px; fill: #ffffff; transition: transform 0.2s ease; }
+    
+    /* --- SPA NAVIGATION BAR --- */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background-color: #1e293b; border-top: 1px solid #334155;
+      display: flex; justify-content: space-around; padding: 10px 0;
+      z-index: 50; box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+    }
+    .nav-btn {
+      background: none; border: none; color: #94a3b8; font-size: 0.8rem; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: color 0.2s;
+    }
+    .nav-btn.active { color: #0ea5e9; }
+    .nav-btn svg { width: 24px; height: 24px; fill: currentColor; }
+    
+    .app-view { display: none; padding-bottom: 70px; }
+    .app-view.active-view { display: block; animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* --- MAP CSS --- */
+    .search-container { display: flex; padding: 15px 20px 0; gap: 10px; }
+    .search-container input { flex: 1; background-color: var(--card-bg); color: var(--text-main); border: 1px solid #444; padding: 10px 15px; border-radius: 8px; outline: none; }
+    .search-container button { background-color: var(--accent); color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; }
+    
+    .slider-container { display: flex; overflow-x: auto; padding: 15px 20px; gap: 12px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    .slider-container::-webkit-scrollbar { display: none; }
+    
+    /* Unified Button Style for Fish & Weather */
+    .fish-btn { flex: 0 0 auto; scroll-snap-align: start; background-color: var(--card-bg); border: 2px solid transparent; border-radius: 24px; padding: 12px 10px; width: 85px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; }
+    .fish-btn img { width: 55px; height: 55px; object-fit: contain; border-radius: 8px; }
+    .fish-btn span { font-size: 0.75rem; text-align: center; font-weight: 600; margin-top: 6px; }
+    .fish-btn.active { border-color: var(--accent); background-color: rgba(14, 165, 233, 0.15); transform: scale(1.05); }
+    
+    .filter-bar { padding: 0 20px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; border-bottom: 1px solid #333; margin-bottom: 15px; }
+    .filter-bar select { background-color: var(--card-bg); color: var(--text-main); border: 1px solid #444; padding: 6px 10px; border-radius: 6px; outline: none; }
+    .fav-toggle-btn { background: #1e293b; color: #fbbf24; border: 1px solid #444; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .fav-toggle-btn.active { background: #fbbf24; color: #121212; }
+    
+    /* Map Container & Locate Button */
+    .map-wrapper { position: relative; margin: 0 20px 15px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    #map { height: 250px; width: 100%; z-index: 1; }
+    .locate-btn { position: absolute; top: 10px; right: 10px; z-index: 1000; background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 5px; }
+    
+    #ff-results { padding: 0 20px 30px; }
+    .status-msg { text-align: center; color: var(--text-muted); margin-top: 20px; font-size: 0.9rem; }
+    
+    /* Custom Map Pins */
+    .custom-pin { width: 20px; height: 20px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; }
+    .pin-blue { background-color: #2563eb; }
+    .pin-yellow { background-color: #fbbf24; }
+    .pin-user { background-color: #ef4444; }
+
+    /* Unified Cards */
+    .app-card { background-color: var(--card-bg); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 2px solid transparent; }
+    .lake-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; }
+    .lake-header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .lake-title-group h3 { margin: 0; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+    .lake-title-group .lake-town { font-size: 0.8rem; color: var(--accent); font-weight: 600; }
+    .star-btn { background: none; border: none; color: #475569; font-size: 1.5rem; cursor: pointer; padding: 0; }
+    .star-btn.active { color: #fbbf24; }
+    .info-toggle { background: var(--bg-color); border: 1px solid #444; color: var(--text-main); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .lake-info-expanded { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.3s ease-out; }
+    .lake-info-expanded.open { max-height: 800px; opacity: 1; margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
+    
+    /* Buttons */
+    .btn-primary { background: var(--accent); color: #fff; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; border:none; cursor: pointer; }
+    .btn-secondary { background: #333; color: #fff; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; border:none; cursor: pointer; margin-top: 10px; }
+
+    /* --- ADVISOR SPECIFIC CSS --- */
+    .advisor-section { padding: 0 20px; }
+    .advisor-section h2 { font-family: 'Montserrat', sans-serif; font-size: 1.25rem; color: white; margin-bottom: 4px; margin-top: 15px; }
+    .advisor-label { font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-bottom: 8px; display: block; }
+    
+    /* Advisor Result Tabs */
+    .tab-bar { display: flex; border-bottom: 1px solid #333; margin-bottom: 15px; }
+    .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--text-muted); font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s; }
+
+    /* Lure Layout in Advisor */
+    .lure-card { background-color: var(--card-bg); border-radius: 10px; padding: 12px; margin-bottom: 12px; position: relative; border: 1px solid #333; }
+    .lure-card img { width: 100%; height: 90px; object-fit: contain; background: white; border-radius: 6px; margin-bottom: 8px; }
+
+    /* MODALS */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
+    .modal-overlay.open { display: flex; }
+    .modal-content { background: var(--card-bg); width: 100%; max-width: 350px; border-radius: 12px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+    .custom-textarea { width: 100%; height: 80px; background: var(--bg-color); color: white; border: 1px solid #444; padding: 10px; border-radius: 6px; font-size: 0.9rem; outline: none; resize: none; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="images/icon.png" alt="App Logo" class="app-logo">
+    <h1>Fish Finder Ontario</h1>
+    <button class="settings-btn" id="openSettingsBtn" aria-label="Settings">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+      </svg>
+    </button>
+  </header>
+
+  <div id="view-map" class="app-view active-view">
+    
+    <div style="padding-top: 15px;"></div>
+    <div class="map-wrapper">
+      <button id="locateMeBtn" class="locate-btn">📍 Locate Me</button>
+      <div id="map"></div>
+    </div>
+
+    <div class="search-container" style="padding-top: 0;">
+      <input type="text" id="lakeSearchInput" placeholder="Search for a lake by name...">
+      <button id="lakeSearchBtn" aria-label="Search">🔍</button>
+    </div>
+
+    <div class="slider-container" id="fishSlider"></div>
+
+    <div class="filter-bar">
+      <button id="viewFavoritesBtn" class="fav-toggle-btn">⭐ Saved Lakes</button>
+      <div>
+        <label for="radiusFilter">Radius (<span id="radiusUnitLabel">km</span>):</label>
+        <select id="radiusFilter">
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+          <option value="250">250</option>
+          <option value="500">500</option>
+          <option value="99999">Any</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="ff-results">
+      <p class="status-msg">Tap a fish above or search by name to find lakes. <br><br><span style="font-size: 0.75rem;">(Note: If lakes don't load, test on GitHub Pages due to browser security blocking local JSON files.)</span></p>
+    </div>
+  </div>
+
+  <div id="view-advisor" class="app-view">
+    <div class="advisor-section">
+      <h2>Fishing Advisor</h2>
+      <p class="text-gray-400 text-sm mb-4">Adapt your setup to the local conditions.</p>
+    </div>
+
+    <div class="advisor-section" style="padding-right: 0;">
+      <label class="advisor-label">1. Target Species <a href="#" id="openProvinceModal" class="text-white hover:underline font-normal ml-2" style="font-size:0.7rem;">[Regulations]</a></label>
+      <div id="fish-selector" class="slider-container" style="padding: 0 0 15px 0;"></div>
+    </div>
+
+    <div class="advisor-section" style="padding-right: 0;">
+      <label class="advisor-label">2. Weather</label>
+      <div id="weather-selector" class="slider-container" style="padding: 0 0 15px 0;"></div>
+    </div>
+
+    <div class="advisor-section flex gap-4">
+      <div class="flex-1">
+        <label class="advisor-label">3. Clarity</label>
+        <div id="clarity-selector" class="grid grid-cols-2 gap-2"></div>
+      </div>
+      <div class="flex-1">
+        <label class="advisor-label">4. Temp</label>
+        <div id="temp-selector" class="grid grid-cols-2 gap-2"></div>
+      </div>
+    </div>
+
+    <div class="advisor-section mt-4">
+      <button id="getRecommendation" class="btn-primary">Find Your Bait</button>
+    </div>
+    
+    <div id="advisor-results" class="advisor-section hidden mt-6 pb-8">
+      <div class="tab-bar">
+        <button id="setupTab" class="tab-btn active">Setup</button>
+        <button id="strategyTab" class="tab-btn">Strategy</button>
+      </div>
+      
+      <div id="setupContent" class="tab-content active space-y-4">
+        <div>
+          <h3 class="font-bold text-lg text-white mb-2">Primary Lures</h3>
+          <div id="lure-result" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-white mb-2">Tackle Colors</h3>
+          <div id="color-result" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-white mb-2">Gear</h3>
+          <div id="gear-result" class="app-card"></div>
+        </div>
+      </div>
+      
+      <div id="strategyContent" class="tab-content space-y-4">
+        <div>
+          <h3 class="font-bold text-lg text-white mb-2">Where to Fish</h3>
+          <div id="location-result" class="app-card"></div>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg text-white mb-2">Pro Tips</h3>
+          <div id="tip-result" class="grid grid-cols-1 gap-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchAppView('view-map', this)">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+      Map
+    </button>
+    <button class="nav-btn" onclick="switchAppView('view-advisor', this)">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+      Advisor
+    </button>
+  </nav>
+
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content text-white">
+      <h2 class="text-xl font-bold mb-4 text-accent">Settings & Info</h2>
+      <div class="mb-4">
+        <label class="block text-sm font-bold mb-2">Distance Unit</label>
+        <select id="distanceUnit" class="w-full bg-gray-800 text-white border border-gray-600 p-2 rounded">
+          <option value="metric">Kilometers (km)</option>
+          <option value="imperial">Miles (mi)</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-bold mb-2">Starting City Override</label>
+        <select id="manualLocation" class="w-full bg-gray-800 text-white border border-gray-600 p-2 rounded">
+          <option value="gps">Use My Device GPS</option>
+          <option value="44.3894,-79.6903">Barrie</option>
+          <option value="43.6532,-79.3832">Toronto</option>
+          <option value="45.4215,-75.6972">Ottawa</option>
+          <option value="48.3809,-89.2477">Thunder Bay</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="closeSettingsBtn">Close</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="provinceModal">
+    <div class="modal-content">
+      <h2 class="text-xl font-bold mb-2 text-white">Local Guides</h2>
+      <select id="provinceSelect" class="w-full bg-gray-800 border border-gray-600 text-white rounded p-2 mb-4">
+        <option value="https://www.lioapplications.lrc.gov.on.ca/fishonline/index.html?viewer=fishonline.fishonline" selected>Ontario</option>
+        <option value="https://www2.gov.bc.ca/gov/content/environment/plants-animals-ecosystems/ecosystems/habitatwizard">British Columbia</option>
+      </select>
+      <button class="btn-primary mb-2" id="goToProvinceSite">Go to Site</button>
+      <button class="btn-secondary" id="closeProvinceModal" style="margin-top:0;">Close</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="recommendations-data.js"></script>
+  <script src="shared-data.js"></script>
+  <script src="app-data.js"></script>
+
+  <script>
+    // SPA NAVIGATION LOGIC
+    function switchAppView(viewId, btnElement) {
+      document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
+      document.getElementById(viewId).classList.add('active-view');
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      if(btnElement) btnElement.classList.add('active');
+      if(viewId === 'view-map' && typeof map !== 'undefined') {
+        setTimeout(() => map.invalidateSize(), 100);
+      }
+    }
+
+    // Pass data from Map to Advisor
+    window.sendToAdvisor = function(speciesId) {
+      const speciesMap = {
+        'largemouthbass': 'largemouth', 'smallmouthbass': 'smallmouth', 'walleye': 'walleye', 'pike': 'pike', 'muskie': 'muskie', 'perch': 'perch',
+        'crappie': 'crappie', 'bluegill': 'bluegill', 'laketrout': 'laketrout', 'brooktrout': 'brooktrout', 'rainbowtrout': 'rainbowtrout', 'browntrout': 'browntrout',
+        'chinooksalmon': 'chinook', 'cohosalmon': 'coho', 'atlanticsalmon': 'atlantic', 'catfish': 'catfish', 'carp': 'carp', 'freshwaterdrum': 'drum',
+        'lakewhitefish': 'whitefish', 'splake': 'splake', 'sturgeon': 'sturgeon'
+      };
+      const translatedSpecies = speciesMap[speciesId] || speciesId || 'walleye';
+
+      const advisorBtn = document.querySelectorAll('.nav-btn')[1];
+      switchAppView('view-advisor', advisorBtn);
+      
+      const fishBtn = document.querySelector(`.fish-btn[data-fish="${translatedSpecies}"]`);
+      if(fishBtn) fishBtn.click();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      // Modals
+      const settingsModal = document.getElementById('settingsModal');
+      document.getElementById('openSettingsBtn').addEventListener('click', () => settingsModal.classList.add('open'));
+      document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.classList.remove('open'));
+
+      const provinceModal = document.getElementById('provinceModal');
+      document.getElementById('openProvinceModal').addEventListener('click', (e) => { e.preventDefault(); provinceModal.classList.add('open'); });
+      document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'));
+      document.getElementById('goToProvinceSite').addEventListener('click', () => { window.open(document.getElementById('provinceSelect').value, '_blank'); provinceModal.classList.remove('open'); });
+
+      // ==========================================
+      // FISHFINDER MAP LOGIC
+      // ==========================================
+      let appUnits = JSON.parse(localStorage.getItem('appUnitsData')) || { distance: 'metric' };
+      document.getElementById('distanceUnit').value = appUnits.distance;
+      document.getElementById('radiusUnitLabel').innerText = appUnits.distance === 'metric' ? 'km' : 'mi';
+
+      let map = L.map('map').setView([46.0, -80.0], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+      let markersLayer = L.layerGroup().addTo(map);
+      let lakesData = [];
+      let cachedUserLocation = null;
+
+      // Locate Me Button Logic
+      document.getElementById('locateMeBtn').addEventListener('click', () => {
+        if (!navigator.geolocation) { alert("Geolocation is not supported by your browser."); return; }
+        document.getElementById('locateMeBtn').innerText = "Locating...";
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            cachedUserLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
+            map.setView([cachedUserLocation.lat, cachedUserLocation.lon], 10);
+            L.marker([cachedUserLocation.lat, cachedUserLocation.lon], { 
+              icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) 
+            }).bindPopup("You are here").addTo(markersLayer);
+            document.getElementById('locateMeBtn').innerText = "📍 Locate Me";
+          },
+          (error) => {
+            alert("Unable to retrieve your location.");
+            document.getElementById('locateMeBtn').innerText = "📍 Locate Me";
+          }
+        );
+      });
+
+      const fishSpeciesList = [
+        { id: 'all', name: 'All Fish' }, { id: 'smallmouthbass', name: 'Smallmouth Bass' }, { id: 'largemouthbass', name: 'Largemouth Bass' },
+        { id: 'walleye', name: 'Walleye' }, { id: 'perch', name: 'Perch' }, { id: 'pike', name: 'Pike' }, { id: 'muskie', name: 'Muskie' }
+      ];
+
+      const ffResultsContainer = document.getElementById('ff-results');
+
+      async function loadLakeData() {
+        try {
+          const response = await fetch('lakesData.json');
+          if(!response.ok) throw new Error("JSON not loaded");
+          lakesData = await response.json();
+          buildMapSlider();
+        } catch (error) { 
+          // The error message is already in HTML, so we just log it.
+          console.warn("Local JSON fetch blocked by browser. Test on GitHub pages."); 
+          buildMapSlider(); // Still build UI even if data fails
+        }
+      }
+
+      function buildMapSlider() {
+        const sliderContainer = document.getElementById('fishSlider');
+        fishSpeciesList.forEach(fish => {
+          const btn = document.createElement('div');
+          btn.className = 'fish-btn';
+          const imgSrc = fish.id === 'all' ? 'images/icon.png' : `images/${fish.id}.png`;
+          btn.innerHTML = `<img src="${imgSrc}" alt="${fish.name}"><span>${fish.name}</span>`;
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('#fishSlider .fish-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if(lakesData.length > 0) findClosestLakes(fish.id); 
+          });
+          sliderContainer.appendChild(btn);
+        });
+      }
+
+      function findClosestLakes(speciesId) {
+        let matchingLakes = speciesId === 'all' ? lakesData : lakesData.filter(l => l.species && l.species.includes(speciesId));
+        if (matchingLakes.length === 0) { ffResultsContainer.innerHTML = `<p class="status-msg">No lakes found.</p>`; return; }
+        
+        let userLat = cachedUserLocation ? cachedUserLocation.lat : 44.3894;
+        let userLon = cachedUserLocation ? cachedUserLocation.lon : -79.6903;
+
+        matchingLakes.forEach(lake => lake.distance = calculateDistance(userLat, userLon, lake.lat, lake.lon));
+        matchingLakes.sort((a, b) => a.distance - b.distance);
+        renderLakeList(matchingLakes.slice(0, 30), speciesId);
+      }
+
+      function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; const dLat = (lat2 - lat1) * (Math.PI / 180); const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+      }
+
+      function renderLakeList(lakesArray, filteredSpeciesId) {
+        ffResultsContainer.innerHTML = '';
+        markersLayer.clearLayers();
+        let mapBounds = [];
+
+        lakesArray.forEach(lake => {
+          const marker = L.marker([lake.lat, lake.lon], { icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-blue"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) }).bindPopup(lake.name);
+          markersLayer.addLayer(marker); mapBounds.push([lake.lat, lake.lon]);
+
+          ffResultsContainer.innerHTML += `
+            <div class="app-card">
+              <div class="lake-header">
+                <div class="lake-header-left"><div class="lake-title-group"><h3>${lake.name}</h3></div></div>
+                <button class="info-toggle">▼</button>
+              </div>
+              <div class="lake-info-expanded">
+                <p class="text-xs text-gray-400">Species recorded here.</p>
+                <button class="btn-primary" style="margin-top: 10px;" onclick="sendToAdvisor('${filteredSpeciesId || 'walleye'}')">🎣 Get Recommended Setup</button>
+              </div>
+            </div>`;
+        });
+
+        if (mapBounds.length > 0) { map.invalidateSize(); map.fitBounds(mapBounds); }
+      }
+
+      document.getElementById('ff-results').addEventListener('click', function(e) {
+        if (e.target.classList.contains('info-toggle')) {
+          e.target.closest('.app-card').querySelector('.lake-info-expanded').classList.toggle('open');
+        }
+      });
+
+      loadLakeData();
+
+      // ==========================================
+      // BITEFINDER ADVISOR LOGIC 
+      // ==========================================
+      let selectedFish = 'largemouth', selectedWeather = 'sunny', selectedClarity = 'clear', selectedTemp = 'cool';
+      
+      const advisorResultsDiv = document.getElementById('advisor-results');
+      const setupTab = document.getElementById('setupTab');
+      const strategyTab = document.getElementById('strategyTab');
+      const setupContent = document.getElementById('setupContent');
+      const strategyContent = document.getElementById('strategyContent');
+
+      // Use the exact same slider style for advisor buttons!
+      function createAdvisorButtons(container, data, getSelectedValue, onSelectCallback, dataKey, iconOnly = false) {
+        container.innerHTML = '';
+        container.className = iconOnly ? "grid grid-cols-2 gap-2" : "slider-container";
+        
+        for (const key in data) {
+          const item = data[key];
+          const btn = document.createElement('div');
+          btn.className = `fish-btn ${key === getSelectedValue() ? 'active' : ''}`;
+          if(iconOnly) { btn.style.width = '100%'; btn.style.padding = '8px'; }
+          
+          btn.dataset[dataKey] = key;
+          btn.innerHTML = `<img src="${item.imageSrc}" style="${iconOnly?'width:35px;height:35px;':''}" alt="${item.name}"><span style="${iconOnly?'font-size:0.7rem; margin-top:4px;':''}">${item.name}</span>`;
+          btn.addEventListener('click', () => { 
+            onSelectCallback(key); 
+            container.querySelectorAll('.fish-btn').forEach(b => b.classList.remove('active')); 
+            btn.classList.add('active'); 
+          });
+          container.appendChild(btn);
+        }
+      }
+
+      if(typeof fishTypes !== 'undefined') {
+        createAdvisorButtons(document.getElementById('fish-selector'), fishTypes, () => selectedFish, (k) => selectedFish = k, 'fish');
+        createAdvisorButtons(document.getElementById('weather-selector'), weatherTypes, () => selectedWeather, (k) => selectedWeather = k, 'weather');
+        createAdvisorButtons(document.getElementById('clarity-selector'), clarityTypes, () => selectedClarity, (k) => selectedClarity = k, 'clarity', true);
+        createAdvisorButtons(document.getElementById('temp-selector'), tempTypes, () => selectedTemp, (k) => selectedTemp = k, 'temp', true);
+      }
+
+      document.getElementById('getRecommendation').addEventListener('click', () => {
+        const rec = (typeof recommendations !== 'undefined') ? 
+          recommendations[selectedFish]?.[selectedWeather]?.[selectedClarity]?.[selectedTemp] : null;
+        
+        if (rec) {
+          // Lures
+          document.getElementById('lure-result').innerHTML = rec.lures.map(lure => {
+            const img = (typeof lureMap !== 'undefined' && lureMap[lure.name]) ? lureMap[lure.name].image : 'images/icon.png';
+            return `<div class="lure-card">${lure.isPrimary ? '<div style="position:absolute; top:0; right:0; background:#fbbf24; color:#000; font-size:0.7rem; font-weight:bold; padding:2px 6px; border-bottom-left-radius:8px;">⭐ Go-To</div>' : ''}<img src="${img}">
+              <h4 class="font-bold text-base text-white">${lure.name}</h4><p class="text-sm text-gray-400 mt-1">${lure.technique || 'Vary retrieve.'}</p></div>`;
+          }).join('');
+
+          // Colors
+          document.getElementById('color-result').innerHTML = rec.colors.map(c => {
+            const hex = (typeof colorMap !== 'undefined' && colorMap[c]) ? colorMap[c].hex : '#ccc';
+            return `<div class="app-card flex items-center"><span style="width:20px; height:20px; border-radius:50%; background:${hex}; margin-right:10px; border:1px solid #555;"></span>
+              <h4 class="font-bold text-sm text-white">${c}</h4></div>`;
+          }).join('');
+
+          document.getElementById('gear-result').innerHTML = `<p class="text-sm text-gray-300">Rod: ${rec.gear?.rod || 'N/A'}<br>Line: ${rec.gear?.line || 'N/A'}</p>`;
+          document.getElementById('location-result').innerHTML = `<h4 class="font-bold text-white text-sm">${rec.location?.title || 'N/A'}</h4><p class="text-sm text-gray-400">${rec.location?.description || ''}</p>`;
+          
+          document.getElementById('tip-result').innerHTML = (rec.tips || []).map(tip => 
+            `<div class="app-card"><h4 class="font-bold text-sm text-accent">${tip.title}</h4><p class="text-sm text-gray-400 mt-1">${tip.description}</p></div>`
+          ).join('');
+
+          setupTab.classList.add('active'); strategyTab.classList.remove('active');
+          setupContent.classList.add('active'); strategyContent.classList.remove('active');
+        } else {
+          document.getElementById('lure-result').innerHTML = `<p class="text-gray-400 text-sm">No specific recommendation found.</p>`;
+          document.getElementById('color-result').innerHTML = ''; document.getElementById('gear-result').innerHTML = ''; document.getElementById('location-result').innerHTML = ''; document.getElementById('tip-result').innerHTML = '';
+        }
+        
+        advisorResultsDiv.classList.remove('hidden');
+        advisorResultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      setupTab.addEventListener('click', () => { setupTab.classList.add('active'); strategyTab.classList.remove('active'); setupContent.classList.add('active'); strategyContent.classList.remove('active'); });
+      strategyTab.addEventListener('click', () => { strategyTab.classList.add('active'); setupTab.classList.remove('active'); strategyContent.classList.add('active'); setupContent.classList.remove('active'); });
+
+    });
+  </script>
+</body>
+</html>
