@@ -166,7 +166,7 @@
     </div>
 
     <div id="ff-results">
-      <p class="status-msg">Tap a fish above or search by name to find lakes. <br><br><span style="font-size: 0.75rem;">(Note: If lakes don't load, test on GitHub Pages due to browser security blocking local JSON files.)</span></p>
+      <p class="status-msg">Tap a fish above or search by name to find lakes. <br><br><span style="font-size: 0.75rem;">(Note: Ensure you are on GitHub Pages for local files to load properly.)</span></p>
     </div>
   </div>
 
@@ -261,9 +261,22 @@
         <select id="manualLocation" class="w-full bg-gray-800 text-white border border-gray-600 p-2 rounded">
           <option value="gps">Use My Device GPS</option>
           <option value="44.3894,-79.6903">Barrie</option>
-          <option value="43.6532,-79.3832">Toronto</option>
+          <option value="44.1628,-77.3832">Belleville</option>
+          <option value="43.2561,-79.8711">Hamilton</option>
+          <option value="49.7692,-94.4895">Kenora</option>
+          <option value="44.2312,-76.4860">Kingston</option>
+          <option value="43.4516,-80.4925">Kitchener</option>
+          <option value="42.9849,-81.2453">London</option>
+          <option value="46.3091,-79.4608">North Bay</option>
           <option value="45.4215,-75.6972">Ottawa</option>
+          <option value="44.3091,-78.3197">Peterborough</option>
+          <option value="42.9745,-82.4066">Sarnia</option>
+          <option value="46.5136,-84.3396">Sault Ste. Marie</option>
+          <option value="46.4917,-80.9930">Sudbury</option>
           <option value="48.3809,-89.2477">Thunder Bay</option>
+          <option value="48.4758,-81.3305">Timmins</option>
+          <option value="43.6532,-79.3832">Toronto</option>
+          <option value="42.3149,-83.0364">Windsor</option>
         </select>
       </div>
       <button class="btn-primary" id="closeSettingsBtn">Close</button>
@@ -276,6 +289,17 @@
       <select id="provinceSelect" class="w-full bg-gray-800 border border-gray-600 text-white rounded p-2 mb-4">
         <option value="https://www.lioapplications.lrc.gov.on.ca/fishonline/index.html?viewer=fishonline.fishonline" selected>Ontario</option>
         <option value="https://www2.gov.bc.ca/gov/content/environment/plants-animals-ecosystems/ecosystems/habitatwizard">British Columbia</option>
+        <option value="https://peche.faune.gouv.qc.ca/?lang=en">Québec</option>
+        <option value="https://www.albertaregulations.ca/fishingregs/">Alberta</option>
+        <option value="https://saskborder.com/fishing">Saskatchewan</option>
+        <option value="https://experience.arcgis.com/experience/2557cda82dcc4a348fbb71304cedcf6d">Manitoba</option>
+        <option value="https://www2.gnb.ca/content/gnb/en/departments/erd/fish-and-wildlife/content/go-fishing.html">New Brunswick</option>
+        <option value="https://www.fishnovascotia.ca/places">Nova Scotia</option>
+        <option value="https://www.princeedwardisland.ca/en/information/environment-energy-and-climate-action/angling-resources-and-information-centre">Prince Edward Island</option>
+        <option value="https://www.nfl.dfo-mpo.gc.ca/en/NL/AG/anglersguide">Newfoundland & Labrador</option>
+        <option value="https://yukon.ca/en/fishing">Yukon</option>
+        <option value="https://www.enr.gov.nt.ca/en/services/fishing/angling-guide">Northwest Territories</option>
+        <option value="https://www.gov.nu.ca/environment/information/fisheries-and-sealing">Nunavut</option>
       </select>
       <button class="btn-primary mb-2" id="goToProvinceSite">Go to Site</button>
       <button class="btn-secondary" id="closeProvinceModal" style="margin-top:0;">Close</button>
@@ -336,6 +360,7 @@
       document.getElementById('distanceUnit').value = appUnits.distance;
       document.getElementById('radiusUnitLabel').innerText = appUnits.distance === 'metric' ? 'km' : 'mi';
 
+      // Using OpenStreetMap Layer (Works best on GitHub Pages)
       let map = L.map('map').setView([46.0, -80.0], 5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
@@ -363,8 +388,16 @@
       });
 
       const fishSpeciesList = [
-        { id: 'all', name: 'All Fish' }, { id: 'smallmouthbass', name: 'Smallmouth Bass' }, { id: 'largemouthbass', name: 'Largemouth Bass' },
-        { id: 'walleye', name: 'Walleye' }, { id: 'perch', name: 'Perch' }, { id: 'pike', name: 'Pike' }, { id: 'muskie', name: 'Muskie' }
+        { id: 'all', name: 'All Fish' },
+        { id: 'smallmouthbass', name: 'Smallmouth Bass' }, { id: 'largemouthbass', name: 'Largemouth Bass' },
+        { id: 'walleye', name: 'Walleye' }, { id: 'perch', name: 'Perch' }, { id: 'pike', name: 'Pike' },
+        { id: 'muskie', name: 'Muskie' }, { id: 'laketrout', name: 'Lake Trout' }, { id: 'brooktrout', name: 'Brook Trout' },
+        { id: 'rainbowtrout', name: 'Rainbow Trout' }, { id: 'browntrout', name: 'Brown Trout' },
+        { id: 'chinooksalmon', name: 'Chinook Salmon' }, { id: 'cohosalmon', name: 'Coho Salmon' },
+        { id: 'atlanticsalmon', name: 'Atlantic Salmon' }, { id: 'crappie', name: 'Crappie' },
+        { id: 'bluegill', name: 'Bluegill' }, { id: 'catfish', name: 'Catfish' }, { id: 'carp', name: 'Carp' },
+        { id: 'freshwaterdrum', name: 'Freshwater Drum' }, { id: 'lakewhitefish', name: 'Lake Whitefish' },
+        { id: 'splake', name: 'Splake' }, { id: 'sturgeon', name: 'Sturgeon' }
       ];
 
       const ffResultsContainer = document.getElementById('ff-results');
@@ -376,7 +409,6 @@
           lakesData = await response.json();
           buildMapSlider();
         } catch (error) { 
-          // The error message is already in HTML, so we just log it.
           console.warn("Local JSON fetch blocked by browser. Test on GitHub pages."); 
           buildMapSlider(); // Still build UI even if data fails
         }
@@ -460,7 +492,6 @@
       const setupContent = document.getElementById('setupContent');
       const strategyContent = document.getElementById('strategyContent');
 
-      // Use the exact same slider style for advisor buttons!
       function createAdvisorButtons(container, data, getSelectedValue, onSelectCallback, dataKey, iconOnly = false) {
         container.innerHTML = '';
         container.className = iconOnly ? "grid grid-cols-2 gap-2" : "slider-container";
