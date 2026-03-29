@@ -77,7 +77,11 @@
     .custom-pin { width: 20px; height: 20px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; }
     .pin-blue { background-color: #2563eb; }
     .pin-yellow { background-color: #fbbf24; }
-    .pin-user { background-color: #ef4444; }
+    .pin-user { background-color: #ef4444; z-index: 1000 !important; }
+
+    /* Map Line Tooltip CSS */
+    .line-tooltip { background: #1e293b; color: #0ea5e9; border: 1px solid #0ea5e9; font-weight: bold; border-radius: 6px; padding: 4px 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+    .leaflet-tooltip-left::before, .leaflet-tooltip-right::before, .leaflet-tooltip-top::before, .leaflet-tooltip-bottom::before { display: none !important; }
 
     /* --- LAKE CARD UI --- */
     .lake-card { background-color: var(--card-bg); border-radius: 10px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; border: 2px solid transparent; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
@@ -473,17 +477,14 @@
         settingsModal.classList.add('open');
       });
       document.getElementById('confirmUpdateBtn').addEventListener('click', async () => {
-        // Unregister SW to force fresh fetch on next load
         if ('serviceWorker' in navigator) {
           const regs = await navigator.serviceWorker.getRegistrations();
           for (let reg of regs) { await reg.update(); }
         }
-        // Clear caches
         if ('caches' in window) {
           const keys = await caches.keys();
           for (let key of keys) { await caches.delete(key); }
         }
-        // Hard reload
         window.location.reload(true);
       });
 
@@ -504,7 +505,7 @@
 
       const provinceModal = document.getElementById('provinceModal');
       document.getElementById('openProvinceModal').addEventListener('click', (e) => { e.preventDefault(); provinceModal.classList.add('open'); });
-      document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'));
+      document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'); });
       document.getElementById('goToProvinceSite').addEventListener('click', () => { window.open(document.getElementById('provinceSelect').value, '_blank'); provinceModal.classList.remove('open'); });
 
       // ==========================================
@@ -518,7 +519,6 @@
       document.getElementById('areaUnit').value = appUnits.area;
       document.getElementById('radiusUnitLabel').innerText = appUnits.distance === 'metric' ? 'km' : 'mi';
 
-      // Re-render when units change
       ['distanceUnit', 'depthUnit', 'areaUnit'].forEach(id => {
         document.getElementById(id).addEventListener('change', (e) => {
           appUnits[e.target.id.replace('Unit', '')] = e.target.value;
@@ -535,6 +535,7 @@
       let map = L.map('map').setView([46.0, -80.0], 5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
+      let routeLineLayer = null; // Holds the drawn dotted line
       let lakesData = [];
       let cachedUserLocation = null;
       let currentActiveSpecies = null;
@@ -548,9 +549,15 @@
           (position) => {
             cachedUserLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
             map.setView([cachedUserLocation.lat, cachedUserLocation.lon], 10);
+            
+            // Clear existing and drop pin
+            markersLayer.clearLayers();
+            if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
+            
             L.marker([cachedUserLocation.lat, cachedUserLocation.lon], { 
               icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) 
             }).bindPopup("You are here").addTo(markersLayer);
+            
             document.getElementById('locateMeBtn').innerText = "📍 Locate Me";
             if(currentActiveSpecies) findClosestLakes(currentActiveSpecies);
           },
@@ -653,7 +660,17 @@
       function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId) {
         ffResultsContainer.innerHTML = '';
         markersLayer.clearLayers();
+        if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
         let mapBounds = [];
+
+        // Restore Red Pin if locating is active
+        if (cachedUserLocation) {
+          const userMarker = L.marker([cachedUserLocation.lat, cachedUserLocation.lon], {
+            icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] })
+          }).bindPopup("You are here");
+          markersLayer.addLayer(userMarker);
+          mapBounds.push([cachedUserLocation.lat, cachedUserLocation.lon]);
+        }
 
         lakesArray.forEach(lake => {
           const uniqueId = getLakeId(lake);
@@ -661,7 +678,6 @@
           const starActiveClass = isFavorited ? 'active' : '';
           const customNote = isFavorited && savedLakes[uniqueId].note ? savedLakes[uniqueId].note : '';
 
-          // Unit Conversions
           let displayDistance = lake.distance !== undefined ? (appUnits.distance === 'metric' ? lake.distance.toFixed(1) + ' km' : (lake.distance * 0.621371).toFixed(1) + ' mi') : '';
           let distanceBadge = displayDistance ? `<div class="distance-badge">${displayDistance}</div>` : '';
           let depthVal = lake.maxDepth ? (appUnits.depth === 'metric' ? parseFloat(lake.maxDepth) : parseFloat(lake.maxDepth) * 3.28084).toFixed(1).replace(/\.0$/, '') : null;
@@ -669,12 +685,10 @@
           let areaVal = lake.surfaceArea ? (appUnits.area === 'metric' ? parseFloat(lake.surfaceArea) : parseFloat(lake.surfaceArea) * 2.47105) : null;
           let areaStr = areaVal ? `${areaVal > 100 ? Math.round(areaVal) : areaVal.toFixed(1).replace(/\.0$/, '')} ${appUnits.area === 'metric' ? 'ha' : 'ac'}` : '';
 
-          // Custom Leaflet Markers
           const pinColorClass = isFavorited ? 'pin-yellow' : 'pin-blue';
           const marker = L.marker([lake.lat, lake.lon], { icon: L.divIcon({ className: '', html: `<div class="custom-pin ${pinColorClass}"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) }).bindPopup(lake.name);
           markersLayer.addLayer(marker); mapBounds.push([lake.lat, lake.lon]);
 
-          // Species String Generator
           let readableOtherSpecies = '';
           if(lake.species) {
              readableOtherSpecies = lake.species
@@ -688,14 +702,12 @@
           const mapsUrl = `http://googleusercontent.com/maps.google.com/maps?daddr=${lake.lat},${lake.lon}`;
           const townName = lake.town ? lake.town : 'Ontario';
 
-          // Stocking highlighting
           let stockedClass = '', stockingContentHTML = '';
           if (lake.isStocked && lake.stockingInfo) {
             stockedClass = (searchedFishName && lake.stockingInfo.toLowerCase().includes(searchedFishName)) ? ' stocked-match' : ' stocked-ghost'; 
             stockingContentHTML = `<div class="stocking-info"><strong>Stocking Info:</strong><br>${lake.stockingInfo}</div>`;
           }
 
-          // Stats Grid
           let statsTextHTML = '';
           const statsArray = [];
           if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${lake.fmz}</span>`);
@@ -716,7 +728,7 @@
           }
 
           ffResultsContainer.innerHTML += `
-            <div class="lake-card${stockedClass}" data-lakeid="${uniqueId}">
+            <div class="lake-card${stockedClass}" data-lakeid="${uniqueId}" data-lat="${lake.lat}" data-lon="${lake.lon}" data-dist="${displayDistance}">
               <div class="lake-header">
                 <div class="lake-header-left">
                   <button class="star-btn ${starActiveClass}" data-lakeid="${uniqueId}">★</button>
@@ -749,11 +761,38 @@
         if (mapBounds.length > 0) { map.invalidateSize(); map.fitBounds(mapBounds, { padding: [20, 20] }); }
       }
 
-      // Event delegation for lake cards (Info toggle, Notes, Stars)
+      // Event delegation for lake cards
       document.getElementById('ff-results').addEventListener('click', function(e) {
+        
+        // Info Toggle & Dotted Map Line Logic
         const infoToggle = e.target.closest('.info-toggle');
         if (infoToggle) {
-          e.target.closest('.lake-card').querySelector('.lake-info-expanded').classList.toggle('open');
+          const card = e.target.closest('.lake-card');
+          const expandedSection = card.querySelector('.lake-info-expanded');
+          const isOpen = expandedSection.classList.toggle('open');
+
+          // Clear any existing dotted lines
+          if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
+
+          if (isOpen && cachedUserLocation) {
+            const lakeLat = parseFloat(card.dataset.lat);
+            const lakeLon = parseFloat(card.dataset.lon);
+            const distStr = card.dataset.dist;
+
+            // Draw dotted line
+            routeLineLayer = L.polyline([
+              [cachedUserLocation.lat, cachedUserLocation.lon],
+              [lakeLat, lakeLon]
+            ], { color: '#0ea5e9', weight: 4, dashArray: '10, 10', opacity: 0.8 }).addTo(map);
+
+            // Add tooltip halfway
+            routeLineLayer.bindTooltip(distStr + " (direct)", {
+              permanent: true, direction: 'center', className: 'line-tooltip'
+            }).openTooltip();
+
+            // Fit map to show both user and lake
+            map.fitBounds(routeLineLayer.getBounds(), { padding: [30, 30] });
+          }
         }
 
         const noteBtn = e.target.closest('.note-btn');
