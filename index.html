@@ -201,9 +201,12 @@
   </div>
 
   <div id="view-advisor" class="app-view">
-    <div class="advisor-section">
+    
+    <div id="advisor-lake-container" class="advisor-section">
       <h2>Fishing Advisor</h2>
-      <p class="text-gray-400 text-sm mb-4">Adapt your setup to the local conditions.</p>
+      <div class="lake-card mt-3" style="border: 1px solid #334155; background-color: transparent; box-shadow: none;">
+        <p class="text-center text-gray-400 text-sm py-2 m-0">Select a lake from the Map to lock in local species.</p>
+      </div>
     </div>
 
     <div class="advisor-section" style="padding-right: 0;">
@@ -410,24 +413,6 @@
       if(viewId === 'view-map' && typeof map !== 'undefined') {
         setTimeout(() => map.invalidateSize(), 100);
       }
-    }
-
-    // Pass data from Map to Advisor
-    window.sendToAdvisor = function(speciesId) {
-      const speciesMap = {
-        'largemouthbass': 'largemouth', 'smallmouthbass': 'smallmouth', 'walleye': 'walleye', 'pike': 'pike', 'muskie': 'muskie', 'perch': 'perch',
-        'crappie': 'crappie', 'bluegill': 'bluegill', 'laketrout': 'laketrout', 'brooktrout': 'brooktrout', 'rainbowtrout': 'rainbowtrout', 'browntrout': 'browntrout',
-        'chinooksalmon': 'chinook', 'cohosalmon': 'coho', 'atlanticsalmon': 'atlantic', 'catfish': 'catfish', 'carp': 'carp', 'freshwaterdrum': 'drum',
-        'lakewhitefish': 'whitefish', 'splake': 'splake', 'sturgeon': 'sturgeon'
-      };
-      const translatedSpecies = speciesMap[speciesId] || speciesId || 'walleye';
-
-      const advisorBtn = document.querySelectorAll('.nav-btn')[1];
-      switchAppView('view-advisor', advisorBtn);
-      
-      const fishBtn = document.querySelector(`.fish-btn[data-fish="${translatedSpecies}"]`);
-      if(fishBtn) fishBtn.click();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -674,6 +659,7 @@
 
         lakesArray.forEach(lake => {
           const uniqueId = getLakeId(lake);
+          const safeUniqueId = uniqueId.replace(/'/g, "\\'"); // Prevent breaking onclick string
           const isFavorited = !!savedLakes[uniqueId];
           const starActiveClass = isFavorited ? 'active' : '';
           const customNote = isFavorited && savedLakes[uniqueId].note ? savedLakes[uniqueId].note : '';
@@ -753,7 +739,7 @@
                   <button class="note-btn" data-lakeid="${uniqueId}">📝 ${customNote ? 'Edit Note' : 'Add Note'}</button>
                 </div>
 
-                <button class="pass-to-advisor-btn" onclick="sendToAdvisor('${filteredSpeciesId || 'walleye'}')">🎣 Get Recommended Setup</button>
+                <button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Recommended Setup</button>
               </div>
             </div>`;
         });
@@ -895,6 +881,78 @@
 
       setupTab.addEventListener('click', () => { setupTab.classList.add('active'); strategyTab.classList.remove('active'); setupContent.classList.add('active'); strategyContent.classList.remove('active'); });
       strategyTab.addEventListener('click', () => { strategyTab.classList.add('active'); setupTab.classList.remove('active'); strategyContent.classList.add('active'); setupContent.classList.remove('active'); });
+
+      // Pass data from Map to Advisor
+      window.sendToAdvisor = function(lakeId, speciesId) {
+        const lake = lakesData.find(l => getLakeId(l) === lakeId);
+        if (!lake) return;
+
+        const speciesMap = {
+          'largemouthbass': 'largemouth', 'smallmouthbass': 'smallmouth', 'walleye': 'walleye', 'pike': 'pike', 'muskie': 'muskie', 'perch': 'perch',
+          'crappie': 'crappie', 'bluegill': 'bluegill', 'laketrout': 'laketrout', 'brooktrout': 'brooktrout', 'rainbowtrout': 'rainbowtrout', 'browntrout': 'browntrout',
+          'chinooksalmon': 'chinooksalmon', 'cohosalmon': 'cohosalmon', 'atlanticsalmon': 'atlanticsalmon', 'catfish': 'catfish', 'carp': 'carp', 'freshwaterdrum': 'freshwaterdrum',
+          'lakewhitefish': 'lakewhitefish', 'splake': 'splake', 'sturgeon': 'sturgeon'
+        };
+
+        const translatedSpecies = speciesMap[speciesId] || speciesId || 'walleye';
+
+        const advisorBtn = document.querySelectorAll('.nav-btn')[1];
+        switchAppView('view-advisor', advisorBtn);
+
+        // Update Lake Card UI
+        const container = document.getElementById('advisor-lake-container');
+        const townName = lake.town ? lake.town : 'Ontario';
+        container.innerHTML = `
+          <h2>Fishing Advisor</h2>
+          <div class="lake-card active-highlight mt-3 border-accent" style="margin-bottom: 0;">
+            <div class="lake-header">
+              <div class="lake-header-left">
+                <div class="lake-title-group">
+                  <h3 style="font-size: 1.1rem;">${lake.name}</h3>
+                  <div class="lake-town">${townName}</div>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-300 mt-2 italic">Showing species available in this lake.</p>
+          </div>
+        `;
+
+        // Filter Fish Selector
+        const availableTranslatedSpecies = (lake.species || []).map(s => speciesMap[s] || s);
+        const filteredFishTypes = {};
+        if (availableTranslatedSpecies.length > 0) {
+          for (const key of availableTranslatedSpecies) {
+            if (fishTypes[key]) {
+              filteredFishTypes[key] = fishTypes[key];
+            }
+          }
+        }
+
+        // Fallback to all fish if the lake has no species mapping
+        const finalFishTypes = Object.keys(filteredFishTypes).length > 0 ? filteredFishTypes : fishTypes;
+
+        // Select the specific fish if it exists in the filtered list, otherwise select the first available
+        if (finalFishTypes[translatedSpecies]) {
+          selectedFish = translatedSpecies;
+        } else {
+          selectedFish = Object.keys(finalFishTypes)[0];
+        }
+
+        // Recreate the fish selector
+        createAdvisorButtons(
+          document.getElementById('fish-selector'), 
+          finalFishTypes, 
+          () => selectedFish, 
+          (k) => selectedFish = k, 
+          'fish'
+        );
+
+        // Ensure result section is hidden until 'Find Your Bait' is clicked
+        document.getElementById('advisor-results').classList.add('hidden');
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
 
     });
   </script>
