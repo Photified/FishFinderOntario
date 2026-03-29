@@ -22,7 +22,6 @@
       background-color: var(--bg-color); color: var(--text-main);
     }
     
-    /* --- APP HEADER --- */
     header { 
       display: flex; justify-content: space-between; align-items: center;
       padding: 12px 20px; background: linear-gradient(135deg, #006eb3 0%, #003e6d 100%); 
@@ -33,7 +32,6 @@
     .settings-btn { background: none; border: none; padding: 5px; cursor: pointer; display: flex; align-items: center; }
     .settings-btn svg { width: 26px; height: 26px; fill: #ffffff; transition: transform 0.2s ease; }
     
-    /* --- SPA NAVIGATION BAR --- */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; width: 100%;
       background-color: #1e293b; border-top: 1px solid #334155;
@@ -81,7 +79,7 @@
     .pin-yellow { background-color: #fbbf24; }
     .pin-user { background-color: #ef4444; }
 
-    /* --- RESTORED LAKE CARD UI --- */
+    /* --- LAKE CARD UI --- */
     .lake-card { background-color: var(--card-bg); border-radius: 10px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; border: 2px solid transparent; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
     .lake-card.active-highlight { border-color: var(--accent); box-shadow: 0 0 12px rgba(14, 165, 233, 0.4); }
     .lake-card.stocked-match { border-left: 4px solid #10b981; background-color: rgba(16, 185, 129, 0.05); }
@@ -120,6 +118,8 @@
     /* Buttons */
     .btn-primary { background: var(--accent); color: #fff; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; border:none; cursor: pointer; }
     .btn-secondary { background: #333; color: #fff; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; border:none; cursor: pointer; margin-top: 10px; }
+    .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
 
     /* --- ADVISOR SPECIFIC CSS --- */
     .advisor-section { padding: 0 20px; }
@@ -135,11 +135,18 @@
     .lure-card { background-color: var(--card-bg); border-radius: 10px; padding: 12px; margin-bottom: 12px; position: relative; border: 1px solid #333; }
     .lure-card img { width: 100%; height: 90px; object-fit: contain; background: white; border-radius: 6px; margin-bottom: 8px; }
 
-    /* MODALS */
+    /* MODALS & DATA SOURCES */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
     .modal-overlay.open { display: flex; }
     .modal-content { background: var(--card-bg); width: 100%; max-width: 350px; border-radius: 12px; padding: 20px; max-height: 90vh; overflow-y: auto; }
     .custom-textarea { width: 100%; height: 80px; background: var(--bg-color); color: white; border: 1px solid #444; padding: 10px; border-radius: 6px; font-size: 0.9rem; outline: none; resize: none; margin-bottom: 12px; font-family: inherit; }
+    
+    .data-sources { margin-top: 20px; padding-top: 15px; border-top: 1px solid #333; }
+    .data-sources h4 { margin: 0 0 5px; color: var(--text-main); font-size: 0.9rem; }
+    .data-sources p { margin: 0 0 8px; font-size: 0.75rem; color: var(--text-muted); }
+    .data-sources ul { margin: 0; padding-left: 20px; font-size: 0.8rem; color: var(--text-muted); }
+    .data-sources li { margin-bottom: 4px; }
+    .data-sources a { color: var(--accent); text-decoration: none; }
   </style>
 </head>
 <body>
@@ -185,7 +192,7 @@
     </div>
 
     <div id="ff-results">
-      <p class="status-msg">Tap a fish above or search by name to find lakes. <br><br><span style="font-size: 0.75rem;">(Note: Ensure you are on GitHub Pages for local files to load properly.)</span></p>
+      <p class="status-msg">Tap a fish above or search by name to find lakes.</p>
     </div>
   </div>
 
@@ -312,7 +319,42 @@
           <option value="42.3149,-83.0364">Windsor</option>
         </select>
       </div>
-      <button class="btn-primary" id="closeSettingsBtn">Close</button>
+      
+      <div id="installGroup" style="display: none; margin-bottom: 15px;">
+        <button class="btn-primary" id="installBtn">📲 Install App to Home Screen</button>
+      </div>
+
+      <button class="btn-secondary" id="updateAppPromptBtn" style="background-color: #2563eb; margin-top: 0;">🔄 Update Data & App</button>
+      <button class="btn-danger" id="clearDataPromptBtn">🗑️ Clear Saved Data</button>
+
+      <div class="data-sources">
+        <h4>Data Sources</h4>
+        <p>Lake and species data compiled from Ontario GeoHub:</p>
+        <ul>
+          <li><a href="https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about" target="_blank">Aquatic Resource Area Polygon Segment</a></li>
+          <li><a href="https://geohub.lio.gov.on.ca/datasets/mnrf::fish-stocking-data-for-recreational-purposes/explore" target="_blank">Fish Stocking Data for Recreational Purposes</a></li>
+        </ul>
+      </div>
+
+      <button class="btn-secondary" id="closeSettingsBtn">Close</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="updateAppModal" style="z-index: 200;">
+    <div class="modal-content text-white">
+      <h2 class="text-xl font-bold mb-2 text-blue-400">Update Available</h2>
+      <p class="text-sm text-gray-300 mb-6">Update app with the latest lake and stocking info?</p>
+      <button class="btn-primary mb-3" id="confirmUpdateBtn">Update Now</button>
+      <button class="btn-secondary" id="cancelUpdateBtn" style="margin-top:0;">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="clearDataModal" style="z-index: 200;">
+    <div class="modal-content text-white">
+      <h2 class="text-xl font-bold mb-2 text-red-500">Clear All Data?</h2>
+      <p class="text-sm text-gray-300 mb-6">Are you sure you want to delete all saved lakes, notes, and preferences? This cannot be undone.</p>
+      <button class="btn-primary mb-3" id="confirmClearDataBtn" style="background: #ef4444;">Yes, Delete Everything</button>
+      <button class="btn-secondary" id="cancelClearDataBtn" style="margin-top:0;">Cancel</button>
     </div>
   </div>
 
@@ -386,18 +428,83 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       
+      // PWA Install Logic
+      let deferredPrompt;
+      const installBtn = document.getElementById('installBtn');
+      const installGroup = document.getElementById('installGroup');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installGroup.style.display = 'block';
+      });
+
+      installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            installGroup.style.display = 'none';
+          }
+          deferredPrompt = null;
+        }
+      });
+
+      // Service Worker Registration
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW Error.', err));
       }
 
       // Modals
       const settingsModal = document.getElementById('settingsModal');
+      const clearDataModal = document.getElementById('clearDataModal');
+      const updateAppModal = document.getElementById('updateAppModal');
+      
       document.getElementById('openSettingsBtn').addEventListener('click', () => settingsModal.classList.add('open'));
       document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.classList.remove('open'));
 
+      // Update App Logic
+      document.getElementById('updateAppPromptBtn').addEventListener('click', () => {
+        settingsModal.classList.remove('open');
+        updateAppModal.classList.add('open');
+      });
+      document.getElementById('cancelUpdateBtn').addEventListener('click', () => {
+        updateAppModal.classList.remove('open');
+        settingsModal.classList.add('open');
+      });
+      document.getElementById('confirmUpdateBtn').addEventListener('click', async () => {
+        // Unregister SW to force fresh fetch on next load
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (let reg of regs) { await reg.update(); }
+        }
+        // Clear caches
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (let key of keys) { await caches.delete(key); }
+        }
+        // Hard reload
+        window.location.reload(true);
+      });
+
+      // Clear Data Logic
+      document.getElementById('clearDataPromptBtn').addEventListener('click', () => {
+        settingsModal.classList.remove('open');
+        clearDataModal.classList.add('open');
+      });
+      document.getElementById('cancelClearDataBtn').addEventListener('click', () => {
+        clearDataModal.classList.remove('open');
+        settingsModal.classList.add('open');
+      });
+      document.getElementById('confirmClearDataBtn').addEventListener('click', () => {
+        localStorage.removeItem('appUnitsData');
+        localStorage.removeItem('savedLakesData');
+        window.location.reload(); 
+      });
+
       const provinceModal = document.getElementById('provinceModal');
       document.getElementById('openProvinceModal').addEventListener('click', (e) => { e.preventDefault(); provinceModal.classList.add('open'); });
-      document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'));
+      document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'); });
       document.getElementById('goToProvinceSite').addEventListener('click', () => { window.open(document.getElementById('provinceSelect').value, '_blank'); provinceModal.classList.remove('open'); });
 
       // ==========================================
@@ -476,7 +583,7 @@
           lakesData = await response.json();
           buildMapSlider();
         } catch (error) { 
-          console.warn("Local JSON fetch blocked by browser. Test on GitHub pages."); 
+          console.warn("Local JSON fetch failed. Make sure you are on a live server or GitHub pages."); 
           buildMapSlider();
         }
       }
@@ -525,7 +632,7 @@
 
       function getLakeId(lake) { return `${lake.name}-${lake.lat}-${lake.lon}`; }
 
-      // Restored Note Modal Logic
+      // Note Modal Logic
       const noteModal = document.getElementById('noteModal');
       const noteInput = document.getElementById('noteInput');
       let pendingNoteLakeId = null;
@@ -578,7 +685,7 @@
               .join(', ');
           }
 
-          const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lake.lat},${lake.lon}`;
+          const mapsUrl = `http://googleusercontent.com/maps.google.com/maps?daddr=${lake.lat},${lake.lon}`;
           const townName = lake.town ? lake.town : 'Ontario';
 
           // Stocking highlighting
@@ -639,7 +746,7 @@
             </div>`;
         });
 
-        if (mapBounds.length > 0) { map.invalidateSize(); map.fitBounds(mapBounds); }
+        if (mapBounds.length > 0) { map.invalidateSize(); map.fitBounds(mapBounds, { padding: [20, 20] }); }
       }
 
       // Event delegation for lake cards (Info toggle, Notes, Stars)
