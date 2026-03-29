@@ -124,6 +124,7 @@
     .custom-pin { width: 20px; height: 20px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; }
     .pin-blue { background-color: #2563eb; }
     .pin-yellow { background-color: #fbbf24; }
+    .pin-green { background-color: #10b981; } /* Highlighted Stocking Map Pin */
     .pin-user { background-color: #ef4444; z-index: 1000 !important; }
 
     /* Map Line Tooltip CSS */
@@ -133,6 +134,7 @@
     /* --- LAKE CARD UI --- */
     .lake-card { background-color: var(--card-bg); border-radius: 10px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; border: 1px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
     .lake-card.active-highlight { border-color: var(--accent); box-shadow: 0 0 12px rgba(14, 165, 233, 0.4); }
+    .lake-card.stocked-highlight { border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.25); background: linear-gradient(180deg, #1e1e1e 0%, #172a23 100%); }
     
     .lake-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; }
     .lake-header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
@@ -144,6 +146,7 @@
     
     .lake-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .distance-badge { background-color: #1e293b; color: var(--accent); padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
+    .stocked-badge { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
     .maps-btn { background-color: #3b82f6; color: white; text-decoration: none; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
     .info-toggle { background: var(--bg-color); border: 1px solid #333; color: white; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem; transition: 0.2s; }
 
@@ -399,6 +402,15 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="regulationsModal" style="z-index: 1060;">
+    <div class="modal-content text-white">
+      <h2 class="text-xl font-bold mb-2 text-blue-400">Fishing Regulations</h2>
+      <p class="text-sm text-gray-300 mb-6">View 2026 Ontario Fishing Regulations?</p>
+      <button class="btn-primary mb-3" id="confirmRegulationsBtn">View Regulations</button>
+      <button class="btn-secondary" id="cancelRegulationsBtn" style="margin-top:0;">Cancel</button>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="feedbackModal" style="z-index: 1060;">
     <div class="modal-content text-white text-center">
       <h2 class="text-xl font-bold mb-2 text-accent">Leave Feedback</h2>
@@ -446,7 +458,6 @@
   <script src="app-data.js"></script>
 
   <script>
-    // SPA NAVIGATION LOGIC
     function switchAppView(viewId, btnElement) {
       document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
       document.getElementById(viewId).classList.add('active-view');
@@ -459,7 +470,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       
-      // PWA Install Logic
       let deferredPrompt;
       const installBtn = document.getElementById('installBtn');
       const installGroup = document.getElementById('installGroup');
@@ -481,21 +491,35 @@
         }
       });
 
-      // Service Worker Registration
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW Error.', err));
       }
 
-      // Modals
       const settingsModal = document.getElementById('settingsModal');
       const clearDataModal = document.getElementById('clearDataModal');
       const updateAppModal = document.getElementById('updateAppModal');
       const feedbackModal = document.getElementById('feedbackModal');
+      const regulationsModal = document.getElementById('regulationsModal');
       
       document.getElementById('openSettingsBtn').addEventListener('click', () => settingsModal.classList.add('open'));
       document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.classList.remove('open'));
 
-      // Feedback Logic via Formsubmit API
+      // Regulations Logic
+      document.getElementById('openRegulationsBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        settingsModal.classList.remove('open');
+        regulationsModal.classList.add('open');
+      });
+      document.getElementById('cancelRegulationsBtn').addEventListener('click', () => {
+        regulationsModal.classList.remove('open');
+        settingsModal.classList.add('open');
+      });
+      document.getElementById('confirmRegulationsBtn').addEventListener('click', () => {
+        window.open('https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf', '_blank');
+        regulationsModal.classList.remove('open');
+      });
+
+      // Feedback Logic
       document.getElementById('openFeedbackBtn').addEventListener('click', () => {
         settingsModal.classList.remove('open');
         feedbackModal.classList.add('open');
@@ -505,7 +529,7 @@
 
       document.getElementById('cancelFeedbackBtn').addEventListener('click', () => {
         feedbackModal.classList.remove('open');
-        settingsModal.classList.add('open'); // Re-open settings
+        settingsModal.classList.add('open'); 
       });
 
       document.getElementById('feedbackForm').addEventListener('submit', function(e) {
@@ -527,11 +551,10 @@
         .then(response => response.json())
         .then(data => {
             btn.innerText = 'Send Message';
-            btn.style.display = 'none'; // Hide button after send
-            document.getElementById('feedbackStatus').classList.remove('hidden'); // Show Sent!
+            btn.style.display = 'none'; 
+            document.getElementById('feedbackStatus').classList.remove('hidden'); 
             document.getElementById('feedbackForm').reset();
             
-            // Auto close after 2 seconds
             setTimeout(() => {
                 feedbackModal.classList.remove('open');
             }, 2000);
@@ -578,12 +601,6 @@
         window.location.reload(); 
       });
 
-      // Direct link to Ontario Fishing Regulations
-      document.getElementById('openRegulationsBtn').addEventListener('click', (e) => { 
-        e.preventDefault(); 
-        window.open('https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf', '_blank'); 
-      });
-
       // ==========================================
       // FISHFINDER MAP LOGIC
       // ==========================================
@@ -611,13 +628,12 @@
       let map = L.map('map').setView([46.0, -80.0], 5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
-      let routeLineLayer = null; // Holds the drawn dotted line
+      let routeLineLayer = null; 
       let lakesData = [];
       let cachedUserLocation = null;
       let currentActiveSpecies = null;
       let savedLakes = JSON.parse(localStorage.getItem('savedLakesData')) || {};
 
-      // Locate Me Button
       document.getElementById('locateMeBtn').addEventListener('click', () => {
         if (!navigator.geolocation) { alert("Geolocation is not supported by your browser."); return; }
         document.getElementById('locateMeBtn').innerText = "Locating...";
@@ -626,7 +642,6 @@
             cachedUserLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
             map.setView([cachedUserLocation.lat, cachedUserLocation.lon], 10);
             
-            // Clear existing and drop pin
             markersLayer.clearLayers();
             if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
             
@@ -717,7 +732,6 @@
 
       function getLakeId(lake) { return `${lake.name}-${lake.lat}-${lake.lon}`; }
 
-      // Note Modal Logic
       const noteModal = document.getElementById('noteModal');
       const noteInput = document.getElementById('noteInput');
       let pendingNoteLakeId = null;
@@ -741,7 +755,6 @@
         if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
         let mapBounds = [];
 
-        // Restore Red Pin if locating is active
         if (cachedUserLocation) {
           const userMarker = L.marker([cachedUserLocation.lat, cachedUserLocation.lon], {
             icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] })
@@ -752,19 +765,31 @@
 
         lakesArray.forEach(lake => {
           const uniqueId = getLakeId(lake);
-          const safeUniqueId = uniqueId.replace(/'/g, "\\'"); // Prevent breaking onclick string
+          const safeUniqueId = uniqueId.replace(/'/g, "\\'"); 
           const isFavorited = !!savedLakes[uniqueId];
           const starActiveClass = isFavorited ? 'active' : '';
           const customNote = isFavorited && savedLakes[uniqueId].note ? savedLakes[uniqueId].note : '';
 
+          // Determine Stocking Match
+          let isStockedMatch = false;
+          if (lake.isStocked && lake.stockingInfo) {
+            if (filteredSpeciesId === 'all' || !filteredSpeciesId) {
+              isStockedMatch = true;
+            } else if (searchedFishName && lake.stockingInfo.toLowerCase().includes(searchedFishName.toLowerCase())) {
+              isStockedMatch = true;
+            }
+          }
+
           let displayDistance = lake.distance !== undefined ? (appUnits.distance === 'metric' ? lake.distance.toFixed(1) + ' km' : (lake.distance * 0.621371).toFixed(1) + ' mi') : '';
           let distanceBadge = displayDistance ? `<div class="distance-badge">${displayDistance}</div>` : '';
+          let stockedBadge = isStockedMatch ? `<div class="stocked-badge">⭐ Stocked</div>` : '';
+          
           let depthVal = lake.maxDepth ? (appUnits.depth === 'metric' ? parseFloat(lake.maxDepth) : parseFloat(lake.maxDepth) * 3.28084).toFixed(1).replace(/\.0$/, '') : null;
           let depthStr = depthVal ? `${depthVal}${appUnits.depth === 'metric' ? 'm' : 'ft'}` : '';
           let areaVal = lake.surfaceArea ? (appUnits.area === 'metric' ? parseFloat(lake.surfaceArea) : parseFloat(lake.surfaceArea) * 2.47105) : null;
           let areaStr = areaVal ? `${areaVal > 100 ? Math.round(areaVal) : areaVal.toFixed(1).replace(/\.0$/, '')} ${appUnits.area === 'metric' ? 'ha' : 'ac'}` : '';
 
-          const pinColorClass = isFavorited ? 'pin-yellow' : 'pin-blue';
+          let pinColorClass = isFavorited ? 'pin-yellow' : (isStockedMatch ? 'pin-green' : 'pin-blue');
           const marker = L.marker([lake.lat, lake.lon], { icon: L.divIcon({ className: '', html: `<div class="custom-pin ${pinColorClass}"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) }).bindPopup(lake.name);
           markersLayer.addLayer(marker); mapBounds.push([lake.lat, lake.lon]);
 
@@ -786,7 +811,7 @@
             stockingContentHTML = `
               <div style="margin-top: 10px; font-size: 0.75rem; line-height: 1.4;">
                 <span style="color: #d1d5db; font-weight: bold;">Stocking Info:</span><br>
-                <span style="color: #9ca3af;">${lake.stockingInfo}</span>
+                <span style="color: ${isStockedMatch ? '#34d399' : '#9ca3af'};">${lake.stockingInfo}</span>
               </div>`;
           }
 
@@ -809,8 +834,10 @@
             speciesDisplay = readableOtherSpecies ? 'Also has: ' + readableOtherSpecies : 'Just this species';
           }
 
+          let cardClasses = `lake-card ${isStockedMatch ? 'stocked-highlight' : ''}`;
+
           ffResultsContainer.innerHTML += `
-            <div class="lake-card" data-lakeid="${uniqueId}" data-lat="${lake.lat}" data-lon="${lake.lon}" data-dist="${displayDistance}">
+            <div class="${cardClasses}" data-lakeid="${uniqueId}" data-lat="${lake.lat}" data-lon="${lake.lon}" data-dist="${displayDistance}">
               <div class="lake-header">
                 <div class="lake-header-left">
                   <button class="star-btn ${starActiveClass}" data-lakeid="${uniqueId}">★</button>
@@ -820,6 +847,7 @@
                   </div>
                 </div>
                 <div class="lake-header-right">
+                  ${stockedBadge}
                   ${distanceBadge}
                   <a href="${mapsUrl}" target="_blank" class="maps-btn">Drive</a>
                   <button class="info-toggle">▼</button>
@@ -843,17 +871,13 @@
         if (mapBounds.length > 0) { map.invalidateSize(); map.fitBounds(mapBounds, { padding: [20, 20] }); }
       }
 
-      // Event delegation for lake cards
       document.getElementById('ff-results').addEventListener('click', function(e) {
-        
-        // Info Toggle & Dotted Map Line Logic
         const infoToggle = e.target.closest('.info-toggle');
         if (infoToggle) {
           const card = e.target.closest('.lake-card');
           const expandedSection = card.querySelector('.lake-info-expanded');
           const isOpen = expandedSection.classList.toggle('open');
 
-          // Clear any existing dotted lines
           if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
 
           if (isOpen && cachedUserLocation) {
@@ -861,18 +885,15 @@
             const lakeLon = parseFloat(card.dataset.lon);
             const distStr = card.dataset.dist;
 
-            // Draw dotted line
             routeLineLayer = L.polyline([
               [cachedUserLocation.lat, cachedUserLocation.lon],
               [lakeLat, lakeLon]
             ], { color: '#0ea5e9', weight: 4, dashArray: '10, 10', opacity: 0.8 }).addTo(map);
 
-            // Add tooltip halfway
             routeLineLayer.bindTooltip(distStr + " (direct)", {
               permanent: true, direction: 'center', className: 'line-tooltip'
             }).openTooltip();
 
-            // Fit map to show both user and lake
             map.fitBounds(routeLineLayer.getBounds(), { padding: [30, 30] });
           }
         }
@@ -910,7 +931,6 @@
       const setupContent = document.getElementById('setupContent');
       const strategyContent = document.getElementById('strategyContent');
 
-      // Crucial Fix: DO NOT dynamically overwrite container.className here
       function createAdvisorButtons(container, data, getSelectedValue, onSelectCallback, dataKey) {
         container.innerHTML = '';
         for (const key in data) {
@@ -937,9 +957,6 @@
         createAdvisorButtons(document.getElementById('temp-selector'), tempTypes, () => selectedTemp, (k) => selectedTemp = k, 'temp');
       }
 
-      // ==========================================
-      // CRITICAL FIX: PASS TO ADVISOR MOVED HERE
-      // ==========================================
       window.sendToAdvisor = function(lakeId, speciesId) {
         const lake = lakesData.find(l => getLakeId(l) === lakeId);
         if (!lake) return;
@@ -959,7 +976,6 @@
         const advisorBtn = document.querySelectorAll('.nav-btn')[1];
         switchAppView('view-advisor', advisorBtn);
 
-        // Lake Data Calcs
         const townName = lake.town ? lake.town : 'Ontario';
         let depthVal = lake.maxDepth ? (appUnits.depth === 'metric' ? parseFloat(lake.maxDepth) : parseFloat(lake.maxDepth) * 3.28084).toFixed(1).replace(/\.0$/, '') : null;
         let depthStr = depthVal ? `${depthVal}${appUnits.depth === 'metric' ? 'm' : 'ft'}` : '';
@@ -978,7 +994,6 @@
         let statsTextHTML = '';
         if (statsArray.length > 0) statsTextHTML = `<div class="lake-stats-grid justify-center mt-2">${statsArray.join('')}</div>`;
 
-        // Update Lake Card UI (Removed stocking text to save space in Advisor view)
         const container = document.getElementById('advisor-lake-container');
         container.innerHTML = `
           <div class="lake-card active-highlight mt-3 border-accent text-center flex flex-col items-center" style="margin-bottom: 0;">
@@ -988,7 +1003,6 @@
           </div>
         `;
 
-        // Filter Fish Selector
         const availableTranslatedSpecies = (lake.species || []).map(s => speciesMap[s] || s);
         const filteredFishTypes = {};
         if (availableTranslatedSpecies.length > 0) {
@@ -999,17 +1013,14 @@
           }
         }
 
-        // Fallback to all fish if the lake has no species mapping
         const finalFishTypes = Object.keys(filteredFishTypes).length > 0 ? filteredFishTypes : fishTypes;
 
-        // Select the specific fish if it exists in the filtered list, otherwise select the first available
         if (finalFishTypes[translatedSpecies]) {
           selectedFish = translatedSpecies;
         } else {
           selectedFish = Object.keys(finalFishTypes)[0];
         }
 
-        // Recreate the fish selector using strictly container.innerHTML (No dynamic class manipulation)
         createAdvisorButtons(
           document.getElementById('fish-selector'), 
           finalFishTypes, 
@@ -1018,10 +1029,7 @@
           'fish'
         );
 
-        // Ensure result section is hidden until 'Find Your Bait' is clicked
         document.getElementById('advisor-results').classList.add('hidden');
-
-        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
@@ -1030,14 +1038,12 @@
           recommendations[selectedFish]?.[selectedWeather]?.[selectedClarity]?.[selectedTemp] : null;
         
         if (rec) {
-          // Lures
           document.getElementById('lure-result').innerHTML = rec.lures.map(lure => {
             const img = (typeof lureMap !== 'undefined' && lureMap[lure.name]) ? lureMap[lure.name].image : 'images/icon.png';
             return `<div class="lure-card">${lure.isPrimary ? '<div style="position:absolute; top:0; right:0; background:#fbbf24; color:#000; font-size:0.7rem; font-weight:bold; padding:2px 6px; border-bottom-left-radius:8px;">⭐ Go-To</div>' : ''}<img src="${img}">
               <h4 class="font-bold text-base text-white">${lure.name}</h4><p class="text-sm text-gray-400 mt-1">${lure.technique || 'Vary retrieve.'}</p></div>`;
           }).join('');
 
-          // Colors
           document.getElementById('color-result').innerHTML = rec.colors.map(c => {
             const hex = (typeof colorMap !== 'undefined' && colorMap[c]) ? colorMap[c].hex : '#ccc';
             return `<div class="lake-card flex-row items-center"><span style="width:20px; height:20px; border-radius:50%; background:${hex}; margin-right:10px; border:1px solid #555;"></span>
