@@ -505,7 +505,7 @@
 
       const provinceModal = document.getElementById('provinceModal');
       document.getElementById('openProvinceModal').addEventListener('click', (e) => { e.preventDefault(); provinceModal.classList.add('open'); });
-      document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'); );
+      document.getElementById('closeProvinceModal').addEventListener('click', () => provinceModal.classList.remove('open'));
       document.getElementById('goToProvinceSite').addEventListener('click', () => { window.open(document.getElementById('provinceSelect').value, '_blank'); provinceModal.classList.remove('open'); });
 
       // ==========================================
