@@ -624,6 +624,35 @@
         });
       });
 
+      // Hook up the Starting City Override Dropdown
+      document.getElementById('manualLocation').addEventListener('change', (e) => {
+          const val = e.target.value;
+          
+          if (val === 'gps') {
+              // If they switch back to GPS, clear the override and show the locate button
+              cachedUserLocation = null; 
+              document.getElementById('locateMeBtn').style.display = 'flex';
+          } else {
+              // Parse the lat,lon from the select option value
+              const coords = val.split(',');
+              cachedUserLocation = { 
+                  lat: parseFloat(coords[0]), 
+                  lon: parseFloat(coords[1]) 
+              };
+              
+              // Hide the Locate Me button since we are overriding it
+              document.getElementById('locateMeBtn').style.display = 'none';
+          }
+          
+          // Re-calculate distances and redraw map (this will draw the red pin!)
+          if (lakesData.length > 0) {
+              findClosestLakes(currentActiveSpecies || 'all');
+              
+              // Optional: Automatically close the settings modal so the user can see the map update
+              document.getElementById('settingsModal').classList.remove('open');
+          }
+      });
+
       // Hook up the previously unused Radius Dropdown
       document.getElementById('radiusFilter').addEventListener('change', () => {
           if (lakesData.length > 0) findClosestLakes(currentActiveSpecies || 'all');
