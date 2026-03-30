@@ -790,6 +790,7 @@
 
           let pinColorClass = isFavorited ? 'pin-yellow' : (isStockedMatch ? 'pin-green' : 'pin-blue');
           
+          // GENERATE PILLS HERE
           let statsTextHTML = '';
           const statsArray = [];
           if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${lake.fmz}</span>`);
@@ -804,16 +805,18 @@
           let popupStatsHTML = '';
           if (statsArray.length > 0) {
             statsTextHTML = `<div class="lake-stats-grid">${statsArray.join('')}</div>`;
-            popupStatsHTML = `<div class="lake-stats-grid justify-center mt-2 mb-0">${statsArray.join('')}</div>`;
+            // For the popup, we center them
+            popupStatsHTML = `<div class="lake-stats-grid" style="justify-content: center; margin-top: 8px; margin-bottom: 0;">${statsArray.join('')}</div>`;
           }
 
           const popupHTML = `
             <div style="text-align: center; min-width: 160px; padding: 4px;">
-              <div class="custom-popup-title" style="color: #fff; font-size: 1.05rem; font-weight: bold; line-height: 1.2;">${lake.name}</div>
+              <div class="custom-popup-title" style="color: #fff; font-size: 1.05rem; font-weight: bold; line-height: 1.2; margin-bottom: 4px;">${lake.name}</div>
               ${popupStatsHTML}
             </div>
           `;
           
+          // CREATE MARKER
           const marker = L.marker([lake.lat, lake.lon], { icon: L.divIcon({ className: '', html: `<div class="custom-pin ${pinColorClass}"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) }).bindPopup(popupHTML, { className: 'custom-popup', autoPan: false });
           lakeMarkers[uniqueId] = marker;
           markersLayer.addLayer(marker); 
