@@ -876,7 +876,7 @@
           let areaVal = lake.surfaceArea ? (appUnits.area === 'metric' ? parseFloat(lake.surfaceArea) : parseFloat(lake.surfaceArea) * 2.47105) : null;
           let areaStr = areaVal ? `${areaVal > 100 ? Math.round(areaVal) : areaVal.toFixed(1).replace(/\.0$/, '')} ${appUnits.area === 'metric' ? 'ha' : 'ac'}` : '';
 
-          const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lake.lat},${lake.lon}`;
+          const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lake.lat},${lake.lon}`;
           const townName = lake.town ? lake.town : 'Ontario';
 
           let pinColorClass = isFavorited ? 'pin-yellow' : (isStockedMatch ? 'pin-green' : 'pin-blue');
