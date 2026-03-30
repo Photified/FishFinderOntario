@@ -624,6 +624,11 @@
         });
       });
 
+      // Hook up the previously unused Radius Dropdown
+      document.getElementById('radiusFilter').addEventListener('change', () => {
+          if (lakesData.length > 0) findClosestLakes(currentActiveSpecies || 'all');
+      });
+
       let map = L.map('map').setView([46.0, -80.0], 5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
@@ -675,6 +680,30 @@
 
       const ffResultsContainer = document.getElementById('ff-results');
 
+      // Hook up the Search Input
+      const lakeSearchInput = document.getElementById('lakeSearchInput');
+      const lakeSearchBtn = document.getElementById('lakeSearchBtn');
+
+      function triggerSearch() {
+          const term = lakeSearchInput.value.trim();
+          if (term.length >= 3) {
+              document.getElementById('radiusFilter').value = '99999'; // Force radius dropdown to 'Any'
+          }
+          if (lakesData.length > 0) {
+              findClosestLakes(currentActiveSpecies || 'all');
+          }
+      }
+
+      lakeSearchInput.addEventListener('input', () => {
+          const term = lakeSearchInput.value.trim();
+          // Auto-trigger if 3+ chars or if they clear the search bar entirely
+          if (term.length >= 3 || term.length === 0) {
+              triggerSearch();
+          }
+      });
+
+      lakeSearchBtn.addEventListener('click', triggerSearch);
+
       async function loadLakeData() {
         try {
           const response = await fetch('lakesData.json');
@@ -708,12 +737,40 @@
 
       function findClosestLakes(speciesId) {
         let matchingLakes = speciesId === 'all' ? lakesData : lakesData.filter(l => l.species && l.species.includes(speciesId));
-        if (matchingLakes.length === 0) { ffResultsContainer.innerHTML = `<p class="status-msg">No lakes found with this species.</p>`; return; }
+        
+        // --- TEXT SEARCH FILTER ---
+        const searchTerm = document.getElementById('lakeSearchInput').value.toLowerCase().trim();
+        if (searchTerm.length >= 3) {
+            matchingLakes = matchingLakes.filter(l => l.name.toLowerCase().includes(searchTerm));
+        }
+
+        if (matchingLakes.length === 0) { 
+            ffResultsContainer.innerHTML = `<p class="status-msg">No lakes found matching your search.</p>`; 
+            markersLayer.clearLayers();
+            if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
+            return; 
+        }
         
         let userLat = cachedUserLocation ? cachedUserLocation.lat : 44.3894;
         let userLon = cachedUserLocation ? cachedUserLocation.lon : -79.6903;
 
         matchingLakes.forEach(lake => lake.distance = calculateDistance(userLat, userLon, lake.lat, lake.lon));
+
+        // --- RADIUS FILTER ---
+        const maxRadius = parseInt(document.getElementById('radiusFilter').value, 10);
+        if (maxRadius < 99999) {
+            // Adjust max threshold based on user's selected app setting (km or mi)
+            const radiusInKm = appUnits.distance === 'metric' ? maxRadius : maxRadius * 1.60934;
+            matchingLakes = matchingLakes.filter(l => l.distance <= radiusInKm);
+        }
+
+        if (matchingLakes.length === 0) { 
+            ffResultsContainer.innerHTML = `<p class="status-msg">No lakes found within this radius. Try expanding it to "Any" or zoom out.</p>`; 
+            markersLayer.clearLayers();
+            if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
+            return; 
+        }
+
         matchingLakes.sort((a, b) => a.distance - b.distance);
         
         const searchedFishObj = fishSpeciesList.find(f => f.id === speciesId);
