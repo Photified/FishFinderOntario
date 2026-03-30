@@ -131,6 +131,14 @@
     .line-tooltip { background: #1e293b; color: #0ea5e9; border: 1px solid #0ea5e9; font-weight: bold; border-radius: 6px; padding: 4px 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
     .leaflet-tooltip-left::before, .leaflet-tooltip-right::before, .leaflet-tooltip-top::before, .leaflet-tooltip-bottom::before { display: none !important; }
 
+    /* Custom Leaflet Popup CSS */
+    .custom-popup .leaflet-popup-content-wrapper { background: var(--card-bg); color: var(--text-main); border: 1px solid #334155; border-radius: 8px; padding: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    .custom-popup .leaflet-popup-tip { background: var(--card-bg); }
+    .custom-popup .leaflet-popup-content { margin: 12px 16px; line-height: 1.4; font-family: 'Inter', sans-serif; }
+    .custom-popup-title { font-weight: 700; font-size: 0.95rem; color: var(--accent); margin-bottom: 2px; }
+    .custom-popup-town { font-size: 0.75rem; color: var(--text-muted); }
+    .custom-popup .leaflet-popup-close-button { color: var(--text-muted) !important; padding: 4px !important;}
+
     /* --- LAKE CARD UI --- */
     .lake-card { background-color: var(--card-bg); border-radius: 10px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; border: 1px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
     .lake-card.active-highlight { border-color: var(--accent); box-shadow: 0 0 12px rgba(14, 165, 233, 0.4); }
@@ -631,6 +639,7 @@
       let cachedUserLocation = null;
       let currentActiveSpecies = null;
       let savedLakes = JSON.parse(localStorage.getItem('savedLakesData')) || {};
+      let lakeMarkers = {};
 
       document.getElementById('locateMeBtn').addEventListener('click', () => {
         if (!navigator.geolocation) { alert("Geolocation is not supported by your browser."); return; }
@@ -750,6 +759,7 @@
       function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId) {
         ffResultsContainer.innerHTML = '';
         markersLayer.clearLayers();
+        lakeMarkers = {};
         if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
         let mapBounds = [];
 
@@ -787,9 +797,23 @@
           let areaVal = lake.surfaceArea ? (appUnits.area === 'metric' ? parseFloat(lake.surfaceArea) : parseFloat(lake.surfaceArea) * 2.47105) : null;
           let areaStr = areaVal ? `${areaVal > 100 ? Math.round(areaVal) : areaVal.toFixed(1).replace(/\.0$/, '')} ${appUnits.area === 'metric' ? 'ha' : 'ac'}` : '';
 
+          const mapsUrl = `http://googleusercontent.com/maps.google.com/maps?daddr=${lake.lat},${lake.lon}`;
+          const townName = lake.town ? lake.town : 'Ontario';
+
           let pinColorClass = isFavorited ? 'pin-yellow' : (isStockedMatch ? 'pin-green' : 'pin-blue');
-          const marker = L.marker([lake.lat, lake.lon], { icon: L.divIcon({ className: '', html: `<div class="custom-pin ${pinColorClass}"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) }).bindPopup(lake.name);
-          markersLayer.addLayer(marker); mapBounds.push([lake.lat, lake.lon]);
+          
+          const popupHTML = `
+            <div style="text-align: center;">
+              <div class="custom-popup-title">${lake.name}</div>
+              <div class="custom-popup-town">${townName}</div>
+              ${distanceBadge ? `<div style="margin-top: 6px; display: flex; justify-content: center;">${distanceBadge}</div>` : ''}
+            </div>
+          `;
+          
+          const marker = L.marker([lake.lat, lake.lon], { icon: L.divIcon({ className: '', html: `<div class="custom-pin ${pinColorClass}"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) }).bindPopup(popupHTML, { className: 'custom-popup', autoPan: false });
+          lakeMarkers[uniqueId] = marker;
+          markersLayer.addLayer(marker); 
+          mapBounds.push([lake.lat, lake.lon]);
 
           let readableOtherSpecies = '';
           if(lake.species) {
@@ -800,9 +824,6 @@
               .map(obj => obj.name)
               .join(', ');
           }
-
-          const mapsUrl = `http://googleusercontent.com/maps.google.com/maps?daddr=${lake.lat},${lake.lon}`;
-          const townName = lake.town ? lake.town : 'Ontario';
 
           let stockingContentHTML = '';
           if (lake.isStocked && lake.stockingInfo) {
@@ -877,21 +898,32 @@
 
           if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
 
-          if (isOpen && cachedUserLocation) {
+          if (isOpen) {
+            const uniqueId = card.dataset.lakeid;
             const lakeLat = parseFloat(card.dataset.lat);
             const lakeLon = parseFloat(card.dataset.lon);
             const distStr = card.dataset.dist;
 
-            routeLineLayer = L.polyline([
-              [cachedUserLocation.lat, cachedUserLocation.lon],
-              [lakeLat, lakeLon]
-            ], { color: '#0ea5e9', weight: 4, dashArray: '10, 10', opacity: 0.8 }).addTo(map);
+            if (lakeMarkers[uniqueId]) {
+              lakeMarkers[uniqueId].openPopup();
+            }
 
-            routeLineLayer.bindTooltip(distStr + " (direct)", {
-              permanent: true, direction: 'center', className: 'line-tooltip'
-            }).openTooltip();
+            if (cachedUserLocation) {
+              routeLineLayer = L.polyline([
+                [cachedUserLocation.lat, cachedUserLocation.lon],
+                [lakeLat, lakeLon]
+              ], { color: '#0ea5e9', weight: 4, dashArray: '10, 10', opacity: 0.8 }).addTo(map);
 
-            map.fitBounds(routeLineLayer.getBounds(), { padding: [30, 30] });
+              routeLineLayer.bindTooltip(distStr + " (direct)", {
+                permanent: true, direction: 'center', className: 'line-tooltip'
+              }).openTooltip();
+
+              map.fitBounds(routeLineLayer.getBounds(), { padding: [60, 60] });
+            } else {
+              map.setView([lakeLat, lakeLon], 12);
+            }
+          } else {
+              map.closePopup();
           }
         }
 
