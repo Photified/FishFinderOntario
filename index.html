@@ -49,7 +49,6 @@
     }
     .nav-btn svg { width: 24px; height: 24px; fill: currentColor; }
     
-    /* Increased bottom padding to clear the nav bar */
     .app-view { display: none; padding-bottom: 100px; }
     .app-view.active-view { display: block; animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -59,7 +58,6 @@
     .search-container input { flex: 1; background-color: var(--card-bg); color: var(--text-main); border: 1px solid #444; padding: 10px 15px; border-radius: 8px; outline: none; }
     .search-container button { background-color: var(--accent); color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; }
     
-    /* Centered horizontally automatically */
     .slider-container { 
       display: flex; 
       overflow-x: auto; 
@@ -87,17 +85,10 @@
       position: relative;
       z-index: 1;
     }
-    .slider-container .fish-btn {
-      flex: 0 0 auto; 
-      width: 85px; 
-      scroll-snap-align: start; 
-    }
-    .grid .fish-btn {
-      width: 100%;
-      padding: 6px 2px; /* Squish grid cards */
-    }
+    .slider-container .fish-btn { flex: 0 0 auto; width: 85px; scroll-snap-align: start; }
+    .grid .fish-btn { width: 100%; padding: 6px 2px; }
     .fish-btn img { width: 45px; height: 45px; object-fit: contain; border-radius: 6px; }
-    .grid .fish-btn img { width: 35px; height: 35px; } /* Smaller images for grid */
+    .grid .fish-btn img { width: 35px; height: 35px; }
     .fish-btn span { font-size: 0.75rem; text-align: center; font-weight: 600; margin-top: 6px; line-height: 1.1; }
     .grid .fish-btn span { font-size: 0.65rem; margin-top: 4px; }
     
@@ -124,19 +115,16 @@
     .custom-pin { width: 20px; height: 20px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; }
     .pin-blue { background-color: #2563eb; }
     .pin-yellow { background-color: #fbbf24; }
-    .pin-green { background-color: #10b981; } /* Highlighted Stocking Map Pin */
+    .pin-green { background-color: #10b981; }
     .pin-user { background-color: #ef4444; z-index: 1000 !important; }
 
-    /* Map Line Tooltip CSS */
+    /* Map Line Tooltip & Custom Marker Popup CSS */
     .line-tooltip { background: #1e293b; color: #0ea5e9; border: 1px solid #0ea5e9; font-weight: bold; border-radius: 6px; padding: 4px 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
     .leaflet-tooltip-left::before, .leaflet-tooltip-right::before, .leaflet-tooltip-top::before, .leaflet-tooltip-bottom::before { display: none !important; }
 
-    /* Custom Leaflet Popup CSS */
     .custom-popup .leaflet-popup-content-wrapper { background: var(--card-bg); color: var(--text-main); border: 1px solid #334155; border-radius: 8px; padding: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     .custom-popup .leaflet-popup-tip { background: var(--card-bg); }
-    .custom-popup .leaflet-popup-content { margin: 12px 16px; line-height: 1.4; font-family: 'Inter', sans-serif; }
-    .custom-popup-title { font-weight: 700; font-size: 0.95rem; color: var(--accent); margin-bottom: 2px; }
-    .custom-popup-town { font-size: 0.75rem; color: var(--text-muted); }
+    .custom-popup .leaflet-popup-content { margin: 12px 14px; line-height: 1.4; font-family: 'Inter', sans-serif; }
     .custom-popup .leaflet-popup-close-button { color: var(--text-muted) !important; padding: 4px !important;}
 
     /* --- LAKE CARD UI --- */
@@ -802,11 +790,27 @@
 
           let pinColorClass = isFavorited ? 'pin-yellow' : (isStockedMatch ? 'pin-green' : 'pin-blue');
           
+          let statsTextHTML = '';
+          const statsArray = [];
+          if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${lake.fmz}</span>`);
+          if (lake.waterbodyType) {
+            let type = lake.waterbodyType.includes('Stream') ? 'River' : 'Lake';
+            statsArray.push(`<span class="stat-item">${type === 'River' ? '💧' : '🌊'} ${type}</span>`);
+          }
+          if (depthStr) statsArray.push(`<span class="stat-item">⚓ ${depthStr} deep</span>`);
+          if (areaStr) statsArray.push(`<span class="stat-item">🗺️ ${areaStr}</span>`);
+          if (lake.secchiDepth) statsArray.push(`<span class="stat-item">🕶️ ${parseFloat(lake.secchiDepth).toFixed(1).replace(/\.0$/, '')}m clear</span>`);
+          
+          let popupStatsHTML = '';
+          if (statsArray.length > 0) {
+            statsTextHTML = `<div class="lake-stats-grid">${statsArray.join('')}</div>`;
+            popupStatsHTML = `<div class="lake-stats-grid justify-center mt-2 mb-0">${statsArray.join('')}</div>`;
+          }
+
           const popupHTML = `
-            <div style="text-align: center;">
-              <div class="custom-popup-title">${lake.name}</div>
-              <div class="custom-popup-town">${townName}</div>
-              ${distanceBadge ? `<div style="margin-top: 6px; display: flex; justify-content: center;">${distanceBadge}</div>` : ''}
+            <div style="text-align: center; min-width: 160px; padding: 4px;">
+              <div class="custom-popup-title" style="color: #fff; font-size: 1.05rem; font-weight: bold; line-height: 1.2;">${lake.name}</div>
+              ${popupStatsHTML}
             </div>
           `;
           
@@ -833,18 +837,6 @@
                 <span style="color: ${isStockedMatch ? '#34d399' : '#9ca3af'};">${lake.stockingInfo}</span>
               </div>`;
           }
-
-          let statsTextHTML = '';
-          const statsArray = [];
-          if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${lake.fmz}</span>`);
-          if (lake.waterbodyType) {
-            let type = lake.waterbodyType.includes('Stream') ? 'River' : 'Lake';
-            statsArray.push(`<span class="stat-item">${type === 'River' ? '💧' : '🌊'} ${type}</span>`);
-          }
-          if (depthStr) statsArray.push(`<span class="stat-item">⚓ ${depthStr} deep</span>`);
-          if (areaStr) statsArray.push(`<span class="stat-item">🗺️ ${areaStr}</span>`);
-          if (lake.secchiDepth) statsArray.push(`<span class="stat-item">🕶️ ${parseFloat(lake.secchiDepth).toFixed(1).replace(/\.0$/, '')}m clear</span>`);
-          if (statsArray.length > 0) statsTextHTML = `<div class="lake-stats-grid">${statsArray.join('')}</div>`;
 
           let speciesDisplay = '';
           if (filteredSpeciesId === 'all' || !filteredSpeciesId) {
@@ -918,7 +910,7 @@
                 permanent: true, direction: 'center', className: 'line-tooltip'
               }).openTooltip();
 
-              map.fitBounds(routeLineLayer.getBounds(), { padding: [60, 60] });
+              map.fitBounds(routeLineLayer.getBounds(), { padding: [75, 75] });
             } else {
               map.setView([lakeLat, lakeLon], 12);
             }
