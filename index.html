@@ -644,7 +644,8 @@
               icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) 
             }).bindPopup("You are here").addTo(markersLayer);
             
-            document.getElementById('locateMeBtn').innerText = "📍 Locate Me";
+            document.getElementById('locateMeBtn').style.display = 'none'; // ADDED: Hides button once located
+            
             if(currentActiveSpecies) findClosestLakes(currentActiveSpecies);
           },
           (error) => {
@@ -913,9 +914,11 @@
                 permanent: true, direction: 'center', className: 'line-tooltip'
               }).openTooltip();
 
-              map.fitBounds(routeLineLayer.getBounds(), { padding: [75, 75] });
+              // ADDED: Padding adjusted specifically to leave 180px of clearance at the top
+              map.fitBounds(routeLineLayer.getBounds(), { paddingTopLeft: [50, 180], paddingBottomRight: [50, 50] });
             } else {
-              map.setView([lakeLat, lakeLon], 12);
+              // ADDED: Changed zoom from 12 to 10 for a wider view context
+              map.setView([lakeLat, lakeLon], 10);
             }
           } else {
               map.closePopup();
