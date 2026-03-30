@@ -40,10 +40,42 @@ const tempTypes = {
     warm: { name: 'Warm', imageSrc: 'images/warm.png' }
 };
 
+const colorMap = {
+    'Green Pumpkin': { hex: '#4B5320', reason: 'The most versatile bass color. Perfectly mimics crawfish, gobies, and bluegill in most water clarities.' },
+    'Watermelon': { hex: '#75A850', reason: 'A translucent, natural green that excels in clear water, mimicking small fish and other forage.' },
+    'Bone White': { hex: '#F9F6EE', reason: 'A solid, highly visible color for topwater lures that provides a strong silhouette against the sky.' },
+    'Crawfish': { hex: '#C84A33', reason: 'Directly imitates crawfish, a primary food source for bass in rocky environments, especially in spring.' },
+    'Goby': { hex: '#967969', reason: 'Crucial in the Great Lakes region. It specifically imitates the round goby, a key forage species.' },
+    'Sucker': { hex: '#BC8F8F', reason: 'Imitates suckers, a large, high-protein forage fish targeted by apex predators like pike and muskie.' },
+    'Loon': { hex: '#333333', reason: 'A dark, solid color for large topwater lures that provides a strong silhouette against the sky, mimicking birds or small mammals.' },
+    'Walleye': { hex: '#D4AF37', reason: 'In many northern lakes, walleye are a primary food source for giant muskie. This pattern imitates that forage.' },
+    'Rainbow Trout': { hex: '#B5E6B5', reason: 'Mimics rainbow trout, a common food source for larger predators like lake trout and brown trout in stocked waters.' },
+    'Smelt': { hex: '#A7B4B5', reason: 'A silvery, almost translucent pattern that imitates smelt, a key open-water baitfish for salmon and trout.' },
+    'Hot Pink': { hex: '#FF69B4', reason: 'A bright, high-visibility color used in stained water for salmon and trout, thought to imitate the color of eggs or trigger an aggressive response.' },
+    'Shock Pink': { hex: '#FC0FC0', reason: 'A bright, shocking color that stands out and is highly effective for crappie and other panfish, especially in stained water.' },
+    'Carp Yellow': { hex: '#FFD700', reason: 'A classic carp color that perfectly mimics corn, one of their absolute favorite foods.' },
+    'Hi-Vis Orange': { hex: '#FFA500', reason: 'A high-visibility color that stands out well against a variety of dark lake bottoms, making it easy for carp to find.' },
+    'White': { hex: '#FFFFFF', reason: 'A highly visible color that effectively mimics the flash and profile of baitfish like shad, shiners, and ciscoes.' },
+    'Chartreuse': { hex: '#DFFF00', reason: 'An extremely bright, high-visibility color that excels in stained, muddy, or deep water for nearly all species.' },
+    'Black': { hex: '#000000', reason: 'Provides the strongest possible silhouette, making it effective in very muddy water and at night for all predators.' },
+    'Blue': { hex: '#0000FF', reason: 'Often combined with black for jigs and spinnerbaits, it provides a subtle contrast that is highly effective in both clear and stained water.' },
+    'Silver': { hex: '#C0C0C0', reason: 'Provides a realistic flash that mimics the scales of many common baitfish species like shiners and alewife.' },
+    'Gold': { hex: '#FFD700', reason: 'Effective in stained or tannic water, imitating the flash of species like perch or golden shiners.' },
+    'Perch': { hex: '#E8A317', reason: 'Directly imitates yellow perch, one of the most common and important forage fish in all of Ontario.' },
+    'Firetiger': { hex: '#F3B700', reason: 'A classic, aggressive pattern with bright green, chartreuse, and orange that is highly effective in stained water for all predator species.' },
+    'Natural Shad': { hex: '#B6C0C3', reason: 'A realistic color pattern that imitates common open-water baitfish like shad and shiners.' },
+    'Chrome': { hex: '#E8E8E8', reason: 'Provides the maximum possible flash, making it excellent on sunny days for triggering reaction strikes from aggressive predators.' },
+    'Red': { hex: '#FF0000', reason: 'Can trigger reaction strikes, imitate the color of gills on injured baitfish, or mimic the color of crawfish.' },
+    'Orange': { hex: '#FFA500', reason: 'A high-visibility color that works well in stained water, particularly effective for salmon, trout, and walleye.' },
+    'Yellow': { hex: '#FFFF00', reason: 'A bright, simple color that can be effective for panfish, walleye, and pike in stained water conditions.' },
+    'Purple': { hex: '#800080', reason: 'A dark, subtle color that works well in low light and clear water as an alternative to black, especially for walleye and smallmouth.' },
+    'Smoke': { hex: '#848884', reason: 'A subtle, translucent color that is very effective in ultra-clear water for wary smallmouth and lake trout.' },
+    'Glow': { hex: '#E0FFD6', reason: 'Essential for deep water species like lake trout and salmon, as it remains visible where other colors fade to gray.' }
+};
+
 /**
  * This is the Lure Map SPECIFIC to the recommendations page.
  * It maps the specific recommendation strings (e.g., "Flipping Jig") to an image.
- * This is different from the canonicalLureMap, which maps the BASE lure name ("Jig").
  */
 const lureMap = {
     'Flipping Jig': { image: 'images/lures/flippingjig.png' },
@@ -57,10 +89,10 @@ const lureMap = {
     'Big Jig': { image: 'images/lures/jig.png' },
     'Big Jigs': { image: 'images/lures/jig.png' },
     'Jig': { image: 'images/lures/jig.png' },
-    'Jig with a Minnow': { image: 'images/lures/jig.png' },
-    'Jig and Minnow': { image: 'images/lures/jig.png' },
-    'Jig with Large Minnow': { image: 'images/lures/jig.png' },
-    'Jig and Worm': { image: 'images/lures/jig.png' },
+    'Jig with a Minnow': { image: 'images/lures/jigwithminnow.png' },
+    'Jig and Minnow': { image: 'images/lures/jigwithminnow.png' },
+    'Jig with Large Minnow': { image: 'images/lures/jigwithminnow.png' },
+    'Jig and Worm': { image: 'images/lures/jigwithworm.png' },
     'Scented Jigs': { image: 'images/lures/jig.png' },
     'Bright Jigs with Scent': { image: 'images/lures/jig.png' },
     'Small Jigs': { image: 'images/lures/jig.png' },
@@ -98,7 +130,7 @@ const lureMap = {
     'Small Spoons': { image: 'images/lures/spoon.png' },
     'Large Spoons': { image: 'images/lures/spoon.png' },
     'Trolling Spoons': { image: 'images/lures/spoon.png' },
-    'Flutter Spoons': { image: 'images/lures/spoon.png' },
+    'Flutter Spoons': { image: 'images/lures/flutterspoon.png' },
     'Jigging Spoons': { image: 'images/lures/jiggingspoon.png' },
     'Small Jigging Spoon': { image: 'images/lures/jiggingspoon.png' },
     'Glow-in-the-Dark Spoons': { image: 'images/lures/spoon.png' },
@@ -152,7 +184,7 @@ const lureMap = {
     'Drop Shot with Minnow': { image: 'images/lures/dropshot.png' },
     'Slip Bobber with Minnow': { image: 'images/lures/slipbobber.png' },
     'Slip Bobber Rig': { image: 'images/lures/slipbobber.png' },
-    'Live Minnow on a Jig': { image: 'images/lures/jig.png' },
+    'Live Minnow on a Jig': { image: 'images/lures/jigwithminnow.png' },
     'Live Minnow under a Bobber': { image: 'images/lures/slipbobber.png' },
     'Kastmasters': { image: 'images/lures/spoon.png' },
     'Large, Vibrating Lures': { image: 'images/lures/chatterbait.png' },
@@ -199,12 +231,6 @@ const lureMap = {
     'Bright Pop-up Corn': { image: 'images/lures/popupcorn.png' },
     'Pop-up Corn': { image: 'images/lures/popupcorn.png' },
     'Spawn Sacs': { image: 'images/lures/spawnsac.png' },
-    'Jig with a Minnow': { image: 'images/lures/jigwithminnow.png' },
-    'Jig and Minnow': { image: 'images/lures/jigwithminnow.png' },
-    'Jig with Large Minnow': { image: 'images/lures/jigwithminnow.png' },
-    'Live Minnow on a Jig': { image: 'images/lures/jigwithminnow.png' },
-    'Jig and Worm': { image: 'images/lures/jigwithworm.png' },
-    'Flutter Spoons': { image: 'images/lures/flutterspoon.png' },
     'Frog': { image: 'images/lures/frog.png' },
     'Jigging Spoon': { image: 'images/lures/jiggingspoon.png' },
     'Squarebill Crankbait': { image: 'images/lures/squarebillcrankbait.png' }
