@@ -146,7 +146,6 @@
     
     .lake-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .distance-badge { background-color: #1e293b; color: var(--accent); padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
-    .stocked-badge { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
     .maps-btn { background-color: #3b82f6; color: white; text-decoration: none; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
     .info-toggle { background: var(--bg-color); border: 1px solid #333; color: white; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem; transition: 0.2s; }
 
@@ -782,7 +781,7 @@
 
           let displayDistance = lake.distance !== undefined ? (appUnits.distance === 'metric' ? lake.distance.toFixed(1) + ' km' : (lake.distance * 0.621371).toFixed(1) + ' mi') : '';
           let distanceBadge = displayDistance ? `<div class="distance-badge">${displayDistance}</div>` : '';
-          let stockedBadge = isStockedMatch ? `<div class="stocked-badge">⭐ Stocked</div>` : '';
+          let stockedEmoji = isStockedMatch ? `<span title="Stocked Match" style="margin-left: 5px;">🐟</span>` : '';
           
           let depthVal = lake.maxDepth ? (appUnits.depth === 'metric' ? parseFloat(lake.maxDepth) : parseFloat(lake.maxDepth) * 3.28084).toFixed(1).replace(/\.0$/, '') : null;
           let depthStr = depthVal ? `${depthVal}${appUnits.depth === 'metric' ? 'm' : 'ft'}` : '';
@@ -843,11 +842,10 @@
                   <button class="star-btn ${starActiveClass}" data-lakeid="${uniqueId}">★</button>
                   <div class="lake-title-group">
                     <h3>${lake.name}</h3>
-                    <div class="lake-town">${townName}</div>
+                    <div class="lake-town">${townName}${stockedEmoji}</div> 
                   </div>
                 </div>
                 <div class="lake-header-right">
-                  ${stockedBadge}
                   ${distanceBadge}
                   <a href="${mapsUrl}" target="_blank" class="maps-btn">Drive</a>
                   <button class="info-toggle">▼</button>
