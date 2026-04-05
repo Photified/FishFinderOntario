@@ -663,6 +663,7 @@
       let markersLayer = L.layerGroup().addTo(map);
       let routeLineLayer = null; 
       let lakesData = [];
+      let seasonsRulebook = {};
       let cachedUserLocation = null;
       let currentActiveSpecies = null;
       let savedLakes = JSON.parse(localStorage.getItem('savedLakesData')) || {};
@@ -735,9 +736,18 @@
 
       async function loadLakeData() {
         try {
-          const response = await fetch('lakesData.json');
-          if(!response.ok) throw new Error("JSON not loaded");
-          lakesData = await response.json();
+          const [lakesRes, seasonsRes] = await Promise.all([
+            fetch('lakesData.json'),
+            fetch('seasonsData.json').catch(() => null) 
+          ]);
+          
+          if(!lakesRes.ok) throw new Error("Lakes JSON not loaded");
+          lakesData = await lakesRes.json();
+          
+          if(seasonsRes && seasonsRes.ok) {
+            seasonsRulebook = await seasonsRes.json();
+          }
+          
           buildMapSlider();
         } catch (error) { 
           console.warn("Local JSON fetch failed. Make sure you are on a live server or GitHub pages."); 
@@ -835,6 +845,16 @@
         noteModal.classList.remove('open');
         pendingNoteLakeId = null;
       });
+
+      // Map app keys to rulebook keys
+      const rulebookKeyMap = {
+          'largemouthbass': 'largemouth',
+          'smallmouthbass': 'smallmouth',
+          'lakewhitefish': 'whitefish'
+      };
+      function getRulebookKey(appFishId) {
+          return rulebookKeyMap[appFishId] || appFishId;
+      }
 
       function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId) {
         ffResultsContainer.innerHTML = '';
@@ -938,6 +958,42 @@
             speciesDisplay = readableOtherSpecies ? 'Also has: ' + readableOtherSpecies : 'Just this species';
           }
 
+          // --- SEASONS LOGIC INJECTION ---
+          let seasonDisplayHTML = '';
+          if (lake.fmz && seasonsRulebook[lake.fmz]) {
+            if (filteredSpeciesId && filteredSpeciesId !== 'all') {
+               const ruleKey = getRulebookKey(filteredSpeciesId);
+               let seasonText = seasonsRulebook[lake.fmz][ruleKey] || "Season Unknown";
+               const fishName = fishSpeciesList.find(f => f.id === filteredSpeciesId)?.name || filteredSpeciesId;
+               seasonDisplayHTML = `
+                  <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); padding: 6px; border-radius: 6px;">
+                      <strong style="color: #0ea5e9;">📅 ${fishName} Season (Zone ${lake.fmz}):</strong><br>
+                      <span style="color: #e2e8f0;">${seasonText}</span>
+                  </div>
+               `;
+            } else if (lake.species && lake.species.length > 0) {
+               let seasonsList = lake.species.map(fishId => {
+                   const ruleKey = getRulebookKey(fishId);
+                   let text = seasonsRulebook[lake.fmz][ruleKey];
+                   if (text) {
+                       let name = fishSpeciesList.find(f => f.id === fishId)?.name || fishId;
+                       return `<div style="margin-bottom: 4px;"><span style="color: #94a3b8; font-weight: bold;">${name}:</span> ${text}</div>`;
+                   }
+                   return '';
+               }).filter(t => t !== '').join('');
+
+               if (seasonsList) {
+                   seasonDisplayHTML = `
+                      <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px; border-radius: 6px; max-height: 120px; overflow-y: auto;">
+                          <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 Zone ${lake.fmz} Seasons:</strong>
+                          ${seasonsList}
+                      </div>
+                   `;
+               }
+            }
+          }
+          // -------------------------------
+
           let cardClasses = `lake-card ${isStockedMatch ? 'stocked-highlight' : ''}`;
 
           ffResultsContainer.innerHTML += `
@@ -960,6 +1016,7 @@
                 ${statsTextHTML}
                 <p class="species-list">${speciesDisplay}</p>
                 ${stockingContentHTML}
+                ${seasonDisplayHTML}
                 
                 <div class="note-section ${isFavorited ? 'visible' : ''}">
                   ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
