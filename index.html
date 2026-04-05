@@ -846,7 +846,6 @@
         pendingNoteLakeId = null;
       });
 
-
       function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId) {
         ffResultsContainer.innerHTML = '';
         markersLayer.clearLayers();
@@ -977,32 +976,40 @@
                   </div>
                `;
             } else if (lake.species && lake.species.length > 0) {
-               let seasonsList = lake.species.map(fishId => {
-                   // Direct 1-to-1 lookup without a translator
-                   let text = seasonsRulebook[cleanFmz][fishId];
-                   
-                   // Fallback 1: Panfish
-                   if (!text && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(fishId)) {
-                       text = "Open All Year (General)";
-                   }
-                   // Fallback 2: Missing regulated fish
-                   else if (!text) {
-                       text = "No General Season (Check Exceptions)";
-                   }
+               
+               // --- NEW FILTER LOGIC ---
+               // Only keep fish IDs that actually exist in your PWA's fishSpeciesList array
+               let pwaSupportedFish = lake.species.filter(fishId => fishSpeciesList.some(f => f.id === fishId));
+               
+               if (pwaSupportedFish.length > 0) {
+                   let seasonsList = pwaSupportedFish.map(fishId => {
+                       // Direct 1-to-1 lookup without a translator
+                       let text = seasonsRulebook[cleanFmz][fishId];
+                       
+                       // Fallback 1: Panfish
+                       if (!text && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(fishId)) {
+                           text = "Open All Year (General)";
+                       }
+                       // Fallback 2: Missing regulated fish
+                       else if (!text) {
+                           text = "No General Season (Check Exceptions)";
+                       }
 
-                   let name = fishSpeciesList.find(f => f.id === fishId)?.name || fishId;
-                   let textColor = text.includes("Exceptions") ? "#fbbf24" : "#e2e8f0";
-                   
-                   return `<div style="margin-bottom: 4px;"><span style="color: #94a3b8; font-weight: bold;">${name}:</span> <span style="color: ${textColor};">${text}</span></div>`;
-               }).join('');
+                       // We safely know this exists now because of the filter above
+                       let name = fishSpeciesList.find(f => f.id === fishId).name;
+                       let textColor = text.includes("Exceptions") ? "#fbbf24" : "#e2e8f0";
+                       
+                       return `<div style="margin-bottom: 4px;"><span style="color: #94a3b8; font-weight: bold;">${name}:</span> <span style="color: ${textColor};">${text}</span></div>`;
+                   }).join('');
 
-               if (seasonsList) {
-                   seasonDisplayHTML = `
-                      <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px; border-radius: 6px; max-height: 120px; overflow-y: auto;">
-                          <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 Zone ${cleanFmz} Seasons:</strong>
-                          ${seasonsList}
-                      </div>
-                   `;
+                   if (seasonsList) {
+                       seasonDisplayHTML = `
+                          <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px; border-radius: 6px; max-height: 120px; overflow-y: auto;">
+                              <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 Zone ${cleanFmz} Seasons:</strong>
+                              ${seasonsList}
+                          </div>
+                       `;
+                   }
                }
             }
           }
