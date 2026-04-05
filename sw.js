@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v33';
+const CACHE_NAME = 'fish-finder-v34';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
