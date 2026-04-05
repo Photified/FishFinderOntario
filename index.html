@@ -846,14 +846,32 @@
         pendingNoteLakeId = null;
       });
 
-      // Map app keys to rulebook keys
-      const rulebookKeyMap = {
-          'largemouthbass': 'largemouth',
-          'smallmouthbass': 'smallmouth',
-          'lakewhitefish': 'whitefish'
-      };
+      // Map app keys to rulebook keys with expanded matching
       function getRulebookKey(appFishId) {
-          return rulebookKeyMap[appFishId] || appFishId;
+          if (!appFishId) return '';
+          const name = appFishId.toLowerCase();
+          
+          if (name.includes('yellow perch') || name.includes('perch')) return 'perch';
+          if (name.includes('sunfish') || name.includes('pumpkinseed') || name.includes('bluegill')) return 'bluegill';
+          if (name.includes('bullhead') || name.includes('catfish')) return 'catfish';
+          if (name.includes('largemouth')) return 'largemouth';
+          if (name.includes('smallmouth')) return 'smallmouth';
+          if (name.includes('walleye') || name.includes('sauger')) return 'walleye';
+          if (name.includes('pike')) return 'pike';
+          if (name.includes('muskie') || name.includes('muskellunge')) return 'muskie';
+          if (name.includes('lake trout')) return 'laketrout';
+          if (name.includes('brook trout')) return 'brooktrout';
+          if (name.includes('rainbow trout')) return 'rainbowtrout';
+          if (name.includes('brown trout')) return 'browntrout';
+          if (name.includes('chinook')) return 'chinooksalmon';
+          if (name.includes('coho')) return 'cohosalmon';
+          if (name.includes('atlantic')) return 'atlanticsalmon';
+          if (name.includes('drum')) return 'freshwaterdrum';
+          if (name.includes('whitefish')) return 'whitefish';
+          if (name.includes('crappie')) return 'crappie';
+          if (name.includes('carp')) return 'carp';
+          
+          return name.replace(/[^a-z]/g, '');
       }
 
       function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId) {
@@ -960,23 +978,40 @@
 
           // --- SEASONS LOGIC INJECTION ---
           let seasonDisplayHTML = '';
-          if (lake.fmz && seasonsRulebook[lake.fmz]) {
+          let cleanFmz = lake.fmz ? String(lake.fmz).replace(/[^0-9]/g, '') : null;
+
+          if (cleanFmz && seasonsRulebook[cleanFmz]) {
             if (filteredSpeciesId && filteredSpeciesId !== 'all') {
                const ruleKey = getRulebookKey(filteredSpeciesId);
-               let seasonText = seasonsRulebook[lake.fmz][ruleKey] || "Season Unknown";
+               let seasonText = seasonsRulebook[cleanFmz][ruleKey];
+               
+               // Fallback for panfish/unregulated fish usually omitted from government CSV
+               if (!seasonText && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(ruleKey)) {
+                   seasonText = "Open All Year (General)";
+               } else if (!seasonText) {
+                   seasonText = "Season Unknown";
+               }
+
                const fishName = fishSpeciesList.find(f => f.id === filteredSpeciesId)?.name || filteredSpeciesId;
                seasonDisplayHTML = `
                   <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); padding: 6px; border-radius: 6px;">
-                      <strong style="color: #0ea5e9;">📅 ${fishName} Season (Zone ${lake.fmz}):</strong><br>
+                      <strong style="color: #0ea5e9;">📅 ${fishName} Season (Zone ${cleanFmz}):</strong><br>
                       <span style="color: #e2e8f0;">${seasonText}</span>
                   </div>
                `;
             } else if (lake.species && lake.species.length > 0) {
                let seasonsList = lake.species.map(fishId => {
                    const ruleKey = getRulebookKey(fishId);
-                   let text = seasonsRulebook[lake.fmz][ruleKey];
+                   let text = seasonsRulebook[cleanFmz][ruleKey];
+                   
+                   // Fallback for panfish/unregulated fish usually omitted from government CSV
+                   if (!text && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(ruleKey)) {
+                       text = "Open All Year (General)";
+                   }
+
                    if (text) {
                        let name = fishSpeciesList.find(f => f.id === fishId)?.name || fishId;
+                       if (name === fishId) name = name.charAt(0).toUpperCase() + name.slice(1); // Clean up capitalization
                        return `<div style="margin-bottom: 4px;"><span style="color: #94a3b8; font-weight: bold;">${name}:</span> ${text}</div>`;
                    }
                    return '';
@@ -985,7 +1020,7 @@
                if (seasonsList) {
                    seasonDisplayHTML = `
                       <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px; border-radius: 6px; max-height: 120px; overflow-y: auto;">
-                          <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 Zone ${lake.fmz} Seasons:</strong>
+                          <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 Zone ${cleanFmz} Seasons:</strong>
                           ${seasonsList}
                       </div>
                    `;
