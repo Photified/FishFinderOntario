@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fish Finder Season Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans p-8">
+
+  <div class="max-w-3xl mx-auto bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+    <h1 class="text-2xl font-bold text-sky-500 mb-2">FMZ Seasons Converter (Final Edition)</h1>
+    <p class="text-gray-400 mb-6 text-sm">Upload the raw <strong>fishingregulationsexceptionopendata.xlsx</strong> file.</p>
+
+    <div class="mb-6">
+      <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-500 file:text-white hover:file:bg-sky-600 transition-colors cursor-pointer"/>
+    </div>
+
+    <div id="outputSection" class="hidden">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="font-semibold text-lg text-green-400">Conversion Successful!</h2>
+        <button id="downloadBtn" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded transition-colors">
+          Download seasonsData.json
+        </button>
+      </div>
+      <pre id="jsonOutput" class="bg-gray-950 p-4 rounded-lg text-sm text-green-300 overflow-auto h-96 border border-gray-700"></pre>
+    </div>
+  </div>
+
+  <script>
+    function getAppSpeciesKeys(csvName) {
+      const name = csvName.toLowerCase();
+      const keys = [];
+
+      // Bass
+      if (name.includes('largemouth')) keys.push('largemouthbass');
+      if (name.includes('smallmouth')) keys.push('smallmouthbass');
+
+      // Walleye / Sauger
+      if (name.includes('walleye') || name.includes('sauger')) keys.push('walleye');
+
+      // Pike / Muskie
+      if (name.includes('northern pike') || name.includes('pike')) keys.push('pike');
+      if (name.includes('muskellunge') || name.includes('muskie')) keys.push('muskie');
+
+      // Panfish
+      if (name.includes('yellow perch') || name.includes('perch')) keys.push('perch');
+      if (name.includes('crappie')) keys.push('crappie');
+      if (name.includes('sunfish') || name.includes('pumpkinseed') || name.includes('bluegill')) keys.push('bluegill');
+      if (name.includes('catfish') || name.includes('bullhead')) keys.push('catfish');
+
+      // Trout
+      if (name.includes('lake trout')) keys.push('laketrout');
+      if (name.includes('brook trout')) {
+          keys.push('brooktrout');
+          keys.push('splake'); // Gov treats Splake as Brook Trout
+      }
+      if (name.includes('rainbow trout')) keys.push('rainbowtrout');
+      if (name.includes('brown trout')) keys.push('browntrout');
+
+      // Salmon
+      if (name.includes('pacific salmon')) {
+          keys.push('chinooksalmon');
+          keys.push('cohosalmon');
+      }
+      if (name.includes('atlantic salmon')) keys.push('atlanticsalmon');
+
+      // Others
+      if (name.includes('carp')) keys.push('carp');
+      if (name.includes('freshwater drum')) keys.push('freshwaterdrum');
+      if (name.includes('whitefish')) keys.push('lakewhitefish');
+      if (name.includes('sturgeon')) keys.push('sturgeon');
+
+      return keys;
+    }
+
+    let finalJsonData = {};
+
+    document.getElementById('excelFileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      
+      reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        
+        const sheetName = workbook.SheetNames.find(s => s.includes("Zone Wide Seasons"));
+        if (!sheetName) return alert("Could not find the 'Zone Wide Seasons and Limits' tab.");
+
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet);
+        const seasonsData = {};
+
+        rows.forEach(row => {
+          const zone = row['Zone Number'];
+          const speciesName = row['Species'];
+          const season = row['Season'];
+
+          if (zone && speciesName && season && !isNaN(parseInt(zone))) {
+            const keysToUpdate = getAppSpeciesKeys(speciesName);
+            keysToUpdate.forEach(key => {
+                if (!seasonsData[zone]) seasonsData[zone] = {};
+                seasonsData[zone][key] = season;
+            });
+          }
+        });
+
+        finalJsonData = seasonsData;
+        document.getElementById('jsonOutput').textContent = JSON.stringify(seasonsData, null, 2);
+        document.getElementById('outputSection').classList.remove('hidden');
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(finalJsonData, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "seasonsData.json");
+      document.body.appendChild(downloadAnchorNode); 
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    });
+  </script>
+</body>
+</html>
