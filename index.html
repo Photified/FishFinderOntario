@@ -220,7 +220,7 @@
     </div>
 
     <div class="search-container" style="padding-top: 0;">
-      <input type="text" id="lakeSearchInput" placeholder="Search for a lake by name...">
+      <input type="text" id="lakeSearchInput" placeholder="Search lake name or area...">
       <button id="lakeSearchBtn" aria-label="Search">🔍</button>
     </div>
 
@@ -355,9 +355,10 @@
       </div>
 
       <div class="mb-4">
-        <label class="block text-sm font-bold mb-2">Starting City Override</label>
+        <label class="block text-sm font-bold mb-2">Starting Location Override</label>
         <select id="manualLocation" class="w-full bg-gray-800 text-white border border-gray-600 p-2 rounded">
           <option value="gps">Use My Device GPS</option>
+          <option value="46.16534,-80.28298">Mercer Lake / Dokis Road area</option>
           <option value="44.3894,-79.6903">Barrie</option>
           <option value="44.1628,-77.3832">Belleville</option>
           <option value="43.2561,-79.8711">Hamilton</option>
@@ -624,7 +625,7 @@
         });
       });
 
-      // Hook up the Starting City Override Dropdown
+      // Hook up the Starting Location Override Dropdown
       document.getElementById('manualLocation').addEventListener('change', (e) => {
           const val = e.target.value;
           
@@ -780,7 +781,7 @@
         // --- TEXT SEARCH FILTER ---
         const searchTerm = document.getElementById('lakeSearchInput').value.toLowerCase().trim();
         if (searchTerm.length >= 3) {
-            matchingLakes = matchingLakes.filter(l => l.name.toLowerCase().includes(searchTerm));
+            matchingLakes = matchingLakes.filter(l => [l.name, l.aliasName, l.region, ...(l.searchAliases || [])].filter(Boolean).join(' ').toLowerCase().includes(searchTerm));
         }
 
         if (matchingLakes.length === 0) { 
@@ -943,7 +944,7 @@
 
           let speciesDisplay = '';
           if (filteredSpeciesId === 'all' || !filteredSpeciesId) {
-            speciesDisplay = readableOtherSpecies ? 'Species: ' + readableOtherSpecies : 'Unknown species';
+            speciesDisplay = readableOtherSpecies ? 'Species: ' + readableOtherSpecies : 'Species not yet verified';
           } else {
             speciesDisplay = readableOtherSpecies ? 'Also has: ' + readableOtherSpecies : 'Just this species';
           }
@@ -955,7 +956,7 @@
           if (cleanFmz && seasonsRulebook[cleanFmz]) {
             if (filteredSpeciesId && filteredSpeciesId !== 'all') {
                // Direct 1-to-1 lookup without a translator
-               let seasonText = seasonsRulebook[cleanFmz][filteredSpeciesId];
+               let seasonText = lake.seasonOverrides?.[filteredSpeciesId] || seasonsRulebook[cleanFmz][filteredSpeciesId];
                
                // Fallback 1: Panfish
                if (!seasonText && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(filteredSpeciesId)) {
@@ -971,7 +972,7 @@
 
                seasonDisplayHTML = `
                   <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); padding: 6px; border-radius: 6px;">
-                      <strong style="color: #0ea5e9;">📅 ${fishName} Season (Zone ${cleanFmz}):</strong><br>
+                      <strong style="color: #0ea5e9;">📅 ${fishName} Season (${lake.seasonLabel || `Zone ${cleanFmz}`}):</strong><br>
                       <span style="color: ${textColor};">${seasonText}</span>
                   </div>
                `;
@@ -984,7 +985,7 @@
                if (pwaSupportedFish.length > 0) {
                    let seasonsList = pwaSupportedFish.map(fishId => {
                        // Direct 1-to-1 lookup without a translator
-                       let text = seasonsRulebook[cleanFmz][fishId];
+                       let text = lake.seasonOverrides?.[fishId] || seasonsRulebook[cleanFmz][fishId];
                        
                        // Fallback 1: Panfish
                        if (!text && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(fishId)) {
@@ -1005,7 +1006,7 @@
                    if (seasonsList) {
                        seasonDisplayHTML = `
                           <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px; border-radius: 6px; max-height: 120px; overflow-y: auto;">
-                              <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 Zone ${cleanFmz} Seasons:</strong>
+                              <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 ${lake.seasonLabel || `Zone ${cleanFmz}`} Seasons:</strong>
                               ${seasonsList}
                           </div>
                        `;
@@ -1029,7 +1030,7 @@
                 </div>
                 <div class="lake-header-right">
                   ${distanceBadge}
-                  <a href="${mapsUrl}" target="_blank" class="maps-btn">Drive</a>
+                  <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn">${lake.locationType === 'waterbody' ? 'Map' : 'Drive'}</a>
                   <button class="info-toggle">▼</button>
                 </div>
               </div>
@@ -1038,13 +1039,16 @@
                 <p class="species-list">${speciesDisplay}</p>
                 ${stockingContentHTML}
                 ${seasonDisplayHTML}
+                ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
+                ${lake.regulationsNotes ? `<p class="species-list" style="color: #fbbf24;">${lake.regulationsNotes} <a href="${lake.regulationsUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">Official regulations</a></p>` : ''}
+                ${lake.dataSources ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">${source.title}</a>`).join(' · ')}</p>` : ''}
                 
                 <div class="note-section ${isFavorited ? 'visible' : ''}">
                   ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
                   <button class="note-btn" data-lakeid="${uniqueId}">📝 ${customNote ? 'Edit Note' : 'Add Note'}</button>
                 </div>
 
-                <button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Advisor Recommended Setup</button>
+                ${lake.speciesStatus === 'unverified' ? '<p class="species-list">Use the Advisor tab for general setups once you know which species you are targeting.</p>' : `<button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Advisor Recommended Setup</button>`}
               </div>
             </div>`;
         });
@@ -1208,6 +1212,7 @@
             <h3 style="font-size: 1.15rem; color: var(--text-main); font-weight: bold; margin: 0;">${lake.name}</h3>
             <div style="font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-top: 2px;">${townName}</div>
             ${statsTextHTML}
+            ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
           </div>
         `;
 

@@ -1,73 +1,58 @@
-const CACHE_NAME = 'fish-finder-v36';
+const CACHE_NAME = 'fish-finder-v37-nipissing';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
-  './images/icon.png'
+  './app-data.js',
+  './recommendations-data.js',
+  './lakesData.json',
+  './seasonsData.json'
 ];
 
-// Install event: Cache the core files and force the new SW to take over immediately
-self.addEventListener('install', (event) => {
-  self.skipWaiting(); 
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS_TO_CACHE))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate event: Clean up old caches and claim control of the open tabs
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Clearing old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim()) // Takes control of the page immediately
+    caches.keys().then(names => Promise.all(
+      names.filter(name => name.startsWith('fish-finder-') && name !== CACHE_NAME)
+        .map(name => caches.delete(name))
+    )).then(() => self.clients.claim())
   );
 });
 
-// Fetch event: Smart routing
-self.addEventListener('fetch', (event) => {
-  
-  // STRATEGY 1: Network-First for the Lake Database
-  if (event.request.url.includes('lakesData.json')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          // We got a good response from the internet! Save a copy to the cache.
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-          return networkResponse;
-        })
-        .catch(() => {
-          // We are offline! Serve the database from the cache instead.
-          console.log('Offline: Serving lakesData.json from cache');
-          return caches.match(event.request);
-        })
-    );
-    return; // Stop here so it doesn't run the other strategy
-  }
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+  const dataRequest = /\/(lakesData|seasonsData)\.json$/.test(url.pathname);
+  const navigation = event.request.mode === 'navigate';
 
-  // STRATEGY 2: Cache-First for images, HTML, and everything else
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).then((networkResponse) => {
-        // Dynamically cache new images as the user scrolls
-        if (event.request.url.includes('/images/')) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return networkResponse;
-      });
-    })
-  );
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    if (dataRequest || navigation) {
+      try {
+        const response = await fetch(event.request);
+        if (!response.ok) throw new Error('Request failed: ' + response.status);
+        await cache.put(event.request, response.clone()).catch(() => {});
+        return response;
+      } catch (error) {
+        const cached = await cache.match(event.request)
+          || (navigation ? await cache.match('./index.html') : null);
+        if (cached) return cached;
+        return Response.error();
+      }
+    }
+    const cached = await cache.match(event.request);
+    if (cached) return cached;
+    const response = await fetch(event.request);
+    if (response.ok && url.pathname.includes('/images/')) {
+      await cache.put(event.request, response.clone()).catch(() => {});
+    }
+    return response;
+  })());
 });

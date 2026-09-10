@@ -44446,12 +44446,13 @@
     "lat": 46.15,
     "lon": -80.39,
     "species": [
-      "walleye",
       "cisco",
+      "sturgeon",
       "lakewhitefish",
       "pike",
       "rockbass",
       "shortheadredhorse",
+      "walleye",
       "whitesucker",
       "perch"
     ],
@@ -44461,13 +44462,29 @@
     "fmz": "11",
     "thermalRegime": "Warm",
     "surfaceArea": null,
-    "maxDepth": "19.7999992370605",
+    "maxDepth": "19.8",
     "meanDepth": null,
-    "secchiDepth": "4.09999990463257",
+    "secchiDepth": "4.1",
     "aliasName": null,
-    "mnrfDistrict": "Bancroft District",
+    "mnrfDistrict": null,
     "unofficialName": null,
-    "developmentalStage": "Yearlings"
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "501222862"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
   },
   {
     "name": "Unnamed Lake",
@@ -54477,5 +54494,724 @@
     "mnrfDistrict": "Wawa District",
     "unofficialName": null,
     "developmentalStage": "Yearlings"
+  },
+  {
+    "name": "Lake Nipissing",
+    "town": "Lake Nipissing",
+    "lat": 46.28187,
+    "lon": -79.84847,
+    "species": [
+      "blackchinshiner",
+      "blacknoseshiner",
+      "bluntnoseminnow",
+      "brownbullhead",
+      "burbot",
+      "chinooksalmon",
+      "cisco",
+      "commonshiner",
+      "easternsilveryminnow",
+      "emeraldshiner",
+      "freshwaterdrum",
+      "goldenshiner",
+      "greaterredhorse",
+      "iowadarter",
+      "johnnydarter",
+      "johnnydarterxtesselateddarter",
+      "lakechub",
+      "sturgeon",
+      "lakewhitefish",
+      "largemouthbass",
+      "logperch",
+      "longnosegar",
+      "mottledsculpin",
+      "muskie",
+      "ninespinestickleback",
+      "pike",
+      "pumpkinseed",
+      "rainbowsmelt",
+      "rockbass",
+      "shortheadredhorse",
+      "silverlamprey",
+      "silverredhorse",
+      "smallmouthbass",
+      "spoonheadsculpin",
+      "spottailshiner",
+      "spottedgar",
+      "troutperch",
+      "walleye",
+      "whitebass",
+      "whitesucker",
+      "whitefishsubfamily",
+      "perch"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": "87325.0",
+    "maxDepth": "52.0",
+    "meanDepth": "4.5",
+    "secchiDepth": "2.5",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road",
+      "West Arm",
+      "Upper French River",
+      "Cross Lake"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701155043"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions.",
+    "seasonLabel": "Lake Nipissing exceptions",
+    "seasonOverrides": {
+      "blackchinshiner": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "blacknoseshiner": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "bluntnoseminnow": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "brownbullhead": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "burbot": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "chinooksalmon": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "cisco": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "commonshiner": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "easternsilveryminnow": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "emeraldshiner": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "freshwaterdrum": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "goldenshiner": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "greaterredhorse": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "iowadarter": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "johnnydarter": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "johnnydarterxtesselateddarter": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "lakechub": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "sturgeon": "Closed all year",
+      "lakewhitefish": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "largemouthbass": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "logperch": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "longnosegar": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "mottledsculpin": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "muskie": "3rd Sat. in June - Nov. 30",
+      "ninespinestickleback": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "pike": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "pumpkinseed": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "rainbowsmelt": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "rockbass": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "shortheadredhorse": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "silverlamprey": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "silverredhorse": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "smallmouthbass": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "spoonheadsculpin": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "spottailshiner": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "spottedgar": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "troutperch": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "walleye": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Oct. 15",
+      "whitebass": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "whitesucker": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "whitefishsubfamily": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Nov. 30",
+      "perch": "Jan. 1 - Mar. 15 & 3rd Sat. in May - Oct. 15"
+    },
+    "regulationsNotes": "Lake Nipissing rules also cover the French River upstream of the Chaudière and Little Chaudière dams and the entire West Arm, including Cross Lake. All-species closures apply March 16 to the Friday before the third Saturday in May, and December 1-31. Walleye: S-2 / C-1, 40-45 cm only. Additional sanctuary and size restrictions apply; check the official rules for your exact location.",
+    "regulationsUrl": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-11"
+  },
+  {
+    "name": "Mercer Lake",
+    "town": "Dokis / French River area",
+    "lat": 46.16534,
+    "lon": -80.28298,
+    "species": [
+      "blackchinshiner",
+      "bluntnoseminnow",
+      "brownbullhead",
+      "cisco",
+      "goldenshiner",
+      "largemouthbass",
+      "pike",
+      "pumpkinseed",
+      "rockbass",
+      "smallmouthbass",
+      "walleye",
+      "whitesucker",
+      "perch"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": "60.7",
+    "maxDepth": "19.0",
+    "meanDepth": "4.7",
+    "secchiDepth": "2.1",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701155015"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Doe Lake",
+    "town": "Dokis / French River area",
+    "lat": 46.14363,
+    "lon": -80.21082,
+    "species": [
+      "brownbullhead",
+      "cisco",
+      "goldenshiner",
+      "pike",
+      "northernredbellydace",
+      "pumpkinseed",
+      "rockbass",
+      "whitesucker",
+      "perch"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": "102.4",
+    "maxDepth": "17.1",
+    "meanDepth": null,
+    "secchiDepth": "3.0",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701155014"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Ethier Lake",
+    "town": "Dokis / French River area",
+    "lat": 46.15527,
+    "lon": -80.11993,
+    "species": [
+      "brownbullhead",
+      "commonshiner",
+      "largemouthbass",
+      "pike",
+      "pumpkinseed",
+      "rockbass",
+      "smallmouthbass"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": "24.3",
+    "maxDepth": "4.0",
+    "meanDepth": "1.8",
+    "secchiDepth": "4.0",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701155028"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Rabbit Lake",
+    "town": "Dokis / French River area",
+    "lat": 46.19008,
+    "lon": -80.15459,
+    "species": [
+      "largemouthbass",
+      "pike"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": "18.7",
+    "maxDepth": "9.1",
+    "meanDepth": "4.6",
+    "secchiDepth": "2.0",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701155032"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Number One Lake",
+    "town": "Dokis / French River area",
+    "lat": 46.20085,
+    "lon": -80.09975,
+    "species": [
+      "pike",
+      "pumpkinseed",
+      "rockbass",
+      "walleye",
+      "whitesucker",
+      "yellowbullhead"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": "86.2",
+    "maxDepth": "5.4",
+    "meanDepth": "2.2",
+    "secchiDepth": "1.8",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701155029"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Number Two Lake",
+    "town": "Dokis / French River area",
+    "lat": 46.1893,
+    "lon": -80.10299,
+    "species": [
+      "brownbullhead",
+      "commonshiner",
+      "whitesucker",
+      "perch"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": "21.0",
+    "maxDepth": "4.0",
+    "meanDepth": "2.4",
+    "secchiDepth": "1.5",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701155030"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Redpine Lake",
+    "town": "Dokis / French River area",
+    "lat": 46.2109,
+    "lon": -80.00961,
+    "species": [
+      "brownbullhead",
+      "pike",
+      "pumpkinseed",
+      "whitesucker",
+      "perch"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": "58.0",
+    "maxDepth": "5.0",
+    "meanDepth": "3.0",
+    "secchiDepth": "1.4",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701154876"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Obashking Lake",
+    "town": "Dokis / French River area",
+    "lat": 46.2137,
+    "lon": -79.97724,
+    "species": [
+      "largemouthbass",
+      "muskie",
+      "pike",
+      "smallmouthbass",
+      "walleye"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "surfaceArea": null,
+    "maxDepth": null,
+    "meanDepth": null,
+    "secchiDepth": null,
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701154834"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Lac Clair",
+    "town": "Dokis / French River area",
+    "lat": 46.14101,
+    "lon": -80.54094,
+    "species": [
+      "bluegill",
+      "bluntnoseminnow",
+      "iowadarter",
+      "johnnydarterxtesselateddarter",
+      "largemouthbass",
+      "pike",
+      "pumpkinseed",
+      "rockbass",
+      "smallmouthbass",
+      "walleye",
+      "whitesucker",
+      "perch"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "10",
+    "surfaceArea": "85.8",
+    "maxDepth": "4.0",
+    "meanDepth": "1.4",
+    "secchiDepth": "1.6",
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "501223144"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "Hall River",
+    "town": "Dokis / French River area",
+    "lat": 46.16063,
+    "lon": -80.22325,
+    "species": [
+      "pike",
+      "smallmouthbass",
+      "walleye"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Stream or River",
+    "fmz": "11",
+    "surfaceArea": null,
+    "maxDepth": null,
+    "meanDepth": null,
+    "secchiDepth": null,
+    "thermalRegime": "Warm",
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "701154144"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions."
+  },
+  {
+    "name": "French River (Main Channel)",
+    "town": "Dokis / French River area",
+    "lat": 46.03705,
+    "lon": -80.44142,
+    "species": [
+      "blacknoseshiner",
+      "bowfin",
+      "brownbullhead",
+      "burbot",
+      "cisco",
+      "commonshiner",
+      "creekchub",
+      "goldenshiner",
+      "johnnydarter",
+      "sturgeon",
+      "lakewhitefish",
+      "muskie",
+      "pike",
+      "northernredbellydace",
+      "pumpkinseed",
+      "rainbowsmelt",
+      "rockbass",
+      "smallmouthbass",
+      "walleye",
+      "whitebass",
+      "whitesucker",
+      "perch"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Stream or River",
+    "fmz": "11",
+    "surfaceArea": "2162.0",
+    "maxDepth": null,
+    "meanDepth": null,
+    "secchiDepth": null,
+    "thermalRegime": "Warm",
+    "aliasName": "Main Channel (French River)",
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road",
+      "Wolseley Bay"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "501223272"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions.",
+    "regulationsNotes": "The French River has water-specific limits below the Chaudière Dam and south of Five Finger Rapids, including Wolseley Bay and the North Channel. Waters upstream of the Chaudière and Little Chaudière dams follow Lake Nipissing rules. Use the official rules for your exact fishing location.",
+    "regulationsUrl": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-11"
+  },
+  {
+    "name": "French River (North Channel)",
+    "town": "Dokis / French River area",
+    "lat": 46.08124,
+    "lon": -80.47097,
+    "species": [
+      "bowfin",
+      "brownbullhead",
+      "burbot",
+      "cisco",
+      "sturgeon",
+      "lakewhitefish",
+      "muskie",
+      "pike",
+      "pumpkinseed",
+      "rainbowsmelt",
+      "rockbass",
+      "smallmouthbass",
+      "walleye",
+      "whitebass",
+      "whitesucker",
+      "perch"
+    ],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Stream or River",
+    "fmz": "11",
+    "surfaceArea": "1438.6",
+    "maxDepth": null,
+    "meanDepth": null,
+    "secchiDepth": null,
+    "thermalRegime": null,
+    "aliasName": "North Channel (French River)",
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road",
+      "Wolseley Bay"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "dataSources": [
+      {
+        "title": "Ontario waterbody and species record",
+        "url": "https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about",
+        "recordId": "501223274"
+      }
+    ],
+    "localNotes": "Map pin marks the waterbody, not a boat launch. Depth and clarity values are recorded survey measurements, not live conditions.",
+    "regulationsNotes": "The French River has water-specific limits below the Chaudière Dam and south of Five Finger Rapids, including Wolseley Bay and the North Channel. Waters upstream of the Chaudière and Little Chaudière dams follow Lake Nipissing rules. Use the official rules for your exact fishing location.",
+    "regulationsUrl": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-11"
+  },
+  {
+    "name": "Marshall Lake",
+    "town": "Monetville / Dokis Road",
+    "lat": 46.1447223,
+    "lon": -80.2302778,
+    "species": [],
+    "isStocked": false,
+    "stockingInfo": null,
+    "waterbodyType": "Lake or Pond",
+    "fmz": "11",
+    "thermalRegime": null,
+    "surfaceArea": null,
+    "maxDepth": null,
+    "meanDepth": null,
+    "secchiDepth": null,
+    "aliasName": null,
+    "mnrfDistrict": null,
+    "unofficialName": null,
+    "developmentalStage": null,
+    "region": "Lake Nipissing / French River",
+    "searchAliases": [
+      "Dokis",
+      "Monetville",
+      "Dokis Road"
+    ],
+    "locationType": "waterbody",
+    "dataChecked": "2026-09-10",
+    "speciesStatus": "unverified",
+    "localNotes": "Location confirmed by Natural Resources Canada. Species, depth and water clarity have not been verified for this Marshall Lake. Map pin marks the lake, not a boat launch.",
+    "dataSources": [
+      {
+        "title": "Natural Resources Canada: Marshall Lake",
+        "url": "https://geonames.nrcan.gc.ca/search-place-names/unique/FCDLV"
+      }
+    ]
   }
 ]
