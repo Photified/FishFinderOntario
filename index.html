@@ -213,6 +213,22 @@
     .maps-btn {margin:10px 0;min-height:38px;}
     .info-toggle {min-width:36px;min-height:36px;}
     .lake-header-left {cursor:pointer;}
+    
+    .locate-btn {position:static;min-height:44px;box-shadow:none;justify-content:center;font-size:.85rem;}
+    .location-actions {display:flex;gap:10px;padding:0 20px 12px;align-items:center;}
+    .location-actions span {color:#94a3b8;font-size:.8rem;}
+    .star-btn,.info-toggle,.search-container button,.fav-toggle-btn {min-width:44px;min-height:44px;}
+    .fish-btn {font-family:inherit;color:inherit;cursor:pointer;}
+    .lake-card .species-list {font-size:.85rem;line-height:1.5;}
+    .lake-more {margin-top:12px;border-top:1px solid #334155;padding-top:8px;}
+    .lake-more summary {cursor:pointer;color:#7dd3fc;padding:10px 0;font-size:.9rem;}
+    .record-note {color:#94a3b8;font-size:.8rem;line-height:1.5;}
+    #view-map.spot-selected > .map-legend,#view-map.spot-selected > .search-context-row,
+    #view-map.spot-selected > .search-container,#view-map.spot-selected > .slider-container,
+    #view-map.spot-selected > .filter-bar,#view-map.spot-selected > .location-actions {display:none;}
+    #view-map.spot-selected .map-wrapper {position:sticky;top:0;z-index:1001;background:#121212;}
+    #backResultsBtn {scroll-margin-top:270px;min-height:44px;}
+    @media(max-width:600px) {#view-map.spot-selected #map {height: min(30vh,220px);} #backResultsBtn {scroll-margin-top:calc(min(30vh,220px) + 12px);} .lake-header {gap:4px;} .lake-header-right {gap:4px;}}
     </style>
 </head>
 <body>
@@ -231,7 +247,6 @@
     
     <div style="padding-top: 15px;"></div>
     <div class="map-wrapper">
-      <button id="locateMeBtn" class="locate-btn">📍 Locate Me</button>
       <div id="map"></div>
     </div>
 
@@ -244,8 +259,9 @@
     <p id="searchContext" aria-live="polite">Search starts near Barrie (default). Use Locate Me to change it. Distances are straight-line.</p>
       <button id="searchAreaBtn" type="button" hidden>Search here</button>
     </div>
+    <div class="location-actions"><button id="locateMeBtn" class="locate-btn">Use my location</button><span>or search a town below</span></div>
     <div class="search-container" style="padding-top: 0;">
-      <input type="text" id="lakeSearchInput" placeholder="Search waterbody or area...">
+      <input type="text" id="lakeSearchInput" placeholder="Search town or waterbody...">
       <button id="lakeSearchBtn" aria-label="Search">🔍</button>
     </div>
 
@@ -268,7 +284,7 @@
 
     <button id="backResultsBtn" class="btn-secondary" hidden>Back to results</button>
     <div id="ff-results" aria-live="polite">
-      <p class="status-msg">Tap a fish above or search by name to find waterbodies.</p>
+      <p class="status-msg">Loading nearby waterbodies…</p>
     </div>
   </div>
 
@@ -698,7 +714,7 @@
       let lakesData = [];
       let seasonsRulebook = {};
       let cachedUserLocation = null;
-      let currentActiveSpecies = null;
+      let currentActiveSpecies = 'all';
       let savedLakes = JSON.parse(localStorage.getItem('savedLakesData')) || {};
       let lakeMarkers = {};
       let areaCenter = null, selectedLakeId = null, favoritesOnly = false;
@@ -721,6 +737,8 @@
       function updateSelection(id, scroll = false) {
         if(id && !selectedLakeId) resultsScroll = window.scrollY;
         selectedLakeId = id;
+        document.getElementById('view-map').classList.toggle('spot-selected', !!id);
+        map.invalidateSize({pan:false});
         document.getElementById('backResultsBtn').hidden = !id;
         ffResultsContainer.querySelectorAll('.lake-card').forEach(card => {
           const active = card.dataset.lakeid === id;
@@ -761,13 +779,13 @@
               icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) 
             }).bindPopup("You are here").addTo(markersLayer);
             
-            document.getElementById('locateMeBtn').style.display = 'none';
-            
+            document.getElementById('locateMeBtn').innerText = 'Update my location';
+            document.getElementById('manualLocation').value = 'gps';
             findClosestLakes(currentActiveSpecies || 'all');
           },
           (error) => {
             alert("Unable to retrieve your location.");
-            document.getElementById('locateMeBtn').innerText = "📍 Locate Me";
+            document.getElementById('locateMeBtn').innerText = "Use my location";
           }
         );
       });
@@ -826,17 +844,20 @@
           }
           
           buildMapSlider();
+          findClosestLakes('all');
         } catch (error) { 
           console.warn("Local JSON fetch failed. Make sure you are on a live server or GitHub pages."); 
           buildMapSlider();
+          ffResultsContainer.innerHTML = '<p class="status-msg">Could not load waterbodies. Check your connection and reload the page.</p>';
         }
       }
 
       function buildMapSlider() {
         const sliderContainer = document.getElementById('fishSlider');
         fishSpeciesList.forEach(fish => {
-          const btn = document.createElement('div');
-          btn.className = 'fish-btn';
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'fish-btn' + (fish.id === currentActiveSpecies ? ' active' : '');
           const imgSrc = fish.id === 'all' ? 'images/icon.png' : `images/${fish.id}.png`;
           btn.innerHTML = `<img src="${imgSrc}" alt="${fish.name}"><span>${fish.name}</span>`;
           btn.addEventListener('click', () => {
@@ -854,6 +875,7 @@
       function findClosestLakes(speciesId) {
         currentActiveSpecies = speciesId;
         selectedLakeId = null;
+        document.getElementById('view-map').classList.remove('spot-selected');
         document.getElementById('backResultsBtn').hidden = true;
         const origin = areaCenter || cachedUserLocation || {lat:44.3894,lon:-79.6903};
         const manual = document.getElementById('manualLocation');
@@ -867,7 +889,7 @@
         // --- TEXT SEARCH FILTER ---
         const searchTerm = document.getElementById('lakeSearchInput').value.toLowerCase().trim();
         if (searchTerm.length >= 3) {
-            matchingLakes = matchingLakes.filter(l => [l.name, l.aliasName, l.region, ...(l.searchAliases || [])].filter(Boolean).join(' ').toLowerCase().includes(searchTerm));
+            matchingLakes = matchingLakes.filter(l => [l.name, l.aliasName, l.town, l.region, ...(l.searchAliases || [])].filter(Boolean).join(' ').toLowerCase().includes(searchTerm));
         }
 
         if (matchingLakes.length === 0) { 
@@ -1029,80 +1051,11 @@
               </div>`;
           }
 
-          let speciesDisplay = '';
-          if (filteredSpeciesId === 'all' || !filteredSpeciesId) {
-            speciesDisplay = readableOtherSpecies ? 'Species: ' + readableOtherSpecies : 'Species not yet verified';
-          } else {
-            speciesDisplay = readableOtherSpecies ? 'Also has: ' + readableOtherSpecies : 'Just this species';
-          }
-
-          // --- SEASONS LOGIC INJECTION ---
-          let seasonDisplayHTML = '';
-          let cleanFmz = lake.fmz ? String(lake.fmz).replace(/[^0-9]/g, '') : null;
-
-          if (cleanFmz && seasonsRulebook[cleanFmz]) {
-            if (filteredSpeciesId && filteredSpeciesId !== 'all') {
-               // Direct 1-to-1 lookup without a translator
-               let seasonText = lake.seasonOverrides?.[filteredSpeciesId] || seasonsRulebook[cleanFmz][filteredSpeciesId];
-               
-               // Fallback 1: Panfish
-               if (!seasonText && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(filteredSpeciesId)) {
-                   seasonText = "Open All Year (General)";
-               } 
-               // Fallback 2: Missing regulated fish
-               else if (!seasonText) {
-                   seasonText = "No General Season (Check Exceptions)";
-               }
-
-               const fishName = fishSpeciesList.find(f => f.id === filteredSpeciesId)?.name || filteredSpeciesId;
-               let textColor = seasonText.includes("Exceptions") ? "#fbbf24" : "#e2e8f0";
-
-               seasonDisplayHTML = `
-                  <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); padding: 6px; border-radius: 6px;">
-                      <strong style="color: #0ea5e9;">📅 ${fishName} Season (${lake.seasonLabel || `Zone ${cleanFmz}`}):</strong><br>
-                      <span style="color: ${textColor};">${seasonText}</span>
-                  </div>
-               `;
-            } else if (lake.species && lake.species.length > 0) {
-               
-               // --- NEW FILTER LOGIC ---
-               // Only keep fish IDs that actually exist in your PWA's fishSpeciesList array
-               let pwaSupportedFish = lake.species.filter(fishId => fishSpeciesList.some(f => f.id === fishId));
-               
-               if (pwaSupportedFish.length > 0) {
-                   let seasonsList = pwaSupportedFish.map(fishId => {
-                       // Direct 1-to-1 lookup without a translator
-                       let text = lake.seasonOverrides?.[fishId] || seasonsRulebook[cleanFmz][fishId];
-                       
-                       // Fallback 1: Panfish
-                       if (!text && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(fishId)) {
-                           text = "Open All Year (General)";
-                       }
-                       // Fallback 2: Missing regulated fish
-                       else if (!text) {
-                           text = "No General Season (Check Exceptions)";
-                       }
-
-                       // We safely know this exists now because of the filter above
-                       let name = fishSpeciesList.find(f => f.id === fishId).name;
-                       let textColor = text.includes("Exceptions") ? "#fbbf24" : "#e2e8f0";
-                       
-                       return `<div style="margin-bottom: 4px;"><span style="color: #94a3b8; font-weight: bold;">${name}:</span> <span style="color: ${textColor};">${text}</span></div>`;
-                   }).join('');
-
-                   if (seasonsList) {
-                       seasonDisplayHTML = `
-                          <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px; border-radius: 6px; max-height: 120px; overflow-y: auto;">
-                              <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 ${lake.seasonLabel || `Zone ${cleanFmz}`} Seasons:</strong>
-                              ${seasonsList}
-                          </div>
-                       `;
-                   }
-               }
-            }
-          }
-          // -------------------------------
-
+          const knownSpecies = (lake.species || []).map(id => fishSpeciesList.find(f => f.id === id)?.name).filter(Boolean);
+          const speciesDisplay = lake.speciesStatus === 'unverified' ? 'Species not yet verified' : knownSpecies.length ? 'Recorded species: ' + knownSpecies.join(', ') : 'Species records unavailable';
+          const officialUrl = lake.regulationsUrl || 'https://www.ontario.ca/document/ontario-fishing-regulations-summary';
+          const seasonDisplayHTML = `<a class="maps-btn" href="${officialUrl}" target="_blank" rel="noopener noreferrer">Check official fishing regulations${lake.fmz ? ' · Zone ' + lake.fmz : ''}</a><p class="record-note">Check seasons, limits and waterbody exceptions before fishing. Season information is not verified in this app.</p>`;
+          const freshnessHTML = `<p class="record-note">Species record date: not provided. Stocking dates refer to recorded stocking events, not a recent species survey.</p>`;
           let cardClasses = `lake-card ${isStockedMatch ? 'stocked-highlight' : ''}`;
 
           ffResultsContainer.innerHTML += `
@@ -1121,16 +1074,18 @@
                 </div>
               </div>
               <div class="lake-info-expanded">
-                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn">View on Google Maps</a>
-                <p class="species-list">Waterbody location only. Access point not verified.</p>
-                ${statsTextHTML}
                 <p class="species-list">${speciesDisplay}</p>
-                ${stockingContentHTML}
+                ${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}
                 ${seasonDisplayHTML}
+                <details class="lake-more"><summary>More details</summary>
+                ${statsTextHTML}
+                ${freshnessHTML}
                 ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
-                ${lake.regulationsNotes ? `<p class="species-list" style="color: #fbbf24;">${lake.regulationsNotes} <a href="${lake.regulationsUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">Official regulations</a></p>` : ''}
-                ${lake.dataSources ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">${source.title}</a>`).join(' · ')}</p>` : ''}
-                
+                ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
+                ${lake.dataSources ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : '<p class="record-note">Individual source date not provided in this record.</p>'}
+                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn">View on Google Maps</a>
+                <p class="record-note">Waterbody location only. Access point not verified.</p>
+                </details>
                 <div class="note-section ${isFavorited ? 'visible' : ''}">
                   ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
                   <button class="note-btn" data-lakeid="${uniqueId}">📝 ${customNote ? 'Edit Note' : 'Add Note'}</button>
