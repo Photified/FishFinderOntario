@@ -162,7 +162,13 @@
     .lake-note-display { font-size: 0.85rem; color: #e2e8f0; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px; font-style: italic; border-left: 3px solid #fbbf24; margin-bottom: 8px; line-height: 1.4; white-space: pre-wrap; }
     .note-btn { background: #334155; color: white; border: 1px solid #475569; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
     
-    .pass-to-advisor-btn { background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; margin-top: 12px; width: 100%; text-align: center; }
+    .pass-to-advisor-btn { background: #38bdf8; color: #082f49; border: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; margin-top: 12px; width: 100%; text-align: center; }
+    .pass-to-advisor-btn:hover { background: #7dd3fc; }
+    .maps-btn.regulations-btn { background-color: #1e3a8a; }
+    .maps-btn.regulations-btn:hover { background-color: #1e40af; }
+    .maps-btn.google-maps-btn { background-color: #2563eb; }
+    .maps-btn.google-maps-btn:hover { background-color: #1d4ed8; }
+    .maps-btn:focus-visible, .pass-to-advisor-btn:focus-visible { outline: 2px solid #bae6fd; outline-offset: 3px; }
 
     /* Buttons */
     .btn-primary { background: var(--accent); color: #fff; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; border:none; cursor: pointer; }
@@ -197,6 +203,12 @@
     .data-sources ul { margin: 0; padding-left: 20px; font-size: 0.8rem; color: var(--text-muted); }
     .data-sources li { margin-bottom: 4px; }
     .data-sources a { color: var(--accent); text-decoration: none; }
+    .data-info-dialog {width:calc(100% - 40px);max-width:420px;max-height:85vh;max-height:85dvh;overflow-y:auto;box-sizing:border-box;background:var(--card-bg);color:var(--text-main);border:1px solid #475569;border-radius:12px;padding:22px;}
+    .data-info-dialog::backdrop {background:rgba(0,0,0,.75);backdrop-filter:blur(4px);}
+    .data-info-dialog h2 {margin:0 0 16px;font-size:1.2rem;font-weight:700;}
+    .data-info-dialog h3 {margin:16px 0 5px;font-size:.95rem;font-weight:600;color:#7dd3fc;}
+    .data-info-dialog p {margin:0;font-size:.85rem;line-height:1.5;color:#cbd5e1;}
+    .data-info-dialog a {color:#7dd3fc;}
   
     [hidden] { display: none !important; }
     .map-legend {display:flex;flex-wrap:wrap;gap:8px 16px;padding:0 20px 12px;font-size:.75rem;color:#cbd5e1;}
@@ -420,18 +432,30 @@
       <button class="btn-secondary" id="updateAppPromptBtn" style="background-color: #2563eb; margin-top: 0;">🔄 Update Data & App</button>
       <button class="btn-danger" id="clearDataPromptBtn">🗑️ Clear Saved Data</button>
 
-      <div class="data-sources">
-        <h4>Data Sources</h4>
-        <p>Lake and species data compiled from Ontario GeoHub:</p>
-        <ul>
-          <li><a href="https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about" target="_blank">Aquatic Resource Area Polygon Segment</a></li>
-          <li><a href="https://geohub.lio.gov.on.ca/datasets/mnrf::fish-stocking-data-for-recreational-purposes/explore" target="_blank">Fish Stocking Data for Recreational Purposes</a></li>
-        </ul>
-      </div>
+      <button class="btn-secondary" id="openDataInfoBtn" type="button">About the data</button>
 
       <button class="btn-secondary" id="closeSettingsBtn">Close</button>
     </div>
   </div>
+
+  <dialog class="data-info-dialog" id="dataInfoModal" aria-labelledby="dataInfoTitle">
+    <h2 id="dataInfoTitle" tabindex="-1">About the data</h2>
+    <h3>Map locations</h3>
+    <p>Pins identify waterbodies, not boat launches or public access points. Some coordinates are approximate. Distances are straight-line distances.</p>
+    <h3>Species and stocking</h3>
+    <p>Species lists reflect available records. Stocking dates show the latest event included in the app, not a recent survey or a guarantee of fish currently present. Source dates are not available for every record.</p>
+    <h3>Fishing regulations</h3>
+    <p>Check current seasons, limits and local exceptions before fishing. Each waterbody's More details section includes a link to the official regulations.</p>
+    <div class="data-sources">
+      <h4>Government sources</h4>
+      <ul>
+        <li><a href="https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about" target="_blank" rel="noopener noreferrer">Aquatic Resource Area Polygon Segment</a></li>
+        <li><a href="https://geohub.lio.gov.on.ca/datasets/mnrf::fish-stocking-data-for-recreational-purposes/explore" target="_blank" rel="noopener noreferrer">Fish Stocking Data for Recreational Purposes</a></li>
+      </ul>
+      <p style="margin-top:10px;">Where records could be matched by government ID, map coordinates were updated from the Waterbody Location sheet in the 2026 regulations dataset.</p>
+    </div>
+    <button class="btn-secondary" id="closeDataInfoBtn" type="button">Back to settings</button>
+  </dialog>
 
   <div class="modal-overlay" id="regulationsModal" style="z-index: 1060;">
     <div class="modal-content text-white">
@@ -538,6 +562,19 @@
       
       document.getElementById('openSettingsBtn').addEventListener('click', () => settingsModal.classList.add('open'));
       document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.classList.remove('open'));
+
+      const dataInfoModal = document.getElementById('dataInfoModal');
+      const openDataInfoBtn = document.getElementById('openDataInfoBtn');
+      openDataInfoBtn.addEventListener('click', () => {
+        settingsModal.classList.remove('open');
+        dataInfoModal.showModal();
+        document.getElementById('dataInfoTitle').focus();
+      });
+      document.getElementById('closeDataInfoBtn').addEventListener('click', () => dataInfoModal.close());
+      dataInfoModal.addEventListener('close', () => {
+        settingsModal.classList.add('open');
+        openDataInfoBtn.focus();
+      });
 
       // Regulations Logic
       document.getElementById('openRegulationsBtn').addEventListener('click', (e) => {
@@ -979,6 +1016,7 @@
           let statsTextHTML = '';
           const statsArray = [];
           if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${lake.fmz}</span>`);
+          if (['approximate','needs_review'].includes(lake.coordinateStatus)) statsArray.push('<span class="stat-item" title="Exact waterbody location not verified">Approx. location</span>');
           if (lake.waterbodyType) {
             let type = lake.waterbodyType.includes('Stream') ? 'River' : 'Lake';
             statsArray.push(`<span class="stat-item">${type === 'River' ? '💧' : '🌊'} ${type}</span>`);
@@ -1013,8 +1051,7 @@
           const knownSpecies = (lake.species || []).map(id => fishSpeciesList.find(f => f.id === id)?.name).filter(Boolean);
           const speciesDisplay = lake.speciesStatus === 'unverified' ? 'Species not yet verified' : knownSpecies.length ? 'Recorded species: ' + knownSpecies.join(', ') : 'Species records unavailable';
           const officialUrl = lake.regulationsUrl || 'https://www.ontario.ca/document/ontario-fishing-regulations-summary';
-          const seasonDisplayHTML = `<a class="maps-btn" href="${officialUrl}" target="_blank" rel="noopener noreferrer">Check official fishing regulations${lake.fmz ? ' · Zone ' + lake.fmz : ''}</a><p class="record-note">Check seasons, limits and waterbody exceptions before fishing. Season information is not verified in this app.</p>`;
-          const freshnessHTML = `<p class="record-note">Species record date: not provided. Stocking dates refer to recorded stocking events, not a recent species survey.</p>`;
+          const seasonDisplayHTML = `<a class="maps-btn regulations-btn" href="${officialUrl}" target="_blank" rel="noopener noreferrer">Check official fishing regulations${lake.fmz ? ' · Zone ' + lake.fmz : ''}</a>`;
           let cardClasses = `lake-card ${isStockedMatch ? 'stocked-highlight' : ''}`;
 
           ffResultsContainer.innerHTML += `
@@ -1036,16 +1073,12 @@
                 ${statsTextHTML}
                 ${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}
                 <p class="species-list">${speciesDisplay}</p>
-                ${['approximate','needs_review'].includes(lake.coordinateStatus) ? '<p class="record-note">Approximate map position. Exact waterbody location not verified.</p>' : ''}
                 <details class="lake-more"><summary>More details</summary>
                 ${seasonDisplayHTML}
-                ${freshnessHTML}
-                ${lake.coordinateSource ? `<p class="record-note">Map reference: ${lake.coordinateSource}. Source effective date: ${lake.coordinateSourceDate}. This identifies the waterbody, not an access point.</p>` : ''}
                 ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
                 ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
-                ${lake.dataSources ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : '<p class="record-note">Individual source date not provided in this record.</p>'}
-                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn">View on Google Maps</a>
-                <p class="record-note">Waterbody location only. Access point not verified.</p>
+                ${lake.dataSources?.length ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : ''}
+                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn google-maps-btn">View on Google Maps</a>
                 </details>
                 <div class="note-section ${isFavorited ? 'visible' : ''}">
                   ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
