@@ -197,38 +197,7 @@
     .data-sources ul { margin: 0; padding-left: 20px; font-size: 0.8rem; color: var(--text-muted); }
     .data-sources li { margin-bottom: 4px; }
     .data-sources a { color: var(--accent); text-decoration: none; }
-  
-    [hidden] { display: none !important; }
-    .map-legend {display:flex;flex-wrap:wrap;gap:8px 16px;padding:0 20px 12px;font-size:.75rem;color:#cbd5e1;}
-    .legend-dot {display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;}
-    .pin-saved::after {content:'★';position:absolute;top:-10px;right:-9px;color:#fbbf24;font-size:17px;transform:rotate(45deg);text-shadow:0 1px 3px #000;}
-    .custom-pin {position:relative;}
-    .search-context-row {display:flex;align-items:center;gap:10px;padding:0 20px 12px;}
-    #searchContext {flex:1;min-width:0;margin:0;color:#94a3b8;font-size:.8rem;line-height:1.4;}
-    #backResultsBtn {margin:0 20px 12px;width:auto;padding:8px 14px;}
-    .lake-info-expanded.open {max-height:none;}
-    .lake-title-group h3 {white-space:normal;overflow-wrap:anywhere;}
-    .maps-btn {margin:10px 0;min-height:38px;}
-    .info-toggle {min-width:36px;min-height:36px;}
-    .lake-header-left {cursor:pointer;}
-    
-    .locate-btn {position:static;min-height:44px;box-shadow:none;justify-content:center;font-size:.85rem;}
-    .location-actions {display:flex;gap:10px;padding:0 20px 12px;align-items:center;}
-    .location-actions span {color:#94a3b8;font-size:.8rem;}
-    .star-btn,.info-toggle,.search-container button,.fav-toggle-btn {min-width:44px;min-height:44px;}
-    .fish-btn {font-family:inherit;color:inherit;cursor:pointer;}
-    .lake-card .species-list {font-size:.85rem;line-height:1.5;}
-    .lake-more {margin-top:12px;border-top:1px solid #334155;padding-top:8px;}
-    .lake-more summary {cursor:pointer;color:#7dd3fc;padding:10px 0;font-size:.9rem;}
-    .record-note {color:#94a3b8;font-size:.8rem;line-height:1.5;}
-    #view-map.spot-selected > .map-legend,#view-map.spot-selected > .search-context-row,
-    #view-map.spot-selected > .search-container,#view-map.spot-selected > .slider-container,
-    #view-map.spot-selected > .filter-bar,#view-map.spot-selected > .location-actions {display:none;}
-    #view-map.spot-selected .map-wrapper {position:sticky;top:0;z-index:1001;background:#121212;}
-    #backResultsBtn {scroll-margin-top:270px;min-height:44px;}
-    @media(max-width:600px) {#view-map.spot-selected #map {height: min(30vh,220px);} #backResultsBtn {scroll-margin-top:calc(min(30vh,220px) + 12px);} .lake-header {gap:4px;} .lake-header-right {gap:4px;}}
-    .water-cluster {background:#075985;border:3px solid #7dd3fc;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 2px 6px #0008;}
-</style>
+  </style>
 </head>
 <body>
 
@@ -246,33 +215,34 @@
     
     <div style="padding-top: 15px;"></div>
     <div class="map-wrapper">
+      <button id="locateMeBtn" class="locate-btn">📍 Locate Me</button>
       <div id="map"></div>
     </div>
 
-    <div class="map-legend" aria-label="Map legend">
-      <span><i class="legend-dot pin-blue"></i>Waterbody</span><span><i class="legend-dot pin-green"></i>Stocking record*</span>
-      <span style="color:#fbbf24">★ Saved spot</span><span><i class="legend-dot pin-user"></i>Starting location</span>
-      <span>Numbers group nearby waterbodies. Tap to zoom.</span><span>*Matches selected fish; check stocking year.</span>
-    </div>
-    <div class="search-context-row">
-    <p id="searchContext" aria-live="polite">Explore Southern Ontario. Move or zoom the map to find waterbodies.</p>
-    </div>
-    <div class="location-actions"><button id="locateMeBtn" class="locate-btn">Use my location</button><span>or search a town below</span></div>
     <div class="search-container" style="padding-top: 0;">
-      <input type="text" id="lakeSearchInput" placeholder="Search town or waterbody...">
+      <input type="text" id="lakeSearchInput" placeholder="Search lake name or area...">
       <button id="lakeSearchBtn" aria-label="Search">🔍</button>
     </div>
 
     <div class="slider-container" id="fishSlider"></div>
 
     <div class="filter-bar">
-      <button id="viewFavoritesBtn" class="fav-toggle-btn">⭐ Saved Spots</button>
-
+      <button id="viewFavoritesBtn" class="fav-toggle-btn">⭐ Saved Lakes</button>
+      <div>
+        <label for="radiusFilter">Radius (<span id="radiusUnitLabel">km</span>):</label>
+        <select id="radiusFilter">
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+          <option value="250">250</option>
+          <option value="500">500</option>
+          <option value="99999">Any</option>
+        </select>
+      </div>
     </div>
 
-    <button id="backResultsBtn" class="btn-secondary" hidden>Back to results</button>
-    <div id="ff-results" aria-live="polite">
-      <p class="status-msg">Loading nearby waterbodies…</p>
+    <div id="ff-results">
+      <p class="status-msg">Tap a fish above or search by name to find lakes.</p>
     </div>
   </div>
 
@@ -488,14 +458,14 @@
   <script src="app-data.js"></script>
 
   <script>
-    let mapScrollPosition = 0;
     function switchAppView(viewId, btnElement) {
-      if(document.getElementById('view-map').classList.contains('active-view')) mapScrollPosition = window.scrollY;
       document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
       document.getElementById(viewId).classList.add('active-view');
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       if(btnElement) btnElement.classList.add('active');
-      if(viewId === 'view-map') setTimeout(() => { window.dispatchEvent(new Event('map-return')); window.scrollTo(0, mapScrollPosition); }, 100);
+      if(viewId === 'view-map' && typeof map !== 'undefined') {
+        setTimeout(() => map.invalidateSize(), 100);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -522,11 +492,6 @@
       });
 
       if ('serviceWorker' in navigator) {
-        let refreshing = false;
-        const hadController = !!navigator.serviceWorker.controller;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if(hadController && !refreshing) { refreshing = true; window.location.reload(); }
-        });
         navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW Error.', err));
       }
 
@@ -645,16 +610,16 @@
       document.getElementById('distanceUnit').value = appUnits.distance;
       document.getElementById('depthUnit').value = appUnits.depth;
       document.getElementById('areaUnit').value = appUnits.area;
-
+      document.getElementById('radiusUnitLabel').innerText = appUnits.distance === 'metric' ? 'km' : 'mi';
 
       ['distanceUnit', 'depthUnit', 'areaUnit'].forEach(id => {
         document.getElementById(id).addEventListener('change', (e) => {
           appUnits[e.target.id.replace('Unit', '')] = e.target.value;
           localStorage.setItem('appUnitsData', JSON.stringify(appUnits));
           if(e.target.id === 'distanceUnit') {
-
+            document.getElementById('radiusUnitLabel').innerText = appUnits.distance === 'metric' ? 'km' : 'mi';
           }
-          if(currentActiveSpecies) {
+          if(currentActiveSpecies && cachedUserLocation) {
              findClosestLakes(currentActiveSpecies);
           }
         });
@@ -663,7 +628,6 @@
       // Hook up the Starting Location Override Dropdown
       document.getElementById('manualLocation').addEventListener('change', (e) => {
           const val = e.target.value;
-          areaCenter = null;
           
           if (val === 'gps') {
               // If they switch back to GPS, clear the override and show the locate button
@@ -683,7 +647,6 @@
           
           // Re-calculate distances and redraw map (this will draw the red pin!)
           if (lakesData.length > 0) {
-              if(cachedUserLocation) map.setView([cachedUserLocation.lat,cachedUserLocation.lon],10);
               findClosestLakes(currentActiveSpecies || 'all');
               
               // Optional: Automatically close the settings modal so the user can see the map update
@@ -691,70 +654,27 @@
           }
       });
 
-      let map = L.map('map').fitBounds([[41.7,-83.5],[46.5,-74.3]]);
+      // Hook up the previously unused Radius Dropdown
+      document.getElementById('radiusFilter').addEventListener('change', () => {
+          if (lakesData.length > 0) findClosestLakes(currentActiveSpecies || 'all');
+      });
+
+      let map = L.map('map').setView([46.0, -80.0], 5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
       let routeLineLayer = null; 
       let lakesData = [];
       let seasonsRulebook = {};
       let cachedUserLocation = null;
-      let currentActiveSpecies = 'all';
+      let currentActiveSpecies = null;
       let savedLakes = JSON.parse(localStorage.getItem('savedLakesData')) || {};
       let lakeMarkers = {};
-      let areaCenter = null, selectedLakeId = null, favoritesOnly = false;
-      let matchingWaters = [], visibleWaters = [], listLimit = 30, refreshingMap = false;
-      let preserveViewport = false, resultsScroll = 0;
-      window.addEventListener('map-return', () => map.invalidateSize({pan:false}));
-      map.on('moveend', () => {
-        if(refreshingMap || !lakesData.length) return;
-        listLimit = 30;
-        refreshMapResults();
-      });
-      document.getElementById('viewFavoritesBtn').addEventListener('click', e => {
-        favoritesOnly = !favoritesOnly;
-        e.currentTarget.classList.toggle('active', favoritesOnly);
-        e.currentTarget.setAttribute('aria-pressed', favoritesOnly);
-        findClosestLakes(currentActiveSpecies || 'all');
-      });
-      function updateSelection(id, scroll = false) {
-        if(id && !selectedLakeId) resultsScroll = window.scrollY;
-        selectedLakeId = id;
-        document.getElementById('view-map').classList.toggle('spot-selected', !!id);
-        map.invalidateSize({pan:false});
-        document.getElementById('backResultsBtn').hidden = !id;
-        if(id) {
-          const lake = lakesData.find(l => getLakeId(l) === id);
-          if(lake) renderLakeList([lake], selectedFishName(), currentActiveSpecies);
-        } else renderVisibleList();
-        ffResultsContainer.querySelectorAll('.lake-card').forEach(card => {
-          const active = card.dataset.lakeid === id;
-          card.hidden = !!id && !active;
-          card.classList.toggle('active-highlight', active);
-          card.querySelector('.lake-info-expanded').classList.toggle('open', active);
-          const toggle = card.querySelector('.info-toggle');
-          toggle.textContent = active ? '▲' : '▼'; toggle.setAttribute('aria-expanded', active);
-        });
-        Object.entries(lakeMarkers).forEach(([key, marker]) => {
-          marker.setIcon(L.divIcon({className:'',html:`<div class="custom-pin ${marker.defaultPinClass} ${key === id ? 'pin-active' : ''}"></div>`,iconSize:[24,24],iconAnchor:[12,24]}));
-        });
-        if(scroll) document.getElementById('backResultsBtn').scrollIntoView({behavior:'smooth',block:'start'});
-      }
-      document.getElementById('backResultsBtn').addEventListener('click', () => {
-        updateSelection(null); map.closePopup(); window.scrollTo({top:resultsScroll,behavior:'smooth'});
-      });
-      function refreshSavedState() {
-        const id = selectedLakeId;
-        preserveViewport = true; findClosestLakes(currentActiveSpecies || 'all'); preserveViewport = false;
-        if(id && matchingWaters.some(l => getLakeId(l) === id)) updateSelection(id);
-      }
-
 
       document.getElementById('locateMeBtn').addEventListener('click', () => {
         if (!navigator.geolocation) { alert("Geolocation is not supported by your browser."); return; }
         document.getElementById('locateMeBtn').innerText = "Locating...";
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            areaCenter = null;
             cachedUserLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
             map.setView([cachedUserLocation.lat, cachedUserLocation.lon], 10);
             
@@ -765,13 +685,13 @@
               icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) 
             }).bindPopup("You are here").addTo(markersLayer);
             
-            document.getElementById('locateMeBtn').innerText = 'Update my location';
-            document.getElementById('manualLocation').value = 'gps';
-            findClosestLakes(currentActiveSpecies || 'all');
+            document.getElementById('locateMeBtn').style.display = 'none';
+            
+            if(currentActiveSpecies) findClosestLakes(currentActiveSpecies);
           },
           (error) => {
             alert("Unable to retrieve your location.");
-            document.getElementById('locateMeBtn').innerText = "Use my location";
+            document.getElementById('locateMeBtn').innerText = "📍 Locate Me";
           }
         );
       });
@@ -796,15 +716,23 @@
       const lakeSearchBtn = document.getElementById('lakeSearchBtn');
 
       function triggerSearch() {
-        clearTimeout(searchTimer);
-        if(lakesData.length) findClosestLakes(currentActiveSpecies || 'all', true);
+          const term = lakeSearchInput.value.trim();
+          if (term.length >= 3) {
+              document.getElementById('radiusFilter').value = '99999'; // Force radius dropdown to 'Any'
+          }
+          if (lakesData.length > 0) {
+              findClosestLakes(currentActiveSpecies || 'all');
+          }
       }
-      let searchTimer;
+
       lakeSearchInput.addEventListener('input', () => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(triggerSearch, 350);
+          const term = lakeSearchInput.value.trim();
+          // Auto-trigger if 3+ chars or if they clear the search bar entirely
+          if (term.length >= 3 || term.length === 0) {
+              triggerSearch();
+          }
       });
-      lakeSearchInput.addEventListener('keydown', e => {if(e.key === 'Enter') triggerSearch();});
+
       lakeSearchBtn.addEventListener('click', triggerSearch);
 
       async function loadLakeData() {
@@ -822,20 +750,17 @@
           }
           
           buildMapSlider();
-          findClosestLakes('all');
         } catch (error) { 
           console.warn("Local JSON fetch failed. Make sure you are on a live server or GitHub pages."); 
           buildMapSlider();
-          ffResultsContainer.innerHTML = '<p class="status-msg">Could not load waterbodies. Check your connection and reload the page.</p>';
         }
       }
 
       function buildMapSlider() {
         const sliderContainer = document.getElementById('fishSlider');
         fishSpeciesList.forEach(fish => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'fish-btn' + (fish.id === currentActiveSpecies ? ' active' : '');
+          const btn = document.createElement('div');
+          btn.className = 'fish-btn';
           const imgSrc = fish.id === 'all' ? 'images/icon.png' : `images/${fish.id}.png`;
           btn.innerHTML = `<img src="${imgSrc}" alt="${fish.name}"><span>${fish.name}</span>`;
           btn.addEventListener('click', () => {
@@ -850,73 +775,51 @@
         });
       }
 
-      function selectedFishName() {
-        return fishSpeciesList.find(f => f.id === currentActiveSpecies)?.name.toLowerCase() || '';
-      }
-      function findClosestLakes(speciesId, zoomToSearch = false) {
-        currentActiveSpecies = speciesId;
-        selectedLakeId = null;
-        document.getElementById('view-map').classList.remove('spot-selected');
-        document.getElementById('backResultsBtn').hidden = true;
-        matchingWaters = lakesData.filter(l => Number.isFinite(l.lat) && Number.isFinite(l.lon)
-          && (speciesId === 'all' || l.species?.includes(speciesId))
-          && (!favoritesOnly || savedLakes[getLakeId(l)]));
-        const term = lakeSearchInput.value.toLowerCase().trim();
-        if(term) matchingWaters = matchingWaters.filter(l => [l.name,l.aliasName,l.town,l.region,...(l.searchAliases || [])].filter(Boolean).join(' ').toLowerCase().includes(term));
-        refreshingMap = true;
-        map.invalidateSize({pan:false});
-        if(zoomToSearch && term && matchingWaters.length) map.fitBounds(matchingWaters.map(l => [l.lat,l.lon]), {padding:[24,24],maxZoom:12,animate:false});
-        refreshingMap = false;
-        listLimit = 30;
-        refreshMapResults();
-      }
-      function renderVisibleList() {
-        renderLakeList(visibleWaters.slice(0,listLimit),selectedFishName(),currentActiveSpecies);
-        if(!visibleWaters.length) ffResultsContainer.innerHTML = '<p class="status-msg">' + (matchingWaters.length ? 'No matching waterbodies in this view. Move or zoom out on the map.' : 'No matching waterbodies. Clear your search or change the fish or Saved Spots filter.') + '</p>';
-        if(visibleWaters.length > listLimit) {
-          const more = document.createElement('button'); more.className = 'btn-secondary';
-          more.textContent = `Show more (${Math.min(listLimit,visibleWaters.length)} of ${visibleWaters.length})`;
-          more.addEventListener('click', () => {listLimit += 30;renderVisibleList();});
-          ffResultsContainer.appendChild(more);
+      function findClosestLakes(speciesId) {
+        let matchingLakes = speciesId === 'all' ? lakesData : lakesData.filter(l => l.species && l.species.includes(speciesId));
+        
+        // --- TEXT SEARCH FILTER ---
+        const searchTerm = document.getElementById('lakeSearchInput').value.toLowerCase().trim();
+        if (searchTerm.length >= 3) {
+            matchingLakes = matchingLakes.filter(l => [l.name, l.aliasName, l.region, ...(l.searchAliases || [])].filter(Boolean).join(' ').toLowerCase().includes(searchTerm));
         }
-      }
-      function markerClass(lake) {
-        const stocked = lake.isStocked && lake.stockingInfo && (currentActiveSpecies === 'all' || lake.stockingInfo.toLowerCase().includes(selectedFishName()));
-        return (stocked ? 'pin-green' : 'pin-blue') + (savedLakes[getLakeId(lake)] ? ' pin-saved' : '');
-      }
-      function refreshMapResults() {
-        const bounds = map.getBounds(), center = map.getCenter();
-        const origin = cachedUserLocation || {lat:center.lat,lon:center.lng};
-        visibleWaters = matchingWaters.filter(l => bounds.contains([l.lat,l.lon]));
-        visibleWaters.forEach(l => l.distance = calculateDistance(origin.lat,origin.lon,l.lat,l.lon));
-        visibleWaters.sort((a,b) => a.distance-b.distance);
-        document.getElementById('searchContext').textContent = `${visibleWaters.length.toLocaleString()} waterbodies in view. Move the map to explore.${favoritesOnly ? ' Saved spots only.' : ''} Distances from ${cachedUserLocation ? 'your starting location' : 'map centre'} (straight-line).`;
-        markersLayer.clearLayers(); lakeMarkers = {};
-        const groups = new Map();
-        matchingWaters.filter(l => bounds.pad(.15).contains([l.lat,l.lon])).forEach(l => {
-          const point = map.project([l.lat,l.lon],map.getZoom());
-          const key = `${Math.floor(point.x/52)}:${Math.floor(point.y/52)}`;
-          if(!groups.has(key)) groups.set(key,[]); groups.get(key).push(l);
-        });
-        groups.forEach(group => {
-          if(group.length > 1) {
-            const lat = group.reduce((sum,l)=>sum+l.lat,0)/group.length;
-            const lon = group.reduce((sum,l)=>sum+l.lon,0)/group.length;
-            const cluster = L.marker([lat,lon],{title:`${group.length} waterbodies. Select to explore.`,icon:L.divIcon({className:'water-cluster',html:`<span>${group.length}</span>`,iconSize:[42,42]})});
-            cluster.on('click', () => {
-              if(map.getZoom()<18) map.setView([lat,lon],Math.min(18,map.getZoom()+2));
-              else {updateSelection(null); visibleWaters=group; listLimit=30;renderVisibleList();document.getElementById('searchContext').textContent=`${group.length} waterbodies at this location. Select a card below.`;ffResultsContainer.scrollIntoView({behavior:'smooth'});}
-            }); markersLayer.addLayer(cluster);
-          } else {
-            const lake=group[0], id=getLakeId(lake), css=markerClass(lake);
-            const marker=L.marker([lake.lat,lake.lon],{title:lake.name,icon:L.divIcon({className:'',html:`<div class="custom-pin ${css} ${id===selectedLakeId?'pin-active':''}"></div>`,iconSize:[24,24],iconAnchor:[12,24]})});
-            marker.defaultPinClass=css; lakeMarkers[id]=marker;
-            marker.on('click',()=>{lake.distance=calculateDistance(origin.lat,origin.lon,lake.lat,lake.lon);updateSelection(id,true);});
-            markersLayer.addLayer(marker);
-          }
-        });
-        if(cachedUserLocation) L.marker([cachedUserLocation.lat,cachedUserLocation.lon],{icon:L.divIcon({className:'',html:'<div class="custom-pin pin-user"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).bindPopup('Starting location').addTo(markersLayer);
-        if(!selectedLakeId) renderVisibleList();
+
+        if (matchingLakes.length === 0) { 
+            ffResultsContainer.innerHTML = `<p class="status-msg">No lakes found matching your search.</p>`; 
+            markersLayer.clearLayers();
+            if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
+            return; 
+        }
+        
+        let userLat = cachedUserLocation ? cachedUserLocation.lat : 44.3894;
+        let userLon = cachedUserLocation ? cachedUserLocation.lon : -79.6903;
+
+        matchingLakes.forEach(lake => lake.distance = calculateDistance(userLat, userLon, lake.lat, lake.lon));
+
+        // --- RADIUS FILTER ---
+        const maxRadius = parseInt(document.getElementById('radiusFilter').value, 10);
+        if (maxRadius < 99999) {
+            // Adjust max threshold based on user's selected app setting (km or mi)
+            const radiusInKm = appUnits.distance === 'metric' ? maxRadius : maxRadius * 1.60934;
+            matchingLakes = matchingLakes.filter(l => l.distance <= radiusInKm);
+        }
+
+        if (matchingLakes.length === 0) { 
+            ffResultsContainer.innerHTML = `<p class="status-msg">No lakes found within this radius. Try expanding it to "Any" or zoom out.</p>`; 
+            markersLayer.clearLayers();
+            if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
+            return; 
+        }
+
+        matchingLakes.sort((a, b) => a.distance - b.distance);
+        
+        const searchedFishObj = fishSpeciesList.find(f => f.id === speciesId);
+        let searchNameForStocking = '';
+        if (searchedFishObj && speciesId !== 'all') {
+          searchNameForStocking = searchedFishObj.name.toLowerCase();
+        }
+        
+        renderLakeList(matchingLakes.slice(0, 150), searchNameForStocking, speciesId);
       }
 
       function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -938,7 +841,7 @@
           if (!savedLakes[pendingNoteLakeId]) savedLakes[pendingNoteLakeId] = {};
           savedLakes[pendingNoteLakeId].note = newNote;
           localStorage.setItem('savedLakesData', JSON.stringify(savedLakes));
-          refreshSavedState();
+          if(currentActiveSpecies) findClosestLakes(currentActiveSpecies);
         }
         noteModal.classList.remove('open');
         pendingNoteLakeId = null;
@@ -946,6 +849,19 @@
 
       function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId) {
         ffResultsContainer.innerHTML = '';
+        markersLayer.clearLayers();
+        lakeMarkers = {};
+        if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
+        let mapBounds = [];
+
+        if (cachedUserLocation) {
+          const userMarker = L.marker([cachedUserLocation.lat, cachedUserLocation.lon], {
+            icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] })
+          }).bindPopup("You are here");
+          markersLayer.addLayer(userMarker);
+          mapBounds.push([cachedUserLocation.lat, cachedUserLocation.lon]);
+        }
+
         lakesArray.forEach(lake => {
           const uniqueId = getLakeId(lake);
           const safeUniqueId = uniqueId.replace(/'/g, "\\'"); 
@@ -963,7 +879,7 @@
           }
 
           let displayDistance = lake.distance !== undefined ? (appUnits.distance === 'metric' ? lake.distance.toFixed(1) + ' km' : (lake.distance * 0.621371).toFixed(1) + ' mi') : '';
-          let distanceBadge = displayDistance ? `<div class="distance-badge" title="Straight-line distance">${displayDistance}</div>` : '';
+          let distanceBadge = displayDistance ? `<div class="distance-badge">${displayDistance}</div>` : '';
           let stockedEmoji = isStockedMatch ? `<span title="Stocked Match" style="margin-left: 5px;">🐟</span>` : '';
           
           let depthVal = lake.maxDepth ? (appUnits.depth === 'metric' ? parseFloat(lake.maxDepth) : parseFloat(lake.maxDepth) * 3.28084).toFixed(1).replace(/\.0$/, '') : null;
@@ -974,7 +890,7 @@
           const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lake.lat},${lake.lon}`;
           const townName = lake.town ? lake.town : 'Ontario';
 
-          let pinColorClass = (isStockedMatch ? 'pin-green' : 'pin-blue') + (isFavorited ? ' pin-saved' : '');
+          let pinColorClass = isFavorited ? 'pin-yellow' : (isStockedMatch ? 'pin-green' : 'pin-blue');
           
           let statsTextHTML = '';
           const statsArray = [];
@@ -991,6 +907,22 @@
             statsTextHTML = `<div class="lake-stats-grid">${statsArray.join('')}</div>`;
           }
 
+          // Simplified Popup 
+          const popupHTML = `
+            <div style="text-align: center; font-weight: bold; font-size: 1.05rem; color: #fff;">
+              ${lake.name}
+            </div>`;
+          
+          // Store default pin class for resetting later
+          const marker = L.marker([lake.lat, lake.lon], { 
+              icon: L.divIcon({ className: '', html: `<div class="custom-pin ${pinColorClass}"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) 
+          }).bindPopup(popupHTML, { className: 'custom-popup', autoPan: false });
+          
+          marker.defaultPinClass = pinColorClass;
+          lakeMarkers[uniqueId] = marker;
+          markersLayer.addLayer(marker); 
+          mapBounds.push([lake.lat, lake.lon]);
+
           let readableOtherSpecies = '';
           if(lake.species) {
              readableOtherSpecies = lake.species
@@ -1005,16 +937,85 @@
           if (lake.isStocked && lake.stockingInfo) {
             stockingContentHTML = `
               <div style="margin-top: 10px; font-size: 0.75rem; line-height: 1.4;">
-                <span style="color: #d1d5db; font-weight: bold;">${(() => { const years = lake.stockingInfo.match(/\b20\d{2}\b/g); return years ? 'Last recorded stocking: ' + Math.max(...years.map(Number)) : 'Stocking record (year unknown)'; })()}:</span><br>
+                <span style="color: #d1d5db; font-weight: bold;">Stocking Info:</span><br>
                 <span style="color: ${isStockedMatch ? '#34d399' : '#9ca3af'};">${lake.stockingInfo}</span>
               </div>`;
           }
 
-          const knownSpecies = (lake.species || []).map(id => fishSpeciesList.find(f => f.id === id)?.name).filter(Boolean);
-          const speciesDisplay = lake.speciesStatus === 'unverified' ? 'Species not yet verified' : knownSpecies.length ? 'Recorded species: ' + knownSpecies.join(', ') : 'Species records unavailable';
-          const officialUrl = lake.regulationsUrl || 'https://www.ontario.ca/document/ontario-fishing-regulations-summary';
-          const seasonDisplayHTML = `<a class="maps-btn" href="${officialUrl}" target="_blank" rel="noopener noreferrer">Check official fishing regulations${lake.fmz ? ' · Zone ' + lake.fmz : ''}</a><p class="record-note">Check seasons, limits and waterbody exceptions before fishing. Season information is not verified in this app.</p>`;
-          const freshnessHTML = `<p class="record-note">Species record date: not provided. Stocking dates refer to recorded stocking events, not a recent species survey.</p>`;
+          let speciesDisplay = '';
+          if (filteredSpeciesId === 'all' || !filteredSpeciesId) {
+            speciesDisplay = readableOtherSpecies ? 'Species: ' + readableOtherSpecies : 'Species not yet verified';
+          } else {
+            speciesDisplay = readableOtherSpecies ? 'Also has: ' + readableOtherSpecies : 'Just this species';
+          }
+
+          // --- SEASONS LOGIC INJECTION ---
+          let seasonDisplayHTML = '';
+          let cleanFmz = lake.fmz ? String(lake.fmz).replace(/[^0-9]/g, '') : null;
+
+          if (cleanFmz && seasonsRulebook[cleanFmz]) {
+            if (filteredSpeciesId && filteredSpeciesId !== 'all') {
+               // Direct 1-to-1 lookup without a translator
+               let seasonText = lake.seasonOverrides?.[filteredSpeciesId] || seasonsRulebook[cleanFmz][filteredSpeciesId];
+               
+               // Fallback 1: Panfish
+               if (!seasonText && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(filteredSpeciesId)) {
+                   seasonText = "Open All Year (General)";
+               } 
+               // Fallback 2: Missing regulated fish
+               else if (!seasonText) {
+                   seasonText = "No General Season (Check Exceptions)";
+               }
+
+               const fishName = fishSpeciesList.find(f => f.id === filteredSpeciesId)?.name || filteredSpeciesId;
+               let textColor = seasonText.includes("Exceptions") ? "#fbbf24" : "#e2e8f0";
+
+               seasonDisplayHTML = `
+                  <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); padding: 6px; border-radius: 6px;">
+                      <strong style="color: #0ea5e9;">📅 ${fishName} Season (${lake.seasonLabel || `Zone ${cleanFmz}`}):</strong><br>
+                      <span style="color: ${textColor};">${seasonText}</span>
+                  </div>
+               `;
+            } else if (lake.species && lake.species.length > 0) {
+               
+               // --- NEW FILTER LOGIC ---
+               // Only keep fish IDs that actually exist in your PWA's fishSpeciesList array
+               let pwaSupportedFish = lake.species.filter(fishId => fishSpeciesList.some(f => f.id === fishId));
+               
+               if (pwaSupportedFish.length > 0) {
+                   let seasonsList = pwaSupportedFish.map(fishId => {
+                       // Direct 1-to-1 lookup without a translator
+                       let text = lake.seasonOverrides?.[fishId] || seasonsRulebook[cleanFmz][fishId];
+                       
+                       // Fallback 1: Panfish
+                       if (!text && ['perch', 'bluegill', 'catfish', 'crappie', 'carp', 'freshwaterdrum'].includes(fishId)) {
+                           text = "Open All Year (General)";
+                       }
+                       // Fallback 2: Missing regulated fish
+                       else if (!text) {
+                           text = "No General Season (Check Exceptions)";
+                       }
+
+                       // We safely know this exists now because of the filter above
+                       let name = fishSpeciesList.find(f => f.id === fishId).name;
+                       let textColor = text.includes("Exceptions") ? "#fbbf24" : "#e2e8f0";
+                       
+                       return `<div style="margin-bottom: 4px;"><span style="color: #94a3b8; font-weight: bold;">${name}:</span> <span style="color: ${textColor};">${text}</span></div>`;
+                   }).join('');
+
+                   if (seasonsList) {
+                       seasonDisplayHTML = `
+                          <div style="margin-top: 6px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px; border-radius: 6px; max-height: 120px; overflow-y: auto;">
+                              <strong style="color: #94a3b8; display: block; margin-bottom: 4px;">📅 ${lake.seasonLabel || `Zone ${cleanFmz}`} Seasons:</strong>
+                              ${seasonsList}
+                          </div>
+                       `;
+                   }
+               }
+            }
+          }
+          // -------------------------------
+
           let cardClasses = `lake-card ${isStockedMatch ? 'stocked-highlight' : ''}`;
 
           ffResultsContainer.innerHTML += `
@@ -1029,22 +1030,19 @@
                 </div>
                 <div class="lake-header-right">
                   ${distanceBadge}
-                  <button class="info-toggle" aria-label="Show waterbody details" aria-expanded="false">▼</button>
+                  <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn">${lake.locationType === 'waterbody' ? 'Map' : 'Drive'}</a>
+                  <button class="info-toggle">▼</button>
                 </div>
               </div>
               <div class="lake-info-expanded">
-                <p class="species-list">${speciesDisplay}</p>
-                ${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}
-                ${seasonDisplayHTML}
-                <details class="lake-more"><summary>More details</summary>
                 ${statsTextHTML}
-                ${freshnessHTML}
+                <p class="species-list">${speciesDisplay}</p>
+                ${stockingContentHTML}
+                ${seasonDisplayHTML}
                 ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
-                ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
-                ${lake.dataSources ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : '<p class="record-note">Individual source date not provided in this record.</p>'}
-                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn">View on Google Maps</a>
-                <p class="record-note">Waterbody location only. Access point not verified.</p>
-                </details>
+                ${lake.regulationsNotes ? `<p class="species-list" style="color: #fbbf24;">${lake.regulationsNotes} <a href="${lake.regulationsUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">Official regulations</a></p>` : ''}
+                ${lake.dataSources ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">${source.title}</a>`).join(' · ')}</p>` : ''}
+                
                 <div class="note-section ${isFavorited ? 'visible' : ''}">
                   ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
                   <button class="note-btn" data-lakeid="${uniqueId}">📝 ${customNote ? 'Edit Note' : 'Add Note'}</button>
@@ -1055,14 +1053,61 @@
             </div>`;
         });
 
-
+        if (mapBounds.length > 0) { map.invalidateSize(); map.fitBounds(mapBounds, { padding: [20, 20] }); }
       }
 
       document.getElementById('ff-results').addEventListener('click', function(e) {
-        const infoToggle = e.target.closest('.info-toggle, .lake-header-left');
-        if (infoToggle && !e.target.closest('.star-btn')) {
-          const id = e.target.closest('.lake-card').dataset.lakeid;
-          updateSelection(selectedLakeId === id ? null : id);
+        const infoToggle = e.target.closest('.info-toggle');
+        if (infoToggle) {
+          const card = e.target.closest('.lake-card');
+          const expandedSection = card.querySelector('.lake-info-expanded');
+          const isOpen = expandedSection.classList.toggle('open');
+          
+          // Remove active styles from ALL cards
+          document.querySelectorAll('.lake-card').forEach(c => c.classList.remove('active-highlight'));
+
+          if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
+
+          // Reset all markers to their default styling
+          Object.values(lakeMarkers).forEach(m => {
+              if (m.defaultPinClass) {
+                  m.setIcon(L.divIcon({ className: '', html: `<div class="custom-pin ${m.defaultPinClass}"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }));
+              }
+          });
+
+          if (isOpen) {
+            card.classList.add('active-highlight'); // Stroke the bottom card
+
+            const uniqueId = card.dataset.lakeid;
+            const lakeLat = parseFloat(card.dataset.lat);
+            const lakeLon = parseFloat(card.dataset.lon);
+            const distStr = card.dataset.dist;
+            const lakeName = card.querySelector('h3').innerText;
+
+            // Update Map Marker to Active State (Blue Pin + Stroke)
+            if (lakeMarkers[uniqueId]) {
+              lakeMarkers[uniqueId].setIcon(L.divIcon({ className: '', html: `<div class="custom-pin pin-blue pin-active"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }));
+            }
+
+            if (cachedUserLocation) {
+              routeLineLayer = L.polyline([
+                [cachedUserLocation.lat, cachedUserLocation.lon],
+                [lakeLat, lakeLon]
+              ], { color: '#0ea5e9', weight: 4, dashArray: '10, 10', opacity: 0.8 }).addTo(map);
+
+              // Tooltip with Name & Distance
+              routeLineLayer.bindTooltip(`
+                <div class="name">${lakeName}</div>
+                <div class="dist">${distStr} (direct)</div>
+              `, { permanent: true, direction: 'center', className: 'line-tooltip' }).openTooltip();
+
+              map.fitBounds(routeLineLayer.getBounds(), { padding: [60, 60] });
+            } else {
+              map.setView([lakeLat, lakeLon], 12);
+            }
+          } else {
+              map.closePopup();
+          }
         }
 
         const noteBtn = e.target.closest('.note-btn');
@@ -1081,7 +1126,7 @@
             savedLakes[lakeId] = { note: '' };
           }
           localStorage.setItem('savedLakesData', JSON.stringify(savedLakes));
-          refreshSavedState();
+          if(currentActiveSpecies) findClosestLakes(currentActiveSpecies);
         }
       });
 
