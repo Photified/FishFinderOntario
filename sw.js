@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v37-nipissing';
+const CACHE_NAME = 'fish-finder-v38-map-selection';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
