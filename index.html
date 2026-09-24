@@ -1033,12 +1033,12 @@
                 </div>
               </div>
               <div class="lake-info-expanded">
+                ${statsTextHTML}
+                ${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}
                 <p class="species-list">${speciesDisplay}</p>
                 ${['approximate','needs_review'].includes(lake.coordinateStatus) ? '<p class="record-note">Approximate map position. Exact waterbody location not verified.</p>' : ''}
-                ${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}
-                ${seasonDisplayHTML}
                 <details class="lake-more"><summary>More details</summary>
-                ${statsTextHTML}
+                ${seasonDisplayHTML}
                 ${freshnessHTML}
                 ${lake.coordinateSource ? `<p class="record-note">Map reference: ${lake.coordinateSource}. Source effective date: ${lake.coordinateSourceDate}. This identifies the waterbody, not an access point.</p>` : ''}
                 ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
