@@ -240,6 +240,49 @@
     #backResultsBtn {scroll-margin-top:270px;min-height:44px;}
     @media(max-width:600px) {#view-map.spot-selected #map {height: min(30vh,220px);} #backResultsBtn {scroll-margin-top:calc(min(30vh,220px) + 12px);} .lake-header {gap:4px;} .lake-header-right {gap:4px;}}
     .water-cluster {background:#075985;border:3px solid #7dd3fc;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 2px 6px #0008;}
+
+    [hidden] {display:none !important;}
+    .map-layer-controls {display:flex;gap:6px;padding:0 20px 12px;flex-wrap:wrap;}
+    .map-layer-controls button,.results-tabs button,.access-actions button,.access-actions a,.access-back,.access-note-save {font:inherit;font-size:.85rem;min-height:44px;padding:9px 12px;border:1px solid #475569;border-radius:8px;background:#1e293b;color:#cbd5e1;cursor:pointer;text-decoration:none;}
+    .map-layer-controls button {display:flex;gap:6px;align-items:center;flex:1;justify-content:center;white-space:nowrap;}
+    .map-layer-controls button[aria-pressed="true"] {border-color:#38bdf8;background:#0c334a;color:#e0f2fe;}
+    .map-layer-controls button[data-map-layer="launch"][aria-pressed="true"] {border-color:#fbbf24;background:#3c3019;color:#fde68a;}
+    .map-layer-controls button[data-map-layer="shore"][aria-pressed="true"] {border-color:#c4b5fd;background:#30264a;color:#ddd6fe;}
+    .access-layer-icon svg,.access-type svg {width:19px;height:21px;display:inline-block;vertical-align:middle;}
+    .access-pin {display:flex;align-items:center;justify-content:center;width:30px;height:34px;border:2px solid currentColor;border-radius:8px;background:#211d17;box-shadow:0 2px 5px #0008;}
+    .access-pin svg {width:21px;height:25px;}
+    .access-launch {color:#fbbf24;}
+    .access-shore,.access-pier {color:#c4b5fd;}
+    .access-saved::after {content:'★';position:absolute;top:-10px;right:-9px;color:#fbbf24;text-shadow:0 1px 3px #000;}
+    .access-cluster {background:#40301f;color:#fef3c7;border:2px solid #fbbf24;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 2px 5px #0008;}
+    .results-tabs {display:flex;gap:8px;padding:0 20px 12px;}
+    .results-tabs button {flex:1;}
+    .results-tabs button[aria-pressed="true"] {background:#075985;color:white;border-color:#38bdf8;}
+    #accessResults {padding:0 20px 24px;scroll-margin-top:80px;}
+    .access-summary,.access-note,.access-source {font-size:.8rem;color:#94a3b8;line-height:1.5;margin:0 0 12px;}
+    .access-source {margin:14px 0 0;}
+    .access-source a {color:#7dd3fc;text-decoration:underline;}
+    .access-card {background:var(--card-bg);border:1px solid #334155;border-radius:12px;margin:0 0 12px;padding:14px;}
+    .access-expanded {border-color:#c4b5fd;}
+    .access-card-heading {display:flex;gap:8px;align-items:center;}
+    .access-open {background:none;border:0;color:inherit;font:inherit;text-align:left;flex:1;min-width:0;cursor:pointer;padding:0;}
+    .access-open strong {display:block;font-size:1rem;margin:5px 0;overflow-wrap:anywhere;}
+    .access-type {font-size:.75rem;font-weight:600;display:flex;align-items:center;gap:6px;}
+    .access-distance {font-size:.8rem;color:#94a3b8;}
+    .access-save {background:none;border:0;min-width:44px;min-height:44px;font-size:1.7rem;color:#fbbf24;cursor:pointer;}
+    .access-facts {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid #334155;padding-top:14px;margin:14px 0;}
+    .access-facts dt {font-size:.73rem;color:#94a3b8;}
+    .access-facts dd {margin:3px 0 0;font-size:.85rem;overflow-wrap:anywhere;}
+    .access-comment {font-size:.85rem;line-height:1.5;white-space:pre-line;}
+    .access-actions {display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;}
+    .access-actions .access-primary {background:#0369a1;border-color:#38bdf8;color:white;}
+    .access-note-label {display:block;font-size:.8rem;color:#cbd5e1;}
+    .access-note-label textarea {display:block;box-sizing:border-box;width:100%;background:#121212;color:white;border:1px solid #475569;border-radius:8px;padding:10px;font:inherit;margin:6px 0 8px;resize:vertical;}
+    .access-note-feedback {font-size:.8rem;color:#6ee7b7;margin-left:8px;}
+    .access-back {margin:0 0 12px;}
+    .nearby-access-btn {width:100%;margin:12px 0 0;background:#30264a;color:#ddd6fe;border:1px solid #8b5cf6;border-radius:8px;min-height:44px;font:inherit;font-size:.85rem;cursor:pointer;}
+    @media(max-width:400px) {.map-layer-controls {padding-left:12px;padding-right:12px;gap:5px;}.map-layer-controls button {font-size:.73rem;padding:8px 6px;}}
+
 </style>
 </head>
 <body>
@@ -257,6 +300,11 @@
   <div id="view-map" class="app-view active-view">
     
     <div style="padding-top: 15px;"></div>
+    <div class="map-layer-controls" role="group" aria-label="Map layers">
+      <button type="button" data-map-layer="waters" aria-pressed="true"><span class="legend-dot pin-blue"></span>Waterbodies</button>
+      <button type="button" data-map-layer="launch" aria-pressed="true"><span class="access-layer-icon"></span>Boat launches</button>
+      <button type="button" data-map-layer="shore" aria-pressed="true"><span class="access-layer-icon"></span>Shore access</button>
+    </div>
     <div class="map-wrapper">
       <div id="map"></div>
     </div>
@@ -264,7 +312,7 @@
     <div class="map-legend" aria-label="Map legend">
       <span><i class="legend-dot pin-blue"></i>Waterbody</span><span><i class="legend-dot pin-green"></i>Stocking record*</span>
       <span style="color:#fbbf24">★ Saved spot</span><span><i class="legend-dot pin-user"></i>Starting location</span>
-      <span>Numbers group nearby waterbodies. Tap to zoom.</span><span>*Matches selected fish; check stocking year.</span>
+      <span>Blue circles group waterbodies; gold squares group access points. Tap to zoom.</span><span>*Matches selected fish; check stocking year.</span>
     </div>
     <div class="search-context-row">
     <p id="searchContext" aria-live="polite">Explore Southern Ontario. Move or zoom the map to find waterbodies.</p>
@@ -282,6 +330,11 @@
 
     </div>
 
+    <div class="results-tabs" role="group" aria-label="Map results">
+      <button type="button" id="waterResultsBtn" aria-pressed="true">Waterbodies</button>
+      <button type="button" id="accessResultsBtn" aria-pressed="false">Access points</button>
+    </div>
+    <div id="accessResults" hidden></div>
     <button id="backResultsBtn" class="btn-secondary" hidden>Back to results</button>
     <div id="ff-results" aria-live="polite">
       <p class="status-msg">Loading nearby waterbodies…</p>
@@ -441,7 +494,10 @@
   <dialog class="data-info-dialog" id="dataInfoModal" aria-labelledby="dataInfoTitle">
     <h2 id="dataInfoTitle" tabindex="-1">About the data</h2>
     <h3>Map locations</h3>
-    <p>Pins identify waterbodies, not boat launches or public access points. Some coordinates are approximate. Distances are straight-line distances.</p>
+    <p>Blue and green pins identify waterbodies. Gold icons identify boat launches; purple icons identify shoreline access, including docks and piers. Some coordinates are approximate. Distances are straight-line distances.</p>
+    <h3>Boat launches and shore access</h3>
+    <p>Access points come from Ontario's Fishing Access Point dataset. Only records marked for public map display are included. Ownership, parking, fees and accessibility are shown as recorded, including unknown values. Check current access and posted signs. A listed site is not a guarantee of free access or permission to fish.</p>
+    <p>Access data imported September 28, 2026. Site verification dates are shown separately when provided. Access points are not assigned fish species or linked to a waterbody solely by proximity.</p>
     <h3>Species and stocking</h3>
     <p>Species lists reflect available records. Stocking dates show the latest event included in the app, not a recent survey or a guarantee of fish currently present. Source dates are not available for every record.</p>
     <h3>Fishing regulations</h3>
@@ -450,6 +506,7 @@
       <h4>Government sources</h4>
       <p>Data source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence &ndash; Ontario</a>.</p>
       <ul>
+        <li><a href="https://data.ontario.ca/dataset/fishing-access-points" target="_blank" rel="noopener noreferrer">Fishing Access Point</a></li>
         <li><a href="https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about" target="_blank" rel="noopener noreferrer">Aquatic Resource Area Polygon Segment</a></li>
         <li><a href="https://geohub.lio.gov.on.ca/datasets/mnrf::fish-stocking-data-for-recreational-purposes/explore" target="_blank" rel="noopener noreferrer">Fish Stocking Data for Recreational Purposes</a></li>
       </ul>
@@ -493,7 +550,7 @@
   <div class="modal-overlay" id="clearDataModal" style="z-index: 1060;">
     <div class="modal-content text-white">
       <h2 class="text-xl font-bold mb-2 text-red-500">Clear All Data?</h2>
-      <p class="text-sm text-gray-300 mb-6">Are you sure you want to delete all saved lakes, notes, and preferences? This cannot be undone.</p>
+      <p class="text-sm text-gray-300 mb-6">Are you sure you want to delete all saved lakes, access points, notes, and preferences? This cannot be undone.</p>
       <button class="btn-primary mb-3" id="confirmClearDataBtn" style="background: #ef4444;">Yes, Delete Everything</button>
       <button class="btn-secondary" id="cancelClearDataBtn" style="margin-top:0;">Cancel</button>
     </div>
@@ -513,14 +570,26 @@
   <script src="recommendations-data.js"></script>
   <script src="app-data.js"></script>
 
+  <script src="access-points.js"></script>
   <script>
     let mapScrollPosition = 0;
+    function revealAdvisorSpecies() {
+      requestAnimationFrame(() => {
+        const slider = document.getElementById('fish-selector');
+        const active = slider?.querySelector('.fish-btn.active');
+        if (!active || !slider.clientWidth) return;
+        const item = active.getBoundingClientRect(), frame = slider.getBoundingClientRect();
+        const left = slider.scrollLeft + item.left - frame.left - (slider.clientWidth - item.width) / 2;
+        slider.scrollTo({left: Math.max(0, left), behavior: 'instant'});
+      });
+    }
     function switchAppView(viewId, btnElement) {
       if(document.getElementById('view-map').classList.contains('active-view')) mapScrollPosition = window.scrollY;
       document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
       document.getElementById(viewId).classList.add('active-view');
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       if(btnElement) btnElement.classList.add('active');
+      if(viewId === 'view-advisor') revealAdvisorSpecies();
       if(viewId === 'view-map') setTimeout(() => { window.dispatchEvent(new Event('map-return')); window.scrollTo(0, mapScrollPosition); }, 100);
     }
 
@@ -672,6 +741,7 @@
       document.getElementById('confirmClearDataBtn').addEventListener('click', () => {
         localStorage.removeItem('appUnitsData');
         localStorage.removeItem('savedLakesData');
+        localStorage.removeItem('savedAccessPointsData');
         window.location.reload(); 
       });
 
@@ -733,6 +803,7 @@
       let map = L.map('map').fitBounds([[41.7,-83.5],[46.5,-74.3]]);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
+      let accessUI = null, searchAreaHasWater = false;
       let routeLineLayer = null; 
       let lakesData = [];
       let seasonsRulebook = {};
@@ -756,6 +827,7 @@
         findClosestLakes(currentActiveSpecies || 'all');
       });
       function updateSelection(id, scroll = false) {
+        if (id) accessUI?.showWaters();
         if(id && !selectedLakeId) resultsScroll = window.scrollY;
         selectedLakeId = id;
         document.getElementById('view-map').classList.toggle('spot-selected', !!id);
@@ -901,10 +973,16 @@
           && (speciesId === 'all' || l.species?.includes(speciesId))
           && (!favoritesOnly || savedLakes[getLakeId(l)]));
         const term = lakeSearchInput.value.toLowerCase().trim();
-        if(term) matchingWaters = matchingWaters.filter(l => [l.name,l.aliasName,l.town,l.region,...(l.searchAliases || [])].filter(Boolean).join(' ').toLowerCase().includes(term));
+        const matchesPlace = l => [l.name,l.aliasName,l.town,l.region,...(l.searchAliases || [])].filter(Boolean).join(' ').toLowerCase().includes(term);
+        const placeMatches = term ? lakesData.filter(l => !l.locationReviewRequired && Number.isFinite(l.lat) && Number.isFinite(l.lon) && matchesPlace(l)) : [];
+        searchAreaHasWater = placeMatches.length > 0;
+        if(term) matchingWaters = matchingWaters.filter(matchesPlace);
         refreshingMap = true;
         map.invalidateSize({pan:false});
-        if(zoomToSearch && term && matchingWaters.length) map.fitBounds(matchingWaters.map(l => [l.lat,l.lon]), {padding:[24,24],maxZoom:12,animate:false});
+        if(zoomToSearch && term) {
+          const searchMatches = matchingWaters.length ? matchingWaters : placeMatches.length ? placeMatches : (accessUI?.searchMatches(term) || []);
+          if(searchMatches.length) map.fitBounds(searchMatches.map(l => [l.lat,l.lon]), {padding:[24,24],maxZoom:12,animate:false});
+        }
         refreshingMap = false;
         listLimit = 30;
         refreshMapResults();
@@ -956,6 +1034,7 @@
         });
         if(cachedUserLocation) L.marker([cachedUserLocation.lat,cachedUserLocation.lon],{icon:L.divIcon({className:'',html:'<div class="custom-pin pin-user"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).bindPopup('Starting location').addTo(markersLayer);
         if(!selectedLakeId) renderVisibleList();
+        accessUI?.refresh();
       }
 
       function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -1087,6 +1166,7 @@
                   <button class="note-btn" data-lakeid="${uniqueId}">📝 ${customNote ? 'Edit Note' : 'Add Note'}</button>
                 </div>
 
+                <button type="button" class="nearby-access-btn">Explore access points nearby</button>
                 ${lake.speciesStatus === 'unverified' ? '<p class="species-list">Use the Advisor tab for general setups once you know which species you are targeting.</p>' : `<button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Advisor Recommended Setup</button>`}
               </div>
             </div>`;
@@ -1096,6 +1176,11 @@
       }
 
       document.getElementById('ff-results').addEventListener('click', function(e) {
+        if(e.target.closest('.nearby-access-btn')) {
+          const lake = lakesData.find(l => getLakeId(l) === e.target.closest('.lake-card').dataset.lakeid);
+          if(lake) accessUI?.nearby(lake);
+          return;
+        }
         const infoToggle = e.target.closest('.info-toggle, .lake-header-left');
         if (infoToggle && !e.target.closest('.star-btn')) {
           const id = e.target.closest('.lake-card').dataset.lakeid;
@@ -1122,6 +1207,13 @@
         }
       });
 
+      if(window.FishingAccess) accessUI = FishingAccess.init({
+        map, waterLayer: markersLayer,
+        state: () => ({origin:cachedUserLocation,units:appUnits,favoritesOnly,term:lakeSearchInput.value.trim(),waterMatches:searchAreaHasWater}),
+        distance: calculateDistance,
+        clearLake: () => updateSelection(null),
+        clearSearch: () => {lakeSearchInput.value='';findClosestLakes(currentActiveSpecies || 'all');}
+      });
       loadLakeData();
 
       // ==========================================
@@ -1235,6 +1327,7 @@
         );
 
         document.getElementById('advisor-results').classList.add('hidden');
+        revealAdvisorSpecies();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 

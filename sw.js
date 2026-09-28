@@ -1,8 +1,10 @@
-const CACHE_NAME = 'fish-finder-v45-attribution';
+const CACHE_NAME = 'fish-finder-v46-access-points';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
   './app-data.js',
+  './access-points.js',
+  './accessPoints.json',
   './recommendations-data.js',
   './lakesData.json',
   './seasonsData.json'
@@ -29,7 +31,7 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-  const dataRequest = /\/(lakesData|seasonsData)\.json$/.test(url.pathname);
+  const dataRequest = /\/(lakesData|seasonsData|accessPoints)\.json$/.test(url.pathname);
   const navigation = event.request.mode === 'navigate';
 
   event.respondWith((async () => {
