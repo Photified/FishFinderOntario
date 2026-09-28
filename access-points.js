@@ -37,9 +37,7 @@ window.FishingAccess = {
       if (next === 'access' && clearLake) ctx.clearLake();
       $('ff-results').hidden = next === 'access';
       host.hidden = next !== 'access';
-      $('waterResultsBtn').setAttribute('aria-pressed', next === 'waters');
-      $('accessResultsBtn').setAttribute('aria-pressed', next === 'access');
-      $('fishSlider').hidden = next === 'access';
+      $('fishSlider').hidden = false;
       $('searchContext').hidden = next === 'access';
       if (next === 'waters') selected = null;
       if (next === 'access' && !enabled.launch && !enabled.shore) {
@@ -60,11 +58,10 @@ window.FishingAccess = {
         enabled[kind] = !enabled[kind]; selected = null;
         syncControls();
         if (kind !== 'waters' && enabled[kind]) setMode('access');
+        else if (kind === 'waters' && enabled.waters) setMode('waters');
         else refresh();
       });
     });
-    $('waterResultsBtn').addEventListener('click', () => setMode('waters'));
-    $('accessResultsBtn').addEventListener('click', () => setMode('access'));
     function select(p, scroll = true) {
       setMode('access'); selected = p.id; render();
       if (scroll) host.scrollIntoView({behavior:'smooth',block:'start'});
@@ -75,7 +72,6 @@ window.FishingAccess = {
       let matches = s.term && !s.waterMatches ? matchPoints(s.term) : points;
       matches = matches.filter(p => typeEnabled(p) && (!s.favoritesOnly || saved[p.id]));
       visible = matches.filter(p => bounds.contains([p.lat,p.lon])).sort((a,b) => distance(a)-distance(b));
-      $('accessResultsBtn').textContent = `Access points (${visible.length.toLocaleString()})`;
       layer.clearLayers();
       const groups = new Map();
       matches.filter(p => bounds.pad(.1).contains([p.lat,p.lon])).forEach(p => {

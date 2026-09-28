@@ -211,7 +211,7 @@
     .data-info-dialog a {color:#7dd3fc;}
   
     [hidden] { display: none !important; }
-    .map-legend {display:flex;flex-wrap:wrap;gap:8px 16px;padding:0 20px 12px;font-size:.75rem;color:#cbd5e1;}
+    .map-legend {margin:0 20px 8px;font-size:.75rem;color:#cbd5e1;border-bottom:1px solid #334155;}
     .legend-dot {display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;}
     .pin-saved::after {content:'★';position:absolute;top:-10px;right:-9px;color:#fbbf24;font-size:17px;transform:rotate(45deg);text-shadow:0 1px 3px #000;}
     .custom-pin {position:relative;}
@@ -234,7 +234,7 @@
     .lake-more summary {cursor:pointer;color:#7dd3fc;padding:10px 0;font-size:.9rem;}
     .record-note {color:#94a3b8;font-size:.8rem;line-height:1.5;}
     #view-map.spot-selected > .map-legend,#view-map.spot-selected > .search-context-row,
-    #view-map.spot-selected > .search-container,#view-map.spot-selected > .slider-container,
+    #view-map.spot-selected > .search-container,
     #view-map.spot-selected > .filter-bar,#view-map.spot-selected > .location-actions {display:none;}
     #view-map.spot-selected .map-wrapper {position:sticky;top:0;z-index:1001;background:#121212;}
     #backResultsBtn {scroll-margin-top:270px;min-height:44px;}
@@ -242,9 +242,12 @@
     .water-cluster {background:#075985;border:3px solid #7dd3fc;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 2px 6px #0008;}
 
     [hidden] {display:none !important;}
-    .map-layer-controls {display:flex;gap:6px;padding:0 20px 12px;flex-wrap:wrap;}
-    .map-layer-controls button,.results-tabs button,.access-actions button,.access-actions a,.access-back,.access-note-save {font:inherit;font-size:.85rem;min-height:44px;padding:9px 12px;border:1px solid #475569;border-radius:8px;background:#1e293b;color:#cbd5e1;cursor:pointer;text-decoration:none;}
-    .map-layer-controls button {display:flex;gap:6px;align-items:center;flex:1;justify-content:center;white-space:nowrap;}
+    .map-layer-controls {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:0 20px 8px;}
+    .map-layer-controls button,.access-actions button,.access-actions a,.access-back,.access-note-save {font:inherit;font-size:.85rem;min-height:44px;padding:9px 12px;border:1px solid #475569;border-radius:8px;background:#1e293b;color:#cbd5e1;cursor:pointer;text-decoration:none;}
+    .map-layer-controls button {box-sizing:border-box;display:flex;gap:4px;align-items:center;justify-content:center;white-space:nowrap;min-width:0;font-size:clamp(.6875rem,2.8vw,.85rem);padding:8px 5px;}
+    .map-layer-controls .legend-dot {flex:none;width:8px;height:8px;margin:0;}
+    .map-layer-controls .access-layer-icon {display:flex;flex:none;}
+    .map-layer-controls .access-layer-icon svg {width:15px;height:18px;}
     .map-layer-controls button[aria-pressed="true"] {border-color:#38bdf8;background:#0c334a;color:#e0f2fe;}
     .map-layer-controls button[data-map-layer="launch"][aria-pressed="true"] {border-color:#fbbf24;background:#3c3019;color:#fde68a;}
     .map-layer-controls button[data-map-layer="shore"][aria-pressed="true"] {border-color:#c4b5fd;background:#30264a;color:#ddd6fe;}
@@ -255,9 +258,6 @@
     .access-shore,.access-pier {color:#c4b5fd;}
     .access-saved::after {content:'★';position:absolute;top:-10px;right:-9px;color:#fbbf24;text-shadow:0 1px 3px #000;}
     .access-cluster {background:#40301f;color:#fef3c7;border:2px solid #fbbf24;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 2px 5px #0008;}
-    .results-tabs {display:flex;gap:8px;padding:0 20px 12px;}
-    .results-tabs button {flex:1;}
-    .results-tabs button[aria-pressed="true"] {background:#075985;color:white;border-color:#38bdf8;}
     #accessResults {padding:0 20px 24px;scroll-margin-top:80px;}
     .access-summary,.access-note,.access-source {font-size:.8rem;color:#94a3b8;line-height:1.5;margin:0 0 12px;}
     .access-source {margin:14px 0 0;}
@@ -281,7 +281,27 @@
     .access-note-feedback {font-size:.8rem;color:#6ee7b7;margin-left:8px;}
     .access-back {margin:0 0 12px;}
     .nearby-access-btn {width:100%;margin:12px 0 0;background:#30264a;color:#ddd6fe;border:1px solid #8b5cf6;border-radius:8px;min-height:44px;font:inherit;font-size:.85rem;cursor:pointer;}
-    @media(max-width:400px) {.map-layer-controls {padding-left:12px;padding-right:12px;gap:5px;}.map-layer-controls button {font-size:.73rem;padding:8px 6px;}}
+    .map-wrapper {margin-bottom:6px;}
+    .legend-icon {display:inline-flex;align-items:center;justify-content:center;flex:none;width:16px;height:18px;}
+    .legend-icon svg {width:16px;height:18px;}
+    .map-legend > summary {display:flex;align-items:center;gap:14px;min-height:36px;list-style:none;cursor:pointer;white-space:nowrap;padding:2px 0;box-sizing:border-box;}
+    .map-legend > summary::-webkit-details-marker {display:none;}
+    .map-legend > summary > span {display:inline-flex;align-items:center;gap:4px;flex:none;}
+    .map-legend > summary .legend-dot {margin:0;width:8px;height:8px;}
+    .legend-heading {font-weight:600;color:#94a3b8;}
+    .legend-chevron {width:16px;height:16px;margin-left:auto;flex:none;transition:transform .15s;}
+    .map-legend[open] .legend-chevron {transform:rotate(180deg);}
+    .map-legend > .map-key-list {padding:12px 0 16px;border-top:1px solid #334155;}
+    @media(max-width:350px) {.map-legend > summary {gap:9px;}}
+    .map-key-list {display:grid;grid-template-columns:25px 1fr;align-items:start;gap:12px 9px;margin:0;}
+    .map-key-list dt {padding-top:3px;}
+    .map-key-list dd {margin:0;font-size:.85rem;line-height:1.45;}
+    .map-key-list dd strong {display:block;}
+    .map-key-list dd span {color:#94a3b8;}
+    .legend-cluster {display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:2px solid #7dd3fc;background:#075985;border-radius:50%;font-size:.65rem;font-weight:700;color:#fff;}
+    .legend-cluster.access {background:#40301f;border-color:#fbbf24;border-radius:6px;}
+    @media(max-width:480px) {.map-layer-controls {padding-left:12px;padding-right:12px;gap:5px;}}
+    @media(max-width:350px) {.map-layer-controls .access-layer-icon,.map-layer-controls .legend-dot {display:none;}.map-layer-controls button {font-size:.75rem;}}
 
 </style>
 </head>
@@ -309,11 +329,21 @@
       <div id="map"></div>
     </div>
 
-    <div class="map-legend" aria-label="Map legend">
-      <span><i class="legend-dot pin-blue"></i>Waterbody</span><span><i class="legend-dot pin-green"></i>Stocking record*</span>
-      <span style="color:#fbbf24">★ Saved spot</span><span><i class="legend-dot pin-user"></i>Starting location</span>
-      <span>Blue circles group waterbodies; gold squares group access points. Tap to zoom.</span><span>*Matches selected fish; check stocking year.</span>
-    </div>
+    <details class="map-legend">
+      <summary aria-label="Map legend: waterbodies, boat launches and shore access. Expand for all symbols."><span class="legend-heading">Legend</span><span><i class="legend-dot pin-blue" aria-hidden="true"></i>Water</span><span><span class="legend-icon access-launch"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h16l-3 5H7zM8 14V7h7l3 7M11 7V4M3 22l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span>Launch</span><span><span class="legend-icon access-shore"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 17l4-6 3 3 5-10M15 4h5v5M3 23l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span>Shore</span><svg class="legend-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></summary>
+      <dl class="map-key-list">
+      <dt><i class="legend-dot pin-blue" aria-hidden="true"></i></dt><dd><strong>Waterbodies</strong><span>Recorded waterbody location, not an access point.</span></dd>
+      <dt><span class="legend-icon access-launch"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h16l-3 5H7zM8 14V7h7l3 7M11 7V4M3 22l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span></dt><dd><strong>Boat launches</strong><span>Recorded places to launch a boat.</span></dd>
+      <dt><span class="legend-icon access-shore"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 17l4-6 3 3 5-10M15 4h5v5M3 23l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span></dt><dd><strong>Shore access</strong><span>Recorded shoreline fishing access.</span></dd>
+      <dt><span class="legend-icon access-pier"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M5 6v14M12 6v14M19 6v14M3 23l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span></dt><dd><strong>Docks and piers</strong><span>Enhanced shoreline access, such as a dock or pier.</span></dd>
+      <dt><i class="legend-dot pin-green" aria-hidden="true"></i></dt><dd><strong>Stocking record</strong><span>Matches the selected fish where applicable. Check the stocking year.</span></dd>
+      <dt><span style="color:#fbbf24" aria-hidden="true">★</span></dt><dd><strong>Saved spot</strong><span>A waterbody or access point saved on this device.</span></dd>
+      <dt><i class="legend-dot pin-user" aria-hidden="true"></i></dt><dd><strong>Starting location</strong><span>Your chosen starting point for straight-line distances.</span></dd>
+      <dt><span class="legend-cluster" aria-hidden="true">3</span></dt><dd><strong>Grouped waterbodies</strong><span>The number counts nearby waterbodies. Tap to zoom in.</span></dd>
+      <dt><span class="legend-cluster access" aria-hidden="true">3</span></dt><dd><strong>Grouped access points</strong><span>The number counts nearby launches and shore access points. Tap to zoom in.</span></dd>
+    </dl>
+    </details>
+    <div class="slider-container" id="fishSlider" aria-label="Filter waterbodies by fish species"></div>
     <div class="search-context-row">
     <p id="searchContext" aria-live="polite">Explore Southern Ontario. Move or zoom the map to find waterbodies.</p>
     </div>
@@ -323,17 +353,12 @@
       <button id="lakeSearchBtn" aria-label="Search">🔍</button>
     </div>
 
-    <div class="slider-container" id="fishSlider"></div>
 
     <div class="filter-bar">
       <button id="viewFavoritesBtn" class="fav-toggle-btn">⭐ Saved Spots</button>
 
     </div>
 
-    <div class="results-tabs" role="group" aria-label="Map results">
-      <button type="button" id="waterResultsBtn" aria-pressed="true">Waterbodies</button>
-      <button type="button" id="accessResultsBtn" aria-pressed="false">Access points</button>
-    </div>
     <div id="accessResults" hidden></div>
     <button id="backResultsBtn" class="btn-secondary" hidden>Back to results</button>
     <div id="ff-results" aria-live="polite">
@@ -955,6 +980,7 @@
             });
             btn.classList.add('active');
             currentActiveSpecies = fish.id;
+            accessUI?.showWaters();
             if(lakesData.length > 0) findClosestLakes(fish.id); 
           });
           sliderContainer.appendChild(btn);
