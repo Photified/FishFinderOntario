@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v53-compact-location-bar';
+const CACHE_NAME = 'fish-finder-v54-normal-map-scroll';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

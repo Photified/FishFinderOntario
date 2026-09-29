@@ -236,9 +236,8 @@
     #view-map.spot-selected > .map-legend,#view-map.spot-selected > .search-context-row,
     #view-map.spot-selected > .search-container,
     #view-map.spot-selected > .filter-bar,#view-map.spot-selected > .location-actions {display:none;}
-    #view-map.spot-selected .map-wrapper {position:sticky;top:0;z-index:1001;background:#121212;}
-    #backResultsBtn {scroll-margin-top:270px;min-height:44px;}
-    @media(max-width:600px) {#view-map.spot-selected #map {height: min(30vh,220px);} #backResultsBtn {scroll-margin-top:calc(min(30vh,220px) + 12px);} .lake-header {gap:4px;} .lake-header-right {gap:4px;}}
+    #backResultsBtn {scroll-margin-top:80px;min-height:44px;}
+    @media(max-width:600px) {.lake-header {gap:4px;} .lake-header-right {gap:4px;}}
     .water-cluster {background:#075985;border:3px solid #7dd3fc;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 2px 6px #0008;}
 
     [hidden] {display:none !important;}
@@ -330,7 +329,6 @@
     .tour-card p {font-size:.85rem;line-height:1.5;color:#d1deea;margin:0;}
     .tour-actions {display:flex;justify-content:flex-end;margin-top:8px;}
     #tourStep {font:inherit;font-size:.8rem;font-weight:600;min-height:36px;padding:5px 10px;border:1px solid #52708a;border-radius:7px;background:#223d53;color:#e0f2fe;cursor:pointer;}
-    body.tour-running #view-map.spot-selected .map-wrapper {position:relative;top:auto;}
     body.tour-running #map {height:min(250px,38dvh) !important;}
 
 </style>
