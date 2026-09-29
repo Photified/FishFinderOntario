@@ -315,19 +315,20 @@
     .map-start-hint {margin:0 20px;padding:0 0 10px;color:#cbd5e1;font-size:.8rem;line-height:1.45;}
     #view-map.spot-selected > .map-start-hint {display:none;}
     button:focus-visible,input:focus-visible {outline:3px solid #7dd3fc;outline-offset:3px;}
-    .intro-dialog {box-sizing:border-box;width:calc(100% - 32px);max-width:420px;max-height:85vh;max-height:85dvh;overflow:auto;border:1px solid #475569;border-radius:18px;padding:24px;background:#1e293b;color:#f1f5f9;box-shadow:0 18px 60px #0008;font-family:inherit;}
-    .intro-dialog::backdrop {background:rgba(0,0,0,.78);}
-    .intro-top {display:flex;align-items:center;justify-content:space-between;gap:12px;}
-    .intro-progress {font-size:.8rem;color:#7dd3fc;margin:0;font-weight:600;}
-    .intro-skip {background:none;border:0;color:#cbd5e1;min-height:44px;padding:0 8px;font:inherit;font-size:.85rem;cursor:pointer;}
-    .intro-dialog h2 {font-size:1.4rem;line-height:1.25;margin:12px 0;outline:none;}
-    .intro-dialog p.intro-copy {font-size:.95rem;line-height:1.6;color:#cbd5e1;margin:0 0 16px;}
-    .intro-tip {padding:12px;border-radius:10px;background:#0c334a;color:#e0f2fe;font-size:.85rem;line-height:1.5;}
-    .intro-actions {display:flex;gap:10px;margin-top:22px;}
-    .intro-actions button {min-height:44px;border-radius:9px;font:inherit;font-weight:600;padding:10px 16px;cursor:pointer;}
-    #introBack {background:transparent;border:1px solid #64748b;color:#f1f5f9;}
-    #introNext {flex:1;background:#0ea5e9;border:1px solid #0ea5e9;color:#082f49;}
-    .intro-footer {font-size:.75rem;color:#94a3b8;margin:16px 0 0;line-height:1.5;}
+    #guidedTour {position:fixed;inset:0;z-index:10000;pointer-events:none;}
+    .tour-shade {position:absolute;background:rgba(0,0,0,.76);pointer-events:auto;touch-action:none;}
+    .tour-ring {position:absolute;border:2px solid #7dd3fc;border-radius:12px;box-sizing:border-box;box-shadow:0 0 16px #38bdf855;pointer-events:none;}
+    .tour-card {position:absolute;box-sizing:border-box;pointer-events:auto;overflow:auto;background:#172635;color:#f1f5f9;border:1px solid #47647d;border-radius:14px;padding:12px 16px 14px;box-shadow:0 8px 30px #0008;font-family:inherit;}
+    .tour-heading {display:flex;justify-content:space-between;align-items:center;gap:12px;}
+    #tourProgress {font-size:.73rem;font-weight:600;color:#7dd3fc;}
+    #tourExit {font:inherit;font-size:.75rem;color:#cbd5e1;background:transparent;border:0;min-height:36px;padding:0 4px;cursor:pointer;}
+    body.tour-running .star-btn:not(.active) {color:#cbd5e1;}
+    .tour-card h2 {font-size:1.08rem;line-height:1.3;margin:3px 0 7px;font-weight:700;}
+    .tour-card p {font-size:.85rem;line-height:1.5;color:#d1deea;margin:0;}
+    .tour-actions {display:flex;justify-content:flex-end;margin-top:8px;}
+    #tourStep {font:inherit;font-size:.8rem;font-weight:600;min-height:36px;padding:5px 10px;border:1px solid #52708a;border-radius:7px;background:#223d53;color:#e0f2fe;cursor:pointer;}
+    body.tour-running #view-map.spot-selected .map-wrapper {position:relative;top:auto;}
+    body.tour-running #map {height:min(250px,38dvh) !important;}
 
 </style>
 </head>
@@ -370,7 +371,7 @@
     </dl>
     </details>
     <div class="slider-container" id="fishSlider" aria-label="Filter waterbodies by fish species"></div>
-    <p class="map-start-hint">Choose a fish to filter the map. Tap a pin for details.</p>
+    
     <div class="search-context-row">
     <p id="searchContext" aria-live="polite">Explore Southern Ontario. Move or zoom the map to find waterbodies.</p>
     </div>
@@ -466,15 +467,6 @@
     </button>
   </nav>
 
-  <dialog id="introDialog" class="intro-dialog" aria-labelledby="introTitle" aria-describedby="introCopy introTip">
-    <div class="intro-top"><p class="intro-progress" id="introProgress">1 of 3</p><button class="intro-skip" id="introSkip" type="button">Skip</button></div>
-    <h2 id="introTitle" tabindex="-1"></h2>
-    <p class="intro-copy" id="introCopy"></p>
-    <div class="intro-tip" id="introTip"></div>
-    <div class="intro-actions"><button id="introBack" type="button">Back</button><button id="introNext" type="button">Next</button></div>
-    <p class="intro-footer">Replay this guide anytime in Settings → How to use the app.</p>
-  </dialog>
-
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-content text-white">
       <h2 class="text-xl font-bold mb-4 text-accent">Settings & Info</h2>
@@ -541,7 +533,8 @@
       <button class="btn-secondary" id="updateAppPromptBtn" style="background-color: #2563eb; margin-top: 0;">🔄 Update Data & App</button>
       <button class="btn-danger" id="clearDataPromptBtn">🗑️ Clear Saved Data</button>
 
-      <button class="btn-secondary" id="openIntroBtn" type="button">How to use the app</button>
+      <button class="btn-secondary" id="openIntroBtn" type="button">Replay Map walkthrough</button>
+      <button class="btn-secondary" id="openAdvisorIntroBtn" type="button">Replay Advisor walkthrough</button>
 
       <button class="btn-secondary" id="openDataInfoBtn" type="button">About the data</button>
 
@@ -629,6 +622,7 @@
   <script src="app-data.js"></script>
 
   <script src="access-points.js"></script>
+  <script src="guided-tour.js"></script>
   <script>
     let mapScrollPosition = 0;
     function revealAdvisorSpecies() {
@@ -648,56 +642,9 @@
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       if(btnElement) btnElement.classList.add('active');
       if(viewId === 'view-advisor') revealAdvisorSpecies();
+      window.dispatchEvent(new CustomEvent('ff-view-change',{detail:viewId}));
       if(viewId === 'view-map') setTimeout(() => { window.dispatchEvent(new Event('map-return')); window.scrollTo(0, mapScrollPosition); }, 100);
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const dialog = document.getElementById('introDialog');
-      const title = document.getElementById('introTitle');
-      const next = document.getElementById('introNext');
-      const back = document.getElementById('introBack');
-      const steps = [
-        {title:'Find your area', copy:'Tap Use my location, or search for a town or waterbody below the map. You can also drag and zoom the map to explore.', tip:'The map starts with waterbodies only. Turn on Boat launches or Shore access whenever you need them.'},
-        {title:'Choose a fish. Explore a spot.', copy:'Swipe through the fish pictures and tap a species to filter waterbodies. Tap a map pin or a result card to see its details.', tip:'Numbered circles group nearby waterbodies. Tap a circle to zoom in. Fish filters apply to waterbodies only.'},
-        {title:'Save spots and plan your trip', copy:'Tap the star on a spot to save it on this device. The star beside search filters your results to saved spots; tap it again to show all.', tip:'Open Advisor in the bottom menu for suggested fishing setups. Check official fishing rules before heading out.'}
-      ];
-      let step = 0, returnToSettings = false, previousOverflow = '';
-      function renderStep() {
-        const content = steps[step];
-        title.textContent = content.title;
-        document.getElementById('introCopy').textContent = content.copy;
-        document.getElementById('introTip').textContent = content.tip;
-        document.getElementById('introProgress').textContent = `${step + 1} of ${steps.length}`;
-        back.hidden = step === 0;
-        next.textContent = step === steps.length - 1 ? 'Got it' : 'Next';
-        title.focus();
-      }
-      function openIntro(fromSettings = false) {
-        returnToSettings = fromSettings;
-        document.getElementById('settingsModal').classList.remove('open');
-        step = 0;
-        previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        dialog.showModal();
-        renderStep();
-      }
-      function closeIntro() { dialog.close(); }
-      dialog.addEventListener('close', () => {
-        try { localStorage.setItem('ffIntroSeenV1', 'true'); } catch (_) {}
-        document.body.style.overflow = previousOverflow;
-        if (returnToSettings) {
-          document.getElementById('settingsModal').classList.add('open');
-          document.getElementById('openIntroBtn').focus();
-        } else document.getElementById('locateMeBtn').focus({preventScroll:true});
-      });
-      document.getElementById('introSkip').addEventListener('click', closeIntro);
-      next.addEventListener('click', () => {if (step === steps.length - 1) closeIntro(); else {step++;renderStep();}});
-      back.addEventListener('click', () => {step = Math.max(0, step - 1);renderStep();});
-      document.getElementById('openIntroBtn').addEventListener('click', () => openIntro(true));
-      let seen = false;
-      try {seen = localStorage.getItem('ffIntroSeenV1') === 'true';} catch (_) {}
-      if (!seen) openIntro();
-    });
 
     document.addEventListener('DOMContentLoaded', () => {
       
@@ -956,6 +903,7 @@
           marker.setIcon(L.divIcon({className:'',html:`<div class="custom-pin ${marker.defaultPinClass} ${key === id ? 'pin-active' : ''}"></div>`,iconSize:[24,24],iconAnchor:[12,24]}));
         });
         if(scroll) document.getElementById('backResultsBtn').scrollIntoView({behavior:'smooth',block:'start'});
+        if(id) window.FFGuide?.action('spot');
       }
       document.getElementById('backResultsBtn').addEventListener('click', () => {
         updateSelection(null); map.closePopup(); window.scrollTo({top:resultsScroll,behavior:'smooth'});
@@ -986,6 +934,7 @@
             document.getElementById('locateMeBtn').innerText = 'Update my location';
             document.getElementById('manualLocation').value = 'gps';
             findClosestLakes(currentActiveSpecies || 'all');
+            window.FFGuide?.action('area');
           },
           (error) => {
             alert("Unable to retrieve your location.");
@@ -1013,16 +962,20 @@
       const lakeSearchInput = document.getElementById('lakeSearchInput');
       const lakeSearchBtn = document.getElementById('lakeSearchBtn');
 
-      function triggerSearch() {
+      function triggerSearch(event) {
         clearTimeout(searchTimer);
         if(lakesData.length) findClosestLakes(currentActiveSpecies || 'all', true);
+        if(event && lakeSearchInput.value.trim()) {
+          if(matchingWaters.length || searchAreaHasWater) window.FFGuide?.action('area');
+          else window.FFGuide?.feedback('area','No matching waterbodies found. Try another town or waterbody, use your location, or skip this step.');
+        }
       }
       let searchTimer;
       lakeSearchInput.addEventListener('input', () => {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(triggerSearch, 350);
       });
-      lakeSearchInput.addEventListener('keydown', e => {if(e.key === 'Enter') triggerSearch();});
+      lakeSearchInput.addEventListener('keydown', e => {if(e.key === 'Enter') triggerSearch(e);});
       lakeSearchBtn.addEventListener('click', triggerSearch);
 
       async function loadLakeData() {
@@ -1041,6 +994,7 @@
           
           buildMapSlider();
           findClosestLakes('all');
+          if(document.getElementById('view-map').classList.contains('active-view')) window.FFGuide?.start('map');
         } catch (error) { 
           console.warn("Local JSON fetch failed. Make sure you are on a live server or GitHub pages."); 
           buildMapSlider();
@@ -1247,7 +1201,7 @@
             <div class="${cardClasses}" data-lakeid="${uniqueId}" data-lat="${lake.lat}" data-lon="${lake.lon}" data-dist="${displayDistance}">
               <div class="lake-header">
                 <div class="lake-header-left">
-                  <button class="star-btn ${starActiveClass}" data-lakeid="${uniqueId}">★</button>
+                  <button type="button" class="star-btn ${starActiveClass}" data-lakeid="${uniqueId}" aria-label="Save spot" aria-pressed="${isFavorited}">★</button>
                   <div class="lake-title-group">
                     <h3>${lake.name}</h3>
                     <div class="lake-town">${townName}${stockedEmoji}</div> 
@@ -1312,6 +1266,7 @@
           }
           localStorage.setItem('savedLakesData', JSON.stringify(savedLakes));
           refreshSavedState();
+          if(savedLakes[lakeId]) window.FFGuide?.action('save');
         }
       });
 
@@ -1339,7 +1294,8 @@
         container.innerHTML = '';
         for (const key in data) {
           const item = data[key];
-          const btn = document.createElement('div');
+          const btn = document.createElement('button');
+          btn.type = 'button';
           btn.className = `fish-btn ${key === getSelectedValue() ? 'active' : ''}`;
           btn.dataset[dataKey] = key;
           btn.innerHTML = `<img src="${item.imageSrc}" alt="${item.name}"><span>${item.name}</span>`;
@@ -1472,6 +1428,7 @@
         
         advisorResultsDiv.classList.remove('hidden');
         advisorResultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.FFGuide?.action('recommendation');
       });
 
       setupTab.addEventListener('click', () => { setupTab.classList.add('active'); strategyTab.classList.remove('active'); setupContent.classList.add('active'); strategyContent.classList.remove('active'); });

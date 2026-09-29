@@ -1,9 +1,10 @@
-const CACHE_NAME = 'fish-finder-v48-getting-started';
+const CACHE_NAME = 'fish-finder-v49-guided-walkthroughs';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
   './app-data.js',
   './access-points.js',
+  './guided-tour.js',
   './accessPoints.json',
   './recommendations-data.js',
   './lakesData.json',
