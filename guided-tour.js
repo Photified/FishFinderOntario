@@ -9,12 +9,12 @@
     <section class="tour-card" tabindex="-1" role="dialog" aria-labelledby="tourTitle" aria-describedby="tourCopy">
       <div class="tour-heading"><span id="tourProgress"></span><button id="tourExit" type="button">Skip tour</button></div>
       <div aria-live="polite" aria-atomic="true"><h2 id="tourTitle"></h2><p id="tourCopy"></p></div>
-      <div class="tour-actions"><button id="tourStep" type="button">Skip step</button></div>
+      <div class="tour-actions"><button id="tourPrevious" type="button" hidden>Previous step</button><button id="tourStep" type="button">Skip step</button></div>
     </section>`;
   document.body.append(root);
   const card = root.querySelector('.tour-card'), ring = root.querySelector('.tour-ring');
   const shades = [...root.querySelectorAll('.tour-shade')];
-  const stepButton = $('#tourStep');
+  const stepButton = $('#tourStep'), previousButton = $('#tourPrevious');
   const mapNav = () => document.querySelectorAll('.nav-btn')[0];
   const advisorNav = () => document.querySelectorAll('.nav-btn')[1];
   const leaveSpot = () => {const b=$('#backResultsBtn');if(b && !b.hidden)b.click();};
@@ -88,6 +88,7 @@
     $('#tourTitle').textContent=step.title;$('#tourCopy').textContent=step.copy;
     $('#tourProgress').textContent=`${active==='map'?'Map':'Advisor'} · ${index+1} of ${guides[active].length}`;
     stepButton.textContent=step.next||'Skip step';
+    previousButton.hidden=index===0;
     if(step.event==='save' && $('#ff-results .active-highlight .star-btn.active')) {
       $('#tourCopy').textContent='This spot is already saved. Its gold star means you can find it again using Saved Spots.';
       stepButton.textContent='Continue';
@@ -132,6 +133,7 @@
   }
   root.querySelector('#tourExit').addEventListener('click',()=>stop());
   stepButton.addEventListener('click',advance);
+  previousButton.addEventListener('click',()=>{if(active&&index>0){index--;if(active==='map'&&index<=2)leaveSpot();showStep();}});
   document.addEventListener('keydown',e=>{
     if(!active)return;
     if(e.key==='Escape'){e.preventDefault();stop();return;}
