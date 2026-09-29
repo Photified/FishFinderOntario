@@ -15,9 +15,10 @@
   const welcome = document.createElement('div');
   welcome.id = 'welcomeTour'; welcome.hidden = true;
   welcome.innerHTML = `<section class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" aria-describedby="welcomeCopy">
+    <div class="welcome-icon"><img src="images/icon.png" alt="" aria-hidden="true"></div>
     <h2 id="welcomeTitle">Welcome to Fish Finder Ontario</h2>
-    <p id="welcomeCopy">Find waterbodies by fish, explore access points, and get fishing setup ideas.</p>
-    <div class="welcome-actions"><button id="welcomeSkip" type="button">Skip</button><button id="welcomeStart" type="button">Take tutorial</button></div>
+    <p id="welcomeCopy">Explore Ontario waterbodies by fish species and find nearby boat launches or shore access. Save spots for later and get fishing setup suggestions in Advisor.</p>
+    <div class="welcome-actions"><button id="welcomeStart" type="button">Take tutorial</button><button id="welcomeSkip" type="button">Skip for now</button></div>
   </section>`;
   document.body.append(welcome);
   const card = root.querySelector('.tour-card'), ring = root.querySelector('.tour-ring');
@@ -161,7 +162,7 @@
     if(welcomeOpen){
       if(e.key==='Escape'){e.preventDefault();closeWelcome(true);return;}
       if(e.key==='Tab'){
-        const buttons=[welcome.querySelector('#welcomeSkip'),welcome.querySelector('#welcomeStart')];
+        const buttons=[welcome.querySelector('#welcomeStart'),welcome.querySelector('#welcomeSkip')];
         const at=buttons.indexOf(document.activeElement);
         e.preventDefault();buttons[e.shiftKey?(at<=0?1:0):(at===0?1:0)].focus();
       }
