@@ -1,8 +1,9 @@
 /* Interactive first-visit guides. The spotlight leaves real app controls usable. */
 (() => {
-  const keys = {map:'ffMapGuideV2', advisor:'ffAdvisorGuideV2'};
+  const keys = {map:'ffMapGuideV3', advisor:'ffAdvisorGuideV2'};
   const $ = selector => document.querySelector(selector);
   let active = null, index = 0, frame = 0, token = 0, previousFocus = null;
+  let mapPhase = '', frozenControl = null, wasInert = false;
   const root = document.createElement('div');
   root.id = 'guidedTour'; root.hidden = true;
   root.innerHTML = `<div class="tour-shade"></div><div class="tour-shade"></div><div class="tour-shade"></div><div class="tour-shade"></div><div class="tour-ring" aria-hidden="true"></div>
@@ -28,15 +29,16 @@
   const mapNav = () => document.querySelectorAll('.nav-btn')[0];
   const advisorNav = () => document.querySelectorAll('.nav-btn')[1];
   const leaveSpot = () => {const b=$('#backResultsBtn');if(b && !b.hidden)b.click();};
+  function unfreeze() {if(frozenControl){frozenControl.inert=wasInert;frozenControl=null;}}
+  function freeze(control) {unfreeze();if(control){frozenControl=control;wasInert=control.inert;control.inert=true;}}
   const guides = {
     map: [
       {title:'Find waterbodies near you',copy:'Tap this pin to use your location. If your browser asks, allow location access to see nearby waterbodies.',target:'#locateMeBtn',event:'area'},
       {title:'What do you want to catch?',copy:'Swipe and tap a fish. Choose All Fish to keep every species in view.',target:'#fishSlider',event:'map-fish'},
-      {title:'Open a waterbody',copy:'Tap a map pin for details. Numbered circles zoom into nearby spots.',target:()=>desktop() ? ($('#ff-results .lake-card .lake-title-group') || $('#map')) : $('#map'),event:'spot'},
-      {title:'Save a spot',copy:'The star saves a waterbody for later. Continue now and save one you like whenever you find it.',target:()=>$('#ff-results .lake-card.active-highlight .star-btn') || $('#ff-results .lake-card .star-btn:not(.active)') || $('#ff-results .lake-card .star-btn'),event:'save',next:'Continue'},
-      {title:'Find your saved spots',copy:'The star beside search shows spots you have saved. Use it after you save one, or Continue to see the other tools.',target:'#viewFavoritesBtn',event:'favorites',enter:leaveSpot,next:'Continue'},
+      {title:'Open a waterbody',copy:'Tap a waterbody name in the list to see its details. You can explore the map pins afterward.',target:()=>mapPhase==='details' ? $('#ff-results .lake-card.active-highlight') : $('#ff-results .lake-card .lake-title-group'),event:'spot'},
+      {title:'Save and find spots',copy:'This star saves a waterbody you like. You can choose which one to save later.',target:()=>mapPhase==='saved' ? $('#viewFavoritesBtn') : ($('#ff-results .lake-card .star-btn:not(.active)') || $('#ff-results .lake-card .star-btn')),event:'save',enter:leaveSpot,next:'Continue'},
       {title:'Add access points',copy:'Turn on Boat launches or Shore access when you need them. Waterbodies are shown by default.',target:'.map-layer-controls',event:'layers',next:'Continue'},
-      {title:'Try Advisor',copy:'Tap Advisor for fishing setups based on your target fish and conditions.',target:()=>advisorNav(),event:'advisor-open',next:'Finish'}
+      {title:'Fishing setup advice',copy:'Advisor suggests bait, gear and fishing strategies based on the fish and conditions you choose. Open it whenever you’re ready.',target:()=>advisorNav(),event:'advisor-info',next:'Finish tutorial'}
     ],
     advisor: [
       {title:'Choose your target fish',copy:'Swipe and tap the species you want advice for. You can tap the current selection to keep it.',target:'#fish-selector',event:'advisor-fish'},
@@ -62,7 +64,9 @@
   function bounds() {
     const rects=elements().map(el=>el.getBoundingClientRect());
     if(!rects.length)return null;
-    return {left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))};
+    const b={left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))};
+    if(active==='map' && index===2 && mapPhase==='details' && !desktop()) b.bottom=Math.min(b.bottom,b.top+Math.min(340,innerHeight*.45));
+    return b;
   }
   function rect(el,x,y,w,h) {Object.assign(el.style,{left:x+'px',top:y+'px',width:Math.max(0,w)+'px',height:Math.max(0,h)+'px'});}
   function position() {
@@ -103,24 +107,32 @@
   function schedule() {if(active&&!frame)frame=requestAnimationFrame(position);}
   function focusables() {
     const candidates=[...elements().flatMap(el=>[el,...el.querySelectorAll('button,input,a[href],[tabindex]')]),...card.querySelectorAll('button')];
-    return [...new Set(candidates)].filter(el=>el.matches('button,input,a[href],[tabindex]') && !el.disabled && el.tabIndex>=0 && el.getClientRects().length);
+    return [...new Set(candidates)].filter(el=>el.matches('button,input,a[href],[tabindex]') && !el.disabled && !el.closest('[inert]') && el.tabIndex>=0 && el.getClientRects().length);
   }
   function showStep() {
     const stamp=++token,step=guides[active][index];
-    step.enter?.();
+    unfreeze();
+    if(mapPhase!=='details' && mapPhase!=='saved')step.enter?.();
     $('#tourTitle').textContent=step.title;$('#tourCopy').textContent=step.copy;
     $('#tourProgress').textContent=`${active==='map'?'Map':'Advisor'} · ${index+1} of ${guides[active].length}`;
     stepButton.textContent=step.next||'Skip step';
     previousButton.hidden=index===0;
-    if(step.event==='spot' && desktop() && $('#ff-results .lake-card .lake-title-group')) {
-      $('#tourCopy').textContent='Click a waterbody name in the list to open its details. You can explore map pins afterward.';
+    if(step.event==='spot' && mapPhase==='details') {
+      $('#tourCopy').textContent='This is the waterbody’s detail card. It shows recorded fish, stocking information and a link to the official regulations.';
+      stepButton.textContent='Continue';
+      freeze($('#ff-results .lake-card.active-highlight'));
     }
-    if(step.event==='save' && elements()[0]?.classList.contains('active')) {
-      $('#tourCopy').textContent='A gold star means this waterbody is saved. Continue now and save others whenever you find them.';
+    if(step.event==='save' && mapPhase==='saved') {
+      $('#tourCopy').textContent='The star beside search shows your saved spots. Use it after you save a waterbody you want to revisit.';
+      freeze($('#viewFavoritesBtn'));
+    } else if(step.event==='save' && elements()[0]?.classList.contains('active')) {
+      $('#tourCopy').textContent='A gold star means this waterbody is already saved. You can save any other spot you like later.';
     }
     if(step.event==='save' && !elements().length) {
-      $('#tourCopy').textContent='When you find a waterbody you like, tap its star to save it. Continue for now.';
+      $('#tourCopy').textContent='Each waterbody has a star you can tap to save it. Continue to see where saved spots appear.';
     }
+    if(step.event==='save' && mapPhase!=='saved')freeze(elements()[0]);
+    if(step.event==='advisor-info')freeze(advisorNav());
     requestAnimationFrame(()=>{
       if(!active||stamp!==token)return;
       const b=bounds(),v=viewport();
@@ -138,7 +150,7 @@
   function stop(mark=true) {
     if(!active)return;
     if(mark)markSeen(active);
-    active=null;token++;root.hidden=true;document.body.classList.remove('tour-running');
+    unfreeze();active=null;mapPhase='';token++;root.hidden=true;document.body.classList.remove('tour-running');
     if(frame){cancelAnimationFrame(frame);frame=0;}
     if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});
   }
@@ -158,22 +170,36 @@
     if(!guides[kind]||(!force&&seen(kind))||(!force&&active===kind))return;
     if(kind==='map'&&!force){showWelcome();return;}
     if(active)stop(false);
-    active=kind;index=0;previousFocus=document.activeElement;
+    active=kind;index=0;mapPhase='';previousFocus=document.activeElement;
     root.hidden=false;document.body.classList.add('tour-running');showStep();
   }
-  function advance() {if(!active)return;if(index+1===guides[active].length)stop();else{index++;showStep();}}
+  function advance() {
+    if(!active)return;
+    if(active==='map' && index===3 && mapPhase!=='saved') {mapPhase='saved';showStep();return;}
+    mapPhase='';
+    if(index+1===guides[active].length)stop();else{index++;showStep();}
+  }
   function action(name) {
     if(!active||guides[active][index].event!==name)return;
     if(name==='save')return; // Saving is optional; the user decides when to continue.
     const stamp=token;
     // Let the app finish rendering and scrolling before locating the next control.
-    setTimeout(()=>{if(active&&stamp===token)advance();},100);
+    setTimeout(()=>{
+      if(!active||stamp!==token)return;
+      if(name==='spot' && active==='map' && index===2) {mapPhase='details';showStep();}
+      else advance();
+    },100);
   }
   root.querySelector('#tourExit').addEventListener('click',()=>stop());
   welcome.querySelector('#welcomeStart').addEventListener('click',()=>{closeWelcome();start('map',true);});
   welcome.querySelector('#welcomeSkip').addEventListener('click',()=>closeWelcome(true));
   stepButton.addEventListener('click',advance);
-  previousButton.addEventListener('click',()=>{if(active&&index>0){index--;if(active==='map'&&index<=2)leaveSpot();showStep();}});
+  previousButton.addEventListener('click',()=>{
+    if(!active)return;
+    if(active==='map' && index===3 && mapPhase==='saved') {mapPhase='';showStep();return;}
+    if(active==='map' && index===2 && mapPhase==='details') {mapPhase='';leaveSpot();showStep();return;}
+    if(index>0) {index--;mapPhase='';if(active==='map'&&index<=2)leaveSpot();showStep();}
+  });
   document.addEventListener('keydown',e=>{
     if(welcomeOpen){
       if(e.key==='Escape'){e.preventDefault();closeWelcome(true);return;}
@@ -207,7 +233,7 @@
   window.addEventListener('ff-tour-action',e=>action(e.detail));
   window.addEventListener('ff-view-change',e=>{
     const kind=e.detail==='view-advisor'?'advisor':'map';
-    if(active&&active!==kind)stop(active==='map'&&guides.map[index].event==='advisor-open');
+    if(active&&active!==kind)stop(active==='map'&&guides.map[index].event==='advisor-info');
     setTimeout(()=>{if($('#view-'+kind)?.classList.contains('active-view'))start(kind);},180);
   });
   window.addEventListener('resize',schedule);
