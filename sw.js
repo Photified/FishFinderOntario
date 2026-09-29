@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v66-full-height-map';
+const CACHE_NAME = 'fish-finder-v67-tour-stars';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
