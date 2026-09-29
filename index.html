@@ -233,9 +233,9 @@
     .lake-more {margin-top:12px;border-top:1px solid #334155;padding-top:8px;}
     .lake-more summary {cursor:pointer;color:#7dd3fc;padding:10px 0;font-size:.9rem;}
     .record-note {color:#94a3b8;font-size:.8rem;line-height:1.5;}
-    #view-map.spot-selected > .map-legend,#view-map.spot-selected > .search-context-row,
-    #view-map.spot-selected > .search-container,
-    #view-map.spot-selected > .filter-bar,#view-map.spot-selected > .location-actions {display:none;}
+    #view-map.spot-selected .desktop-map-controls > .map-legend,#view-map.spot-selected .desktop-map-controls > .search-context-row,
+    #view-map.spot-selected .desktop-map-tools > .search-container,
+    #view-map.spot-selected .desktop-map-controls > .filter-bar,#view-map.spot-selected .desktop-map-tools > .location-actions {display:none;}
     #backResultsBtn {scroll-margin-top:80px;min-height:44px;}
     @media(max-width:600px) {.lake-header {gap:4px;} .lake-header-right {gap:4px;}}
     .water-cluster {background:#075985;border:3px solid #7dd3fc;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 2px 6px #0008;}
@@ -315,7 +315,7 @@
     #viewFavoritesBtn svg {fill:none;stroke:currentColor;stroke-width:1.8;}
     #viewFavoritesBtn.active svg {fill:currentColor;}
     .map-start-hint {margin:0 20px;padding:0 0 10px;color:#cbd5e1;font-size:.8rem;line-height:1.45;}
-    #view-map.spot-selected > .map-start-hint {display:none;}
+    #view-map.spot-selected .map-start-hint {display:none;}
     button:focus-visible,input:focus-visible {outline:3px solid #7dd3fc;outline-offset:3px;}
     #guidedTour {position:fixed;inset:0;z-index:10000;pointer-events:none;}
     .tour-shade {position:absolute;background:rgba(0,0,0,.76);pointer-events:auto;touch-action:none;}
@@ -341,6 +341,24 @@
     #welcomeSkip:hover {background:#223d53;}
     #welcomeStart {border:1px solid #38bdf8;background:#38bdf8;color:#082f49;}
     body.tour-running #map {height:min(250px,38dvh) !important;}
+    @media(min-width:1000px) {
+      .desktop-map-layout {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"canvas tools" "canvas controls";grid-template-rows:auto 1fr;column-gap:20px;align-items:start;padding:16px 20px 0;}
+      .desktop-map-tools {grid-area:tools;min-width:0;}
+      .desktop-map-canvas {grid-area:canvas;min-width:0;}
+      .desktop-map-controls {grid-area:controls;min-width:0;}
+      .desktop-map-tools .map-top-spacing {display:none;}
+      .desktop-map-tools .search-container {padding:0 0 12px;}
+      .desktop-map-canvas .map-wrapper {margin:0;}
+      .desktop-map-canvas #map {height:clamp(460px,calc(100dvh - 180px),900px);}
+      .desktop-map-controls .map-legend {margin:0 0 8px;}
+      .desktop-map-controls .map-layer-controls {padding:0 0 8px;}
+      .desktop-map-controls #fishSlider {box-sizing:border-box;width:100%;padding:10px 3px 14px;}
+      .desktop-map-controls .search-context-row {padding:0 0 12px;}
+      .desktop-map-controls #accessResults {padding:0 0 24px;}
+      .desktop-map-controls #ff-results {padding:0 0 30px;}
+      .desktop-map-controls #backResultsBtn {margin:0 0 12px;}
+      body.tour-running .desktop-map-canvas #map {height:clamp(460px,calc(100dvh - 180px),900px) !important;}
+    }
 
 </style>
 </head>
@@ -357,8 +375,9 @@
   </header>
 
   <div id="view-map" class="app-view active-view">
-    
-    <div style="padding-top: 15px;"></div>
+    <div class="desktop-map-layout">
+      <div class="desktop-map-tools">
+    <div class="map-top-spacing" style="padding-top: 15px;"></div>
     <div class="search-container" role="group" aria-label="Location, search and saved spots" style="padding-top: 0;">
       <button id="locateMeBtn" class="locate-btn" type="button" aria-label="Use my location" title="Use my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></button>
       <input type="search" id="lakeSearchInput" placeholder="Town or lake..." aria-label="Search town or waterbody" enterkeyhint="search">
@@ -366,10 +385,13 @@
       <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg></button>
     </div>
 
+      </div>
+      <div class="desktop-map-canvas">
     <div class="map-wrapper">
       <div id="map"></div>
     </div>
-
+      </div>
+      <div class="desktop-map-controls">
     <details class="map-legend">
       <summary aria-label="Map legend: waterbodies, boat launches and shore access. Expand for all symbols."><span class="legend-heading">Legend</span><span><i class="legend-dot pin-blue" aria-hidden="true"></i>Water</span><span><span class="legend-icon access-launch"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h16l-3 5H7zM8 14V7h7l3 7M11 7V4M3 22l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span>Launch</span><span><span class="legend-icon access-shore"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 17l4-6 3 3 5-10M15 4h5v5M3 23l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span>Shore</span><svg class="legend-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></summary>
       <dl class="map-key-list">
@@ -398,6 +420,8 @@
     <button id="backResultsBtn" class="btn-secondary" hidden>Back to results</button>
     <div id="ff-results" aria-live="polite">
       <p class="status-msg">Loading nearby waterbodies…</p>
+    </div>
+      </div>
     </div>
   </div>
 
@@ -881,6 +905,7 @@
       let matchingWaters = [], visibleWaters = [], listLimit = 30, refreshingMap = false;
       let preserveViewport = false, resultsScroll = 0;
       window.addEventListener('map-return', () => map.invalidateSize({pan:false}));
+      window.addEventListener('resize', () => map.invalidateSize({pan:false}));
       map.on('moveend', () => {
         if(refreshingMap || !lakesData.length) return;
         listLimit = 30;

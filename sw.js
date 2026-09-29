@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v64-welcome-icon';
+const CACHE_NAME = 'fish-finder-v65-desktop-map';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
