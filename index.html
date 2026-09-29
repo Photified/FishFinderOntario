@@ -304,10 +304,13 @@
     @media(max-width:350px) {.map-layer-controls .access-layer-icon,.map-layer-controls .legend-dot {display:none;}.map-layer-controls button {font-size:.75rem;}}
 
 
-    .search-container {display:grid;grid-template-columns:minmax(0,1fr) 44px 44px;gap:8px;padding-bottom:14px;}
+    .search-container {display:grid;grid-template-columns:44px minmax(0,1fr) 44px 44px;gap:6px;padding-bottom:14px;}
     .search-container input {min-width:0;width:100%;box-sizing:border-box;font-size:16px;padding:10px;}
     .search-container button {width:44px;height:44px;padding:0;display:flex;align-items:center;justify-content:center;}
     .search-container button svg {width:22px;height:22px;}
+    .search-container #locateMeBtn {z-index:auto;}
+    .search-container #locateMeBtn:disabled {opacity:.55;cursor:wait;}
+    @media(max-width:480px) {.search-container {padding-left:12px;padding-right:12px;}}
     .search-container #viewFavoritesBtn {background:#1e293b;color:#fbbf24;border:1px solid #64748b;}
     .search-container #viewFavoritesBtn.active {background:#fbbf24;color:#121212;border-color:#fbbf24;}
     #viewFavoritesBtn svg {fill:none;stroke:currentColor;stroke-width:1.8;}
@@ -347,9 +350,9 @@
   <div id="view-map" class="app-view active-view">
     
     <div style="padding-top: 15px;"></div>
-    <div class="location-actions"><button id="locateMeBtn" class="locate-btn">Use my location</button><span>or search a town below</span></div>
-    <div class="search-container" style="padding-top: 0;">
-      <input type="search" id="lakeSearchInput" placeholder="Town or waterbody..." aria-label="Search town or waterbody" enterkeyhint="search">
+    <div class="search-container" role="group" aria-label="Location, search and saved spots" style="padding-top: 0;">
+      <button id="locateMeBtn" class="locate-btn" type="button" aria-label="Use my location" title="Use my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></button>
+      <input type="search" id="lakeSearchInput" placeholder="Town or lake..." aria-label="Search town or waterbody" enterkeyhint="search">
       <button id="lakeSearchBtn" type="button" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></button>
       <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg></button>
     </div>
@@ -840,7 +843,7 @@
               };
               
               // Hide the Locate Me button since we are overriding it
-              document.getElementById('locateMeBtn').style.display = 'none';
+              document.getElementById('locateMeBtn').style.display = 'flex';
           }
           
           // Re-calculate distances and redraw map (this will draw the red pin!)
@@ -956,9 +959,18 @@
         if(resetLocationFilters) document.getElementById('searchContext').textContent += ' Filters reset to All Fish to show nearby waterbodies.';
       }
 
+      function setLocationButtonState(busy) {
+        const button = document.getElementById('locateMeBtn');
+        const label = busy ? 'Finding your location' : cachedUserLocation ? 'Update my location' : 'Use my location';
+        button.disabled = busy;
+        button.setAttribute('aria-busy', String(busy));
+        button.setAttribute('aria-label', label);
+        button.title = label;
+      }
+
       document.getElementById('locateMeBtn').addEventListener('click', () => {
         if (!navigator.geolocation) { alert("Geolocation is not supported by your browser."); return; }
-        document.getElementById('locateMeBtn').innerText = "Locating...";
+        setLocationButtonState(true);
         navigator.geolocation.getCurrentPosition(
           (position) => {
             areaCenter = null;
@@ -970,7 +982,7 @@
             if(waterToggle?.getAttribute('aria-pressed') === 'false') waterToggle.click();
             accessUI?.showWaters();
 
-            document.getElementById('locateMeBtn').innerText = 'Update my location';
+            setLocationButtonState(false);
             document.getElementById('manualLocation').value = 'gps';
             findClosestLakes(currentActiveSpecies || 'all');
             frameNearbyWaterbodies();
@@ -978,7 +990,7 @@
           },
           (error) => {
             alert("Unable to retrieve your location.");
-            document.getElementById('locateMeBtn').innerText = "Use my location";
+            setLocationButtonState(false);
           }
         );
       });
