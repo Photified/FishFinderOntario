@@ -157,8 +157,7 @@
     .stat-item { font-size: 0.7rem; color: var(--text-main); background-color: rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 12px; display: flex; align-items: center; gap: 4px; border: 1px solid rgba(255, 255, 255, 0.1); }
     .species-list { margin: 8px 0 0 0; font-size: 0.75rem; color: #9ca3af; line-height: 1.4; }
     
-    .note-section { margin-top: 5px; display: none; }
-    .note-section.visible { display: block; }
+    .note-section { margin-top: 5px; display: block; }
     .lake-note-display { font-size: 0.85rem; color: #e2e8f0; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px; font-style: italic; border-left: 3px solid #fbbf24; margin-bottom: 8px; line-height: 1.4; white-space: pre-wrap; }
     .note-btn {width:100%;box-sizing:border-box;background:#334155;color:white;border:1px solid #475569;cursor:pointer;}
     .note-btn:hover {background:#475569;}
@@ -1304,7 +1303,7 @@
                 ${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}
                 <p class="species-list">${speciesDisplay}</p>
                 <details class="lake-more"><summary>More details</summary>
-                <div class="note-section ${isFavorited ? 'visible' : ''}">
+                <div class="note-section">
                   ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
                   <button type="button" class="maps-btn note-btn" data-lakeid="${uniqueId}">${customNote ? 'Edit Note' : 'Add Note'}</button>
                 </div>
