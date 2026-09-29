@@ -1120,7 +1120,7 @@
         visibleWaters = matchingWaters.filter(l => bounds.contains([l.lat,l.lon]));
         visibleWaters.forEach(l => l.distance = calculateDistance(origin.lat,origin.lon,l.lat,l.lon));
         visibleWaters.sort((a,b) => a.distance-b.distance);
-        document.getElementById('searchContext').textContent = `${visibleWaters.length.toLocaleString()} waterbodies in view. Move the map to explore.${favoritesOnly ? ' Saved spots only.' : ''} Distances from ${cachedUserLocation ? 'your starting location' : 'map centre'} (straight-line).`;
+        document.getElementById('searchContext').textContent = `${visibleWaters.length.toLocaleString()} ${visibleWaters.length === 1 ? 'waterbody' : 'waterbodies'} with ${selectedFishName() || 'all fish'} in view. Move the map to explore.${favoritesOnly ? ' Saved spots only.' : ''} Distances from ${cachedUserLocation ? 'your starting location' : 'map centre'} (straight-line).`;
         markersLayer.clearLayers(); lakeMarkers = {};
         const groups = new Map();
         matchingWaters.filter(l => bounds.pad(.15).contains([l.lat,l.lon])).forEach(l => {
