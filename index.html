@@ -304,6 +304,9 @@
 
 
     .search-container {display:grid;grid-template-columns:44px minmax(0,1fr) 44px 44px;gap:6px;padding-bottom:14px;}
+    .map-next-step {margin:12px 20px 10px;padding:9px 12px;border:1px solid #285775;border-radius:9px;background:#102c3d;color:#d9f1ff;font-size:.84rem;line-height:1.35;}
+    .map-next-step strong {color:#7dd3fc;margin-right:6px;}
+    @media(max-width:480px) {.map-next-step {margin-left:12px;margin-right:12px;}}
     .search-container input {min-width:0;width:100%;box-sizing:border-box;font-size:16px;padding:10px;}
     .search-container button {width:44px;height:44px;padding:0;display:flex;align-items:center;justify-content:center;}
     .search-container button svg {width:22px;height:22px;}
@@ -346,8 +349,7 @@
   </header>
 
   <div id="view-map" class="app-view active-view">
-    
-    <div style="padding-top: 15px;"></div>
+    <p id="mapNextStep" class="map-next-step"><strong>Next:</strong> Tap the location pin or search for a town or lake.</p>
     <div class="search-container" role="group" aria-label="Location, search and saved spots" style="padding-top: 0;">
       <button id="locateMeBtn" class="locate-btn" type="button" aria-label="Use my location" title="Use my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></button>
       <input type="search" id="lakeSearchInput" placeholder="Town or lake..." aria-label="Search town or waterbody" enterkeyhint="search">
@@ -867,8 +869,25 @@
       let savedLakes = JSON.parse(localStorage.getItem('savedLakesData')) || {};
       let lakeMarkers = {};
       let areaCenter = null, selectedLakeId = null, favoritesOnly = false;
+      let hasChosenArea = false, hasChosenFish = false;
       let matchingWaters = [], visibleWaters = [], listLimit = 30, refreshingMap = false;
       let preserveViewport = false, resultsScroll = 0;
+      function updateMapNextStep() {
+        let instruction;
+        if(!document.getElementById('accessResults').hidden) instruction = 'Tap a boat launch or shore access point for details.';
+        else if(selectedLakeId) instruction = savedLakes[selectedLakeId]
+          ? 'Open More details for access points, or get an Advisor setup.'
+          : 'Tap the star on this waterbody to save it.';
+        else if(favoritesOnly) instruction = visibleWaters.length
+          ? 'Tap a saved spot on the map or in the list below.'
+          : 'Tap the top star again to show all waterbodies.';
+        else if(hasChosenFish) instruction = visibleWaters.length
+          ? 'Tap a map pin or a waterbody below to see its details.'
+          : 'Move the map or choose another fish to see waterbodies.';
+        else if(hasChosenArea) instruction = 'Choose a fish below the map, or keep All Fish selected.';
+        else instruction = 'Tap the location pin or search for a town or lake.';
+        document.getElementById('mapNextStep').innerHTML = `<strong>Next:</strong> ${instruction}`;
+      }
       window.addEventListener('map-return', () => map.invalidateSize({pan:false}));
       map.on('moveend', () => {
         if(refreshingMap || !lakesData.length) return;
@@ -881,6 +900,9 @@
         e.currentTarget.setAttribute('aria-pressed', favoritesOnly);
         e.currentTarget.title = favoritesOnly ? 'Show all spots' : 'Show saved spots';
         findClosestLakes(currentActiveSpecies || 'all');
+      });
+      document.querySelectorAll('[data-map-layer]').forEach(button => {
+        button.addEventListener('click', () => queueMicrotask(updateMapNextStep));
       });
       function updateSelection(id, scroll = false) {
         if (id) accessUI?.showWaters();
@@ -906,6 +928,7 @@
         });
         if(scroll) document.getElementById('backResultsBtn').scrollIntoView({behavior:'smooth',block:'start'});
         if(id) window.FFGuide?.action('spot');
+        updateMapNextStep();
       }
       document.getElementById('backResultsBtn').addEventListener('click', () => {
         updateSelection(null); map.closePopup(); window.scrollTo({top:resultsScroll,behavior:'smooth'});
@@ -973,6 +996,7 @@
           (position) => {
             areaCenter = null;
             cachedUserLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
+            hasChosenArea = true;
             clearTimeout(searchTimer);
             lakeSearchInput.value = '';
             if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
@@ -1015,6 +1039,8 @@
       function triggerSearch(event) {
         clearTimeout(searchTimer);
         if(lakesData.length) findClosestLakes(currentActiveSpecies || 'all', true);
+        if(lakeSearchInput.value.trim() && (matchingWaters.length || searchAreaHasWater)) hasChosenArea = true;
+        updateMapNextStep();
         if(event && lakeSearchInput.value.trim()) {
           if(matchingWaters.length || searchAreaHasWater) window.FFGuide?.action('area');
           else window.FFGuide?.feedback('area','No matching waterbodies found. Try another town or waterbody, use your location, or skip this step.');
@@ -1067,6 +1093,7 @@
             });
             btn.classList.add('active');
             currentActiveSpecies = fish.id;
+            hasChosenFish = true;
             accessUI?.showWaters();
             const waterToggle = document.querySelector('[data-map-layer="waters"]');
             if(waterToggle?.getAttribute('aria-pressed') === 'false') waterToggle.click();
@@ -1183,6 +1210,7 @@
         if(cachedUserLocation) L.marker([cachedUserLocation.lat,cachedUserLocation.lon],{icon:L.divIcon({className:'',html:'<div class="custom-pin pin-user"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).bindPopup('Starting location').addTo(markersLayer);
         if(!selectedLakeId) renderVisibleList();
         accessUI?.refresh();
+        updateMapNextStep();
       }
 
       function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -1327,7 +1355,7 @@
       document.getElementById('ff-results').addEventListener('click', function(e) {
         if(e.target.closest('.nearby-access-btn')) {
           const lake = lakesData.find(l => getLakeId(l) === e.target.closest('.lake-card').dataset.lakeid);
-          if(lake) accessUI?.nearby(lake);
+          if(lake) {accessUI?.nearby(lake);updateMapNextStep();}
           return;
         }
         const infoToggle = e.target.closest('.info-toggle, .lake-header-left');
