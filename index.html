@@ -117,6 +117,7 @@
     .pin-yellow { background-color: #fbbf24; }
     .pin-green { background-color: #10b981; }
     .pin-user { background-color: #ef4444; z-index: 1000 !important; }
+    .pin-search { background-color: #ef4444; z-index: 1000 !important; }
     
     /* New Active Pin Style */
     .pin-active { border: 3px solid #0ea5e9 !important; box-shadow: 0 0 10px rgba(14, 165, 233, 0.8); transform: rotate(-45deg) scale(1.3); z-index: 999 !important; }
@@ -402,6 +403,7 @@
       <dt><i class="legend-dot pin-green" aria-hidden="true"></i></dt><dd><strong>Stocking record</strong><span>Matches the selected fish where applicable. Check the stocking year.</span></dd>
       <dt><span style="color:#fbbf24" aria-hidden="true">★</span></dt><dd><strong>Saved spot</strong><span>A waterbody or access point saved on this device.</span></dd>
       <dt><i class="legend-dot pin-user" aria-hidden="true"></i></dt><dd><strong>Starting location</strong><span>Your chosen starting point for straight-line distances.</span></dd>
+      <dt><i class="legend-dot pin-search" aria-hidden="true"></i></dt><dd><strong>Searched place</strong><span>Red pin marking the city or waterbody you searched for.</span></dd>
       <dt><span class="legend-cluster" aria-hidden="true">3</span></dt><dd><strong>Grouped waterbodies</strong><span>The number counts nearby waterbodies. Tap to zoom in.</span></dd>
       <dt><span class="legend-cluster access" aria-hidden="true">3</span></dt><dd><strong>Grouped access points</strong><span>The number counts nearby launches and shore access points. Tap to zoom in.</span></dd>
     </dl>
@@ -582,6 +584,7 @@
     <h2 id="dataInfoTitle" tabindex="-1">About the data</h2>
     <h3>Map locations</h3>
     <p>Blue and green pins identify waterbodies. Gold icons identify boat launches; purple icons identify shoreline access, including docks and piers. Some coordinates are approximate. Distances are straight-line distances.</p>
+    <p>City searches use <a href="https://natural-resources.canada.ca/maps-tools-publications/satellite-elevation-air-photos/geolocation-service" target="_blank" rel="noopener noreferrer">Natural Resources Canada's Geolocator service</a> to place the red search pin. This search requires an internet connection.</p>
     <h3>Boat launches and shore access</h3>
     <p>Access points come from Ontario's Fishing Access Point dataset. Only records marked for public map display are included. Ownership, parking, fees and accessibility are shown as recorded, including unknown values. Check current access and posted signs. A listed site is not a guarantee of free access or permission to fish.</p>
     <p>Access data imported September 28, 2026. Site verification dates are shown separately when provided. Access points are not assigned fish species or linked to a waterbody solely by proximity.</p>
@@ -862,6 +865,8 @@
       document.getElementById('manualLocation').addEventListener('change', (e) => {
           const val = e.target.value;
           areaCenter = null;
+          ++searchRequest;
+          lakeSearchInput.value = '';
           
           if (val === 'gps') {
               // If they switch back to GPS, clear the override and show the locate button
@@ -892,6 +897,7 @@
       let map = L.map('map').fitBounds([[41.7,-83.5],[46.5,-74.3]]);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
+      let searchMarker = null;
       let accessUI = null, searchAreaHasWater = false;
       let routeLineLayer = null; 
       let lakesData = [];
@@ -994,6 +1000,32 @@
         if(resetLocationFilters) document.getElementById('searchContext').textContent += ' Filters reset to All Fish to show nearby waterbodies.';
       }
 
+      function frameSearchedPlace() {
+        if(!areaCenter) return;
+        let resetFilters=false;
+        if(matchingWaters.length<3) {
+          favoritesOnly=false;
+          const savedButton=document.getElementById('viewFavoritesBtn');
+          savedButton.classList.remove('active');
+          savedButton.setAttribute('aria-pressed','false');
+          savedButton.title='Show saved spots';
+          currentActiveSpecies='all';
+          document.querySelectorAll('#fishSlider .fish-btn').forEach((button,i)=>button.classList.toggle('active',i===0));
+          findClosestLakes('all');
+          resetFilters=true;
+        }
+        const nearest=matchingWaters.map(lake=>({lake,distance:calculateDistance(areaCenter.lat,areaCenter.lon,lake.lat,lake.lon)}))
+          .sort((a,b)=>a.distance-b.distance).slice(0,3);
+        refreshingMap=true;
+        map.invalidateSize({pan:false});
+        if(nearest.length) map.fitBounds([[areaCenter.lat,areaCenter.lon],...nearest.map(({lake})=>[lake.lat,lake.lon])],
+          {padding:[40,40],maxZoom:10,animate:false});
+        else map.setView([areaCenter.lat,areaCenter.lon],10,{animate:false});
+        refreshingMap=false;
+        refreshMapResults();
+        if(resetFilters) document.getElementById('searchContext').textContent+=' Filters reset to All Fish to show nearby waterbodies.';
+      }
+
       function setLocationButtonState(busy) {
         const button = document.getElementById('locateMeBtn');
         const label = busy ? 'Finding your location' : cachedUserLocation ? 'Update my location' : 'Use my location';
@@ -1005,6 +1037,7 @@
 
       document.getElementById('locateMeBtn').addEventListener('click', () => {
         if (!navigator.geolocation) { alert("Geolocation is not supported by your browser."); return; }
+        ++searchRequest;
         setLocationButtonState(true);
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -1049,18 +1082,79 @@
       const lakeSearchInput = document.getElementById('lakeSearchInput');
       const lakeSearchBtn = document.getElementById('lakeSearchBtn');
 
-      function triggerSearch(event) {
-        clearTimeout(searchTimer);
-        if(lakesData.length) findClosestLakes(currentActiveSpecies || 'all', true);
-        if(event && lakeSearchInput.value.trim()) {
-          if(matchingWaters.length || searchAreaHasWater) window.FFGuide?.action('area');
-          else window.FFGuide?.feedback('area','No matching waterbodies found. Try another town or waterbody, use your location, or skip this step.');
+      let searchTimer, searchRequest = 0;
+      const cityCache = new Map();
+      async function locateCity(term) {
+        const city = term.replace(/,?\s*(Ontario|ON|Canada)\s*$/i, '').trim();
+        const key = city.toLowerCase();
+        if(cityCache.has(key)) return cityCache.get(key);
+        const known = [...document.querySelectorAll('#manualLocation option')].find(option => option.textContent.trim().toLowerCase() === key);
+        if(known) {
+          const [lat,lon] = known.value.split(',').map(Number);
+          const location = {lat,lon,label:city};
+          cityCache.set(key,location);
+          return location;
         }
+        const url = new URL('https://geolocator.api.geo.ca/');
+        url.search = new URLSearchParams({q:city,lang:'en',keys:'geonames'});
+        const response = await fetch(url,{signal:AbortSignal.timeout(8000)});
+        if(!response.ok) throw new Error('City lookup unavailable');
+        const results = await response.json();
+        const candidates = (Array.isArray(results) ? results : []).filter(place =>
+          place.province==='Ontario' && Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng)));
+        const match = candidates.find(place => place.name?.toLowerCase()===key && /^(City|Town|Village|Community|Urban Community|Municipality)$/.test(place.category))
+          || candidates.find(place => place.name?.toLowerCase()===key)
+          || candidates.find(place => place.name?.toLowerCase().startsWith(key) && /City|Town|Village|Community/.test(place.category));
+        if(!match) return null;
+        const location = {lat:Number(match.lat),lon:Number(match.lng),label:match.name};
+        cityCache.set(key,location);
+        return location;
       }
-      let searchTimer;
-      lakeSearchInput.addEventListener('input', () => {
+      async function triggerSearch(event) {
+        if(event?.type === 'keydown') event.preventDefault();
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(triggerSearch, 350);
+        const request = ++searchRequest, term = lakeSearchInput.value.trim();
+        if(!term) {areaCenter=null;findClosestLakes(currentActiveSpecies || 'all');return;}
+        if(!lakesData.length) return;
+        const lower = term.toLowerCase();
+        const named = lakesData.filter(lake => !lake.locationReviewRequired && Number.isFinite(lake.lat) && Number.isFinite(lake.lon)
+          && [lake.name,lake.aliasName].some(name => name?.toLowerCase().includes(lower)));
+        const exact = named.find(lake => [lake.name,lake.aliasName].some(name => name?.toLowerCase() === lower));
+        lakeSearchBtn.disabled=true;
+        document.getElementById('searchContext').textContent=`Finding ${term}…`;
+        let found = exact ? {lat:exact.lat,lon:exact.lon,label:exact.name,lakeId:getLakeId(exact)} : null;
+        if(!found) {
+          try {found=await locateCity(term);} catch(error) {console.warn('City search unavailable',error);}
+        }
+        if(!found && named.length) {
+          const lake=named[0];found={lat:lake.lat,lon:lake.lon,label:lake.name,lakeId:getLakeId(lake)};
+        }
+        if(request!==searchRequest) return;
+        lakeSearchBtn.disabled=false;
+        if(!found) {
+          areaCenter=null;
+          findClosestLakes(currentActiveSpecies || 'all');
+          document.getElementById('searchContext').textContent=`Could not find “${term}” in Ontario. Try another city or waterbody name.`;
+          window.FFGuide?.feedback('area','Could not find that place. Try another name or tap the location pin.');
+          return;
+        }
+        areaCenter={...found,term:lower};
+        accessUI?.showWaters();
+        const waterToggle=document.querySelector('[data-map-layer="waters"]');
+        if(waterToggle?.getAttribute('aria-pressed')==='false') waterToggle.click();
+        findClosestLakes(currentActiveSpecies || 'all');
+        frameSearchedPlace();
+        window.FFGuide?.action('area');
+      }
+      lakeSearchInput.addEventListener('input', () => {
+        ++searchRequest;
+        lakeSearchBtn.disabled=false;
+        const term=lakeSearchInput.value.trim();
+        if(!term) {areaCenter=null;findClosestLakes(currentActiveSpecies || 'all');}
+        else {
+          if(areaCenter && areaCenter.term!==term.toLowerCase()) {areaCenter=null;findClosestLakes(currentActiveSpecies || 'all');}
+          document.getElementById('searchContext').textContent='Tap the magnifying glass or press Enter to search for “'+term+'”.';
+        }
       });
       lakeSearchInput.addEventListener('keydown', e => {if(e.key === 'Enter') triggerSearch(e);});
       lakeSearchBtn.addEventListener('click', triggerSearch);
@@ -1149,7 +1243,7 @@
       function selectedFishName() {
         return fishSpeciesList.find(f => f.id === currentActiveSpecies)?.name.toLowerCase() || '';
       }
-      function findClosestLakes(speciesId, zoomToSearch = false) {
+      function findClosestLakes(speciesId) {
         currentActiveSpecies = speciesId;
         selectedLakeId = null;
         document.getElementById('view-map').classList.remove('spot-selected');
@@ -1160,14 +1254,11 @@
         const term = lakeSearchInput.value.toLowerCase().trim();
         const matchesPlace = l => [l.name,l.aliasName,l.town,l.region,...(l.searchAliases || [])].filter(Boolean).join(' ').toLowerCase().includes(term);
         const placeMatches = term ? lakesData.filter(l => !l.locationReviewRequired && Number.isFinite(l.lat) && Number.isFinite(l.lon) && matchesPlace(l)) : [];
-        searchAreaHasWater = placeMatches.length > 0;
-        if(term) matchingWaters = matchingWaters.filter(matchesPlace);
+        const searchedArea=!!areaCenter && areaCenter.term===term;
+        searchAreaHasWater = searchedArea || placeMatches.length > 0;
+        if(term && !searchedArea) matchingWaters = matchingWaters.filter(matchesPlace);
         refreshingMap = true;
         map.invalidateSize({pan:false});
-        if(zoomToSearch && term) {
-          const searchMatches = matchingWaters.length ? matchingWaters : placeMatches.length ? placeMatches : (accessUI?.searchMatches(term) || []);
-          if(searchMatches.length) map.fitBounds(searchMatches.map(l => [l.lat,l.lon]), {padding:[24,24],maxZoom:12,animate:false});
-        }
         refreshingMap = false;
         listLimit = 30;
         refreshMapResults();
@@ -1188,11 +1279,11 @@
       }
       function refreshMapResults() {
         const bounds = map.getBounds(), center = map.getCenter();
-        const origin = cachedUserLocation || {lat:center.lat,lon:center.lng};
+        const origin = areaCenter || cachedUserLocation || {lat:center.lat,lon:center.lng};
         visibleWaters = matchingWaters.filter(l => bounds.contains([l.lat,l.lon]));
         visibleWaters.forEach(l => l.distance = calculateDistance(origin.lat,origin.lon,l.lat,l.lon));
         visibleWaters.sort((a,b) => a.distance-b.distance);
-        document.getElementById('searchContext').textContent = `${visibleWaters.length.toLocaleString()} ${visibleWaters.length === 1 ? 'waterbody' : 'waterbodies'} with ${selectedFishName() || 'all fish'} in view. Move the map to explore.${favoritesOnly ? ' Saved spots only.' : ''} Distances from ${cachedUserLocation ? 'your starting location' : 'map centre'} (straight-line).`;
+        document.getElementById('searchContext').textContent = `${visibleWaters.length.toLocaleString()} ${visibleWaters.length === 1 ? 'waterbody' : 'waterbodies'} with ${selectedFishName() || 'all fish'} in view. Move the map to explore.${favoritesOnly ? ' Saved spots only.' : ''} Distances from ${areaCenter ? areaCenter.label : cachedUserLocation ? 'your starting location' : 'map centre'} (straight-line).`;
         markersLayer.clearLayers(); lakeMarkers = {};
         const groups = new Map();
         matchingWaters.filter(l => bounds.pad(.15).contains([l.lat,l.lon])).forEach(l => {
@@ -1217,7 +1308,16 @@
             markersLayer.addLayer(marker);
           }
         });
-        if(cachedUserLocation) L.marker([cachedUserLocation.lat,cachedUserLocation.lon],{icon:L.divIcon({className:'',html:'<div class="custom-pin pin-user"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).bindPopup('Starting location').addTo(markersLayer);
+        if(cachedUserLocation && !areaCenter) L.marker([cachedUserLocation.lat,cachedUserLocation.lon],{icon:L.divIcon({className:'',html:'<div class="custom-pin pin-user"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).bindPopup('Starting location').addTo(markersLayer);
+        if(areaCenter) {
+          if(!searchMarker) searchMarker=L.marker([areaCenter.lat,areaCenter.lon],{zIndexOffset:1000,
+            icon:L.divIcon({className:'',html:'<div class="custom-pin pin-search"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).addTo(map);
+          else searchMarker.setLatLng([areaCenter.lat,areaCenter.lon]);
+          const label=document.createElement('strong');label.textContent='Searched place: '+areaCenter.label;
+          searchMarker.bindPopup(label);
+          searchMarker.off('click');
+          if(areaCenter.lakeId) searchMarker.on('click',()=>updateSelection(areaCenter.lakeId,true));
+        } else if(searchMarker) {map.removeLayer(searchMarker);searchMarker=null;}
         if(!selectedLakeId) renderVisibleList();
         accessUI?.refresh();
       }
@@ -1396,10 +1496,10 @@
 
       if(window.FishingAccess) accessUI = FishingAccess.init({
         map, waterLayer: markersLayer,
-        state: () => ({origin:cachedUserLocation,units:appUnits,favoritesOnly,term:lakeSearchInput.value.trim(),waterMatches:searchAreaHasWater}),
+        state: () => ({origin:areaCenter || cachedUserLocation,units:appUnits,favoritesOnly,term:lakeSearchInput.value.trim(),waterMatches:searchAreaHasWater}),
         distance: calculateDistance,
         clearLake: () => updateSelection(null),
-        clearSearch: () => {lakeSearchInput.value='';findClosestLakes(currentActiveSpecies || 'all');}
+        clearSearch: () => {lakeSearchInput.value='';areaCenter=null;findClosestLakes(currentActiveSpecies || 'all');}
       });
       loadLakeData();
 

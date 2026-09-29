@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v67-tour-stars';
+const CACHE_NAME = 'fish-finder-v69-city-search-pin';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

@@ -30,7 +30,7 @@
   const leaveSpot = () => {const b=$('#backResultsBtn');if(b && !b.hidden)b.click();};
   const guides = {
     map: [
-      {title:'Find your area',copy:'Tap the pin to find nearby waterbodies, or enter a town or waterbody and tap the magnifying glass. The star shows saved spots; we’ll try it shortly.',target:'.search-container > button, .search-container > input',event:'area'},
+      {title:'Find waterbodies near you',copy:'Tap this pin to use your location. If your browser asks, allow location access to see nearby waterbodies.',target:'#locateMeBtn',event:'area'},
       {title:'What do you want to catch?',copy:'Swipe and tap a fish. Choose All Fish to keep every species in view.',target:'#fishSlider',event:'map-fish'},
       {title:'Open a waterbody',copy:'Tap a map pin for details. Numbered circles zoom into nearby spots.',target:()=>desktop() ? ($('#ff-results .lake-card .lake-title-group') || $('#map')) : $('#map'),event:'spot'},
       {title:'Save a spot',copy:'The star saves a waterbody for later. Continue now and save one you like whenever you find it.',target:()=>$('#ff-results .lake-card.active-highlight .star-btn') || $('#ff-results .lake-card .star-btn:not(.active)') || $('#ff-results .lake-card .star-btn'),event:'save',next:'Continue'},
