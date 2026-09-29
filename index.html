@@ -71,12 +71,12 @@
     }
     .slider-container::-webkit-scrollbar { display: none; }
     .fish-slider-shell {position:relative;width:100%;min-width:0;}
-    .fish-slider-shell .slider-container {box-sizing:border-box;width:100%;max-width:100%;}
-    .fish-scroll-arrow {position:absolute;top:50%;z-index:12;display:flex;align-items:center;justify-content:center;width:30px;height:44px;padding:0;border:1px solid #7dd3fc77;border-radius:10px;background:rgba(12,31,46,.82);color:#e0f2fe;opacity:.66;transform:translateY(-50%);cursor:pointer;box-shadow:0 2px 10px #0008;transition:opacity .15s,background .15s;}
+    .fish-slider-shell .slider-container {box-sizing:border-box;width:100%;max-width:100%;padding:12px 44px;scroll-padding-inline:44px;-webkit-mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent);}
+    .fish-scroll-arrow {position:absolute;top:12px;bottom:12px;z-index:12;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:36px;padding:0;border:1px solid #7dd3fc77;border-radius:14px;background:#1e293b;color:#e0f2fe;opacity:.66;cursor:pointer;transition:opacity .15s,background .15s;}
     .fish-scroll-arrow:hover,.fish-scroll-arrow:focus-visible {opacity:1;background:#123449;}
     .fish-scroll-arrow[hidden] {display:none;}
-    .fish-scroll-arrow.left {left:3px;}
-    .fish-scroll-arrow.right {right:3px;}
+    .fish-scroll-arrow.left {left:4px;}
+    .fish-scroll-arrow.right {right:4px;}
     .fish-scroll-arrow svg {width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
     
     .fish-btn { 
@@ -369,7 +369,8 @@
       .desktop-map-canvas #map {height:100%;min-height:0;}
       .desktop-map-controls .map-legend {margin:0 0 8px;}
       .desktop-map-controls .map-layer-controls {padding:0 0 8px;}
-      .desktop-map-controls #fishSlider {box-sizing:border-box;width:100%;padding:10px 3px 14px;}
+      .desktop-map-controls #fishSlider {box-sizing:border-box;width:100%;padding:10px 44px 14px;}
+      .desktop-map-controls .fish-scroll-arrow {top:10px;bottom:14px;}
       .desktop-map-controls .search-context-row {padding:0 0 12px;}
       .desktop-map-controls #accessResults {padding:0 0 24px;}
       .desktop-map-controls #ff-results {padding:0 0 30px;}
