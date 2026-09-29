@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v59-note-button';
+const CACHE_NAME = 'fish-finder-v60-species-framing';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

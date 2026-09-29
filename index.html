@@ -1069,10 +1069,45 @@
             btn.classList.add('active');
             currentActiveSpecies = fish.id;
             accessUI?.showWaters();
-            if(lakesData.length > 0) findClosestLakes(fish.id); 
+            const waterToggle = document.querySelector('[data-map-layer="waters"]');
+            if(waterToggle?.getAttribute('aria-pressed') === 'false') waterToggle.click();
+            if(lakesData.length > 0) {
+              findClosestLakes(fish.id);
+              frameSelectedSpecies();
+            }
           });
           sliderContainer.appendChild(btn);
         });
+      }
+
+      function frameSelectedSpecies() {
+        const centre = map.getCenter();
+        const origin = areaCenter || cachedUserLocation || {lat:centre.lat,lon:centre.lng};
+        let clearedFilters = false;
+        // Keep the chosen fish while removing filters that prevent three matches.
+        if(matchingWaters.length < 3 && (lakeSearchInput.value.trim() || favoritesOnly)) {
+          clearTimeout(searchTimer);
+          lakeSearchInput.value = '';
+          favoritesOnly = false;
+          const savedButton = document.getElementById('viewFavoritesBtn');
+          savedButton.classList.remove('active');
+          savedButton.setAttribute('aria-pressed','false');
+          savedButton.title = 'Show saved spots';
+          findClosestLakes(currentActiveSpecies);
+          clearedFilters = true;
+        }
+        if(visibleWaters.length < 3 && matchingWaters.length) {
+          const nearest = matchingWaters.map(lake => ({lake,
+            distance:calculateDistance(origin.lat,origin.lon,lake.lat,lake.lon)
+          })).sort((a,b)=>a.distance-b.distance).slice(0,3);
+          refreshingMap = true;
+          map.invalidateSize({pan:false});
+          map.fitBounds([[origin.lat,origin.lon],...nearest.map(({lake})=>[lake.lat,lake.lon])],
+            {padding:[40,40],maxZoom:10,animate:false});
+          refreshingMap = false;
+          refreshMapResults();
+        }
+        if(clearedFilters) document.getElementById('searchContext').textContent += ' Search and Saved Spots filters cleared to show nearby matches.';
       }
 
       function selectedFishName() {
