@@ -160,7 +160,8 @@
     .note-section { margin-top: 5px; display: none; }
     .note-section.visible { display: block; }
     .lake-note-display { font-size: 0.85rem; color: #e2e8f0; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px; font-style: italic; border-left: 3px solid #fbbf24; margin-bottom: 8px; line-height: 1.4; white-space: pre-wrap; }
-    .note-btn { background: #334155; color: white; border: 1px solid #475569; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
+    .note-btn {width:100%;box-sizing:border-box;background:#334155;color:white;border:1px solid #475569;cursor:pointer;}
+    .note-btn:hover {background:#475569;}
     
     .pass-to-advisor-btn { background: #38bdf8; color: #082f49; border: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; margin-top: 12px; width: 100%; text-align: center; }
     .pass-to-advisor-btn:hover { background: #7dd3fc; }
@@ -1268,6 +1269,10 @@
                 ${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}
                 <p class="species-list">${speciesDisplay}</p>
                 <details class="lake-more"><summary>More details</summary>
+                <div class="note-section ${isFavorited ? 'visible' : ''}">
+                  ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
+                  <button type="button" class="maps-btn note-btn" data-lakeid="${uniqueId}">${customNote ? 'Edit Note' : 'Add Note'}</button>
+                </div>
                 ${seasonDisplayHTML}
                 ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
                 ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
@@ -1275,10 +1280,7 @@
                 <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn google-maps-btn">View on Google Maps</a>
                 <button type="button" class="nearby-access-btn">Explore access points nearby</button>
                 </details>
-                <div class="note-section ${isFavorited ? 'visible' : ''}">
-                  ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
-                  <button class="note-btn" data-lakeid="${uniqueId}">📝 ${customNote ? 'Edit Note' : 'Add Note'}</button>
-                </div>
+
 
                 ${lake.speciesStatus === 'unverified' ? '<p class="species-list">Use the Advisor tab for general setups once you know which species you are targeting.</p>' : `<button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Advisor Recommended Setup</button>`}
               </div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v58-tour-previous';
+const CACHE_NAME = 'fish-finder-v59-note-button';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
