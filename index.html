@@ -1036,9 +1036,13 @@
       }
 
       document.getElementById('locateMeBtn').addEventListener('click', () => {
-        if (!navigator.geolocation) { alert("Geolocation is not supported by your browser."); return; }
+        if (!navigator.geolocation) {
+          window.FFGuide?.feedback('area','This browser cannot find your location. You can skip this step and search for a city later.');
+          alert("Geolocation is not supported by your browser."); return;
+        }
         ++searchRequest;
         setLocationButtonState(true);
+        window.FFGuide?.feedback('area','Finding your location… This can take a few seconds. Allow location access if your browser asks.');
         navigator.geolocation.getCurrentPosition(
           (position) => {
             areaCenter = null;
@@ -1059,6 +1063,7 @@
           (error) => {
             alert("Unable to retrieve your location.");
             setLocationButtonState(false);
+            window.FFGuide?.feedback('area','Could not get your location. Try the pin again, or skip this step and search for a city later.');
           }
         );
       });
