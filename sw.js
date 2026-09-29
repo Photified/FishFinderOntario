@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v74-fish-scroll-edge-fade';
+const CACHE_NAME = 'fish-finder-v75-fish-slider-start-alignment';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

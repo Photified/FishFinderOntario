@@ -71,7 +71,8 @@
     }
     .slider-container::-webkit-scrollbar { display: none; }
     .fish-slider-shell {position:relative;width:100%;min-width:0;}
-    .fish-slider-shell .slider-container {box-sizing:border-box;width:100%;max-width:100%;padding:12px 44px;scroll-padding-inline:44px;-webkit-mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent);}
+    .fish-slider-shell .slider-container {box-sizing:border-box;width:100%;max-width:100%;padding:12px 44px 12px 4px;scroll-padding-inline:44px;-webkit-mask-image:linear-gradient(to right,#000,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,#000,#000 calc(100% - 44px),transparent);}
+    .fish-slider-shell.has-scroll-left .slider-container {-webkit-mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent);}
     .fish-scroll-arrow {position:absolute;top:12px;bottom:12px;z-index:12;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:36px;padding:0;border:1px solid #7dd3fc77;border-radius:14px;background:#1e293b;color:#e0f2fe;opacity:.66;cursor:pointer;transition:opacity .15s,background .15s;}
     .fish-scroll-arrow:hover,.fish-scroll-arrow:focus-visible {opacity:1;background:#123449;}
     .fish-scroll-arrow[hidden] {display:none;}
@@ -369,7 +370,7 @@
       .desktop-map-canvas #map {height:100%;min-height:0;}
       .desktop-map-controls .map-legend {margin:0 0 8px;}
       .desktop-map-controls .map-layer-controls {padding:0 0 8px;}
-      .desktop-map-controls #fishSlider {box-sizing:border-box;width:100%;padding:10px 44px 14px;}
+      .desktop-map-controls #fishSlider {box-sizing:border-box;width:100%;padding:10px 44px 14px 4px;}
       .desktop-map-controls .fish-scroll-arrow {top:10px;bottom:14px;}
       .desktop-map-controls .search-context-row {padding:0 0 12px;}
       .desktop-map-controls #accessResults {padding:0 0 24px;}
@@ -1244,6 +1245,7 @@
         const remaining = fishSlider.scrollWidth - fishSlider.clientWidth;
         fishScrollLeft.hidden = remaining <= 2 || fishSlider.scrollLeft <= 2;
         fishScrollRight.hidden = remaining <= 2 || fishSlider.scrollLeft >= remaining - 2;
+        fishSlider.parentElement.classList.toggle('has-scroll-left', !fishScrollLeft.hidden);
       }
       fishSlider.addEventListener('scroll', updateFishScrollArrows, {passive:true});
       window.addEventListener('resize', updateFishScrollArrows);
