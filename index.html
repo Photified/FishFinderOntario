@@ -347,11 +347,13 @@
   <div id="view-map" class="app-view active-view">
     
     <div style="padding-top: 15px;"></div>
-    <div class="map-layer-controls" role="group" aria-label="Map layers">
-      <button type="button" data-map-layer="waters" aria-pressed="true"><span class="legend-dot pin-blue"></span>Waterbodies</button>
-      <button type="button" data-map-layer="launch" aria-pressed="false"><span class="access-layer-icon"></span>Boat launches</button>
-      <button type="button" data-map-layer="shore" aria-pressed="false"><span class="access-layer-icon"></span>Shore access</button>
+    <div class="location-actions"><button id="locateMeBtn" class="locate-btn">Use my location</button><span>or search a town below</span></div>
+    <div class="search-container" style="padding-top: 0;">
+      <input type="search" id="lakeSearchInput" placeholder="Town or waterbody..." aria-label="Search town or waterbody" enterkeyhint="search">
+      <button id="lakeSearchBtn" type="button" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></button>
+      <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg></button>
     </div>
+
     <div class="map-wrapper">
       <div id="map"></div>
     </div>
@@ -370,18 +372,16 @@
       <dt><span class="legend-cluster access" aria-hidden="true">3</span></dt><dd><strong>Grouped access points</strong><span>The number counts nearby launches and shore access points. Tap to zoom in.</span></dd>
     </dl>
     </details>
+    <div class="map-layer-controls" role="group" aria-label="Map layers">
+      <button type="button" data-map-layer="waters" aria-pressed="true"><span class="legend-dot pin-blue"></span>Waterbodies</button>
+      <button type="button" data-map-layer="launch" aria-pressed="false"><span class="access-layer-icon"></span>Boat launches</button>
+      <button type="button" data-map-layer="shore" aria-pressed="false"><span class="access-layer-icon"></span>Shore access</button>
+    </div>
     <div class="slider-container" id="fishSlider" aria-label="Filter waterbodies by fish species"></div>
     
     <div class="search-context-row">
     <p id="searchContext" aria-live="polite">Explore Southern Ontario. Move or zoom the map to find waterbodies.</p>
     </div>
-    <div class="location-actions"><button id="locateMeBtn" class="locate-btn">Use my location</button><span>or search a town below</span></div>
-    <div class="search-container" style="padding-top: 0;">
-      <input type="search" id="lakeSearchInput" placeholder="Town or waterbody..." aria-label="Search town or waterbody" enterkeyhint="search">
-      <button id="lakeSearchBtn" type="button" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></button>
-      <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg></button>
-    </div>
-
     <div id="accessResults" hidden></div>
     <button id="backResultsBtn" class="btn-secondary" hidden>Back to results</button>
     <div id="ff-results" aria-live="polite">
@@ -861,6 +861,7 @@
       let lakesData = [];
       let seasonsRulebook = {};
       let cachedUserLocation = null;
+      let fitLocationWhenLoaded = false;
       let currentActiveSpecies = 'all';
       let savedLakes = JSON.parse(localStorage.getItem('savedLakesData')) || {};
       let lakeMarkers = {};
@@ -915,6 +916,46 @@
       }
 
 
+      function frameNearbyWaterbodies() {
+        if(!cachedUserLocation) return;
+        if(!lakesData.length) {
+          fitLocationWhenLoaded = true;
+          map.setView([cachedUserLocation.lat, cachedUserLocation.lon], 10);
+          document.getElementById('searchContext').textContent = 'Loading waterbodies so we can show the nearest three…';
+          return;
+        }
+        fitLocationWhenLoaded = false;
+        let resetLocationFilters = false;
+        // Search the full dataset, not just the current map view or a fixed radius.
+        // If restrictive filters cannot supply three waters, broaden to All Fish.
+        if(matchingWaters.length < 3) {
+          lakeSearchInput.value = '';
+          favoritesOnly = false;
+          const savedButton = document.getElementById('viewFavoritesBtn');
+          savedButton.classList.remove('active');
+          savedButton.setAttribute('aria-pressed', 'false');
+          savedButton.title = 'Show saved spots';
+          currentActiveSpecies = 'all';
+          document.querySelectorAll('#fishSlider .fish-btn').forEach((button,i) => button.classList.toggle('active',i === 0));
+          findClosestLakes('all');
+          resetLocationFilters = true;
+        }
+        const origin = cachedUserLocation;
+        const nearest = matchingWaters.map(lake => ({
+          lake, distance: calculateDistance(origin.lat, origin.lon, lake.lat, lake.lon)
+        })).sort((a,b) => a.distance - b.distance).slice(0,3);
+        refreshingMap = true;
+        map.invalidateSize({pan:false});
+        if(nearest.length) {
+          map.fitBounds([[origin.lat, origin.lon], ...nearest.map(({lake}) => [lake.lat, lake.lon])], {
+            padding:[40,40], maxZoom:10, animate:false
+          });
+        } else map.setView([origin.lat, origin.lon], 10, {animate:false});
+        refreshingMap = false;
+        refreshMapResults();
+        if(resetLocationFilters) document.getElementById('searchContext').textContent += ' Filters reset to All Fish to show nearby waterbodies.';
+      }
+
       document.getElementById('locateMeBtn').addEventListener('click', () => {
         if (!navigator.geolocation) { alert("Geolocation is not supported by your browser."); return; }
         document.getElementById('locateMeBtn').innerText = "Locating...";
@@ -922,18 +963,17 @@
           (position) => {
             areaCenter = null;
             cachedUserLocation = { lat: position.coords.latitude, lon: position.coords.longitude };
-            map.setView([cachedUserLocation.lat, cachedUserLocation.lon], 10);
-            
-            markersLayer.clearLayers();
+            clearTimeout(searchTimer);
+            lakeSearchInput.value = '';
             if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
-            
-            L.marker([cachedUserLocation.lat, cachedUserLocation.lon], { 
-              icon: L.divIcon({ className: '', html: `<div class="custom-pin pin-user"></div>`, iconSize: [24, 24], iconAnchor: [12, 24] }) 
-            }).bindPopup("You are here").addTo(markersLayer);
-            
+            const waterToggle = document.querySelector('[data-map-layer="waters"]');
+            if(waterToggle?.getAttribute('aria-pressed') === 'false') waterToggle.click();
+            accessUI?.showWaters();
+
             document.getElementById('locateMeBtn').innerText = 'Update my location';
             document.getElementById('manualLocation').value = 'gps';
             findClosestLakes(currentActiveSpecies || 'all');
+            frameNearbyWaterbodies();
             window.FFGuide?.action('area');
           },
           (error) => {
@@ -994,6 +1034,7 @@
           
           buildMapSlider();
           findClosestLakes('all');
+          if(fitLocationWhenLoaded) frameNearbyWaterbodies();
           if(document.getElementById('view-map').classList.contains('active-view')) window.FFGuide?.start('map');
         } catch (error) { 
           console.warn("Local JSON fetch failed. Make sure you are on a live server or GitHub pages."); 

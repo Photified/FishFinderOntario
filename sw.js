@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v49-guided-walkthroughs';
+const CACHE_NAME = 'fish-finder-v52-three-waterbodies';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
