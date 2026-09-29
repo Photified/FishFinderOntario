@@ -13,6 +13,7 @@ window.FishingAccess = {
     const svg = type => `<svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[type]}</svg>`;
     let points = [], visible = [], selected = null, listLimit = 20, mode = 'waters';
     let status = 'loading', dataDate = '', errorMessage = '';
+    let pendingNearby = null;
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem('savedAccessPointsData')) || {}; } catch (_) {}
     const layer = L.layerGroup().addTo(map);
@@ -151,6 +152,18 @@ window.FishingAccess = {
       }
       if (action === 'map') {map.setView([p.lat,p.lon],16);$('map').scrollIntoView({behavior:'smooth',block:'center'});}
     });
+    function frameNearbyAccess(lake) {
+      const nearest = points.map(point => ({point,
+        distance:ctx.distance(lake.lat,lake.lon,point.lat,point.lon)
+      })).sort((a,b) => a.distance-b.distance).slice(0,3);
+      map.invalidateSize({pan:false});
+      if(nearest.length) {
+        map.fitBounds([[lake.lat,lake.lon],...nearest.map(({point}) => [point.lat,point.lon])], {
+          padding:[40,40],maxZoom:10,animate:false
+        });
+      }
+      refresh();
+    }
     async function load() {
       status='loading';render();
       try {
@@ -158,7 +171,9 @@ window.FishingAccess = {
         const data=await response.json();
         if (!Array.isArray(data.points) || data.points.length!==data.count) throw new Error('Invalid access data');
         points=data.points.filter(p => labels[p.type] && Number.isFinite(p.lat) && Number.isFinite(p.lon));
-        dataDate=data.retrievedAt;status='ready';refresh();
+        dataDate=data.retrievedAt;status='ready';
+        if(pendingNearby && mode === 'access') {const lake=pendingNearby;pendingNearby=null;frameNearbyAccess(lake);}
+        else refresh();
       } catch (_) {status='error';errorMessage='Could not load access points. Check your connection and try again. Waterbody search is still available.';render();}
     }
     syncControls();
@@ -166,11 +181,15 @@ window.FishingAccess = {
     load();
     return {
       refresh,
-      showWaters() {setMode('waters',false);},
+      showWaters() {pendingNearby=null;setMode('waters',false);},
       searchMatches: matchPoints,
       nearby(lake) {
+        const favoritesButton = $('viewFavoritesBtn');
+        if(ctx.state().favoritesOnly) favoritesButton.click();
         ctx.clearSearch(); enabled.launch=enabled.shore=true;syncControls();setMode('access');selected=null;
-        map.setView([lake.lat,lake.lon],12);refresh();host.scrollIntoView({behavior:'smooth',block:'start'});
+        if(status === 'ready') {pendingNearby=null;frameNearbyAccess(lake);}
+        else {pendingNearby={lat:lake.lat,lon:lake.lon};render();}
+        host.scrollIntoView({behavior:'smooth',block:'start'});
       }
     };
   }

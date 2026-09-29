@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v56-species-count';
+const CACHE_NAME = 'fish-finder-v57-nearby-access';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
