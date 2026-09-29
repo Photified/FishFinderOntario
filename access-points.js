@@ -16,7 +16,7 @@ window.FishingAccess = {
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem('savedAccessPointsData')) || {}; } catch (_) {}
     const layer = L.layerGroup().addTo(map);
-    const enabled = { waters: true, launch: true, shore: true };
+    const enabled = { waters: true, launch: false, shore: false };
     const host = $('accessResults');
     const typeEnabled = p => p.type === 'launch' ? enabled.launch : enabled.shore;
     const title = p => p.name || labels[p.type];
@@ -161,6 +161,7 @@ window.FishingAccess = {
         dataDate=data.retrievedAt;status='ready';refresh();
       } catch (_) {status='error';errorMessage='Could not load access points. Check your connection and try again. Waterbody search is still available.';render();}
     }
+    syncControls();
     map.on('moveend', () => {listLimit=20;refresh();});
     load();
     return {
