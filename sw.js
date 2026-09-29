@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v72-star-preview-results';
+const CACHE_NAME = 'fish-finder-v73-fish-scroll-arrows';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
