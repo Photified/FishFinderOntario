@@ -12,6 +12,14 @@
       <div class="tour-actions"><button id="tourPrevious" type="button" hidden>Previous step</button><button id="tourStep" type="button">Skip step</button></div>
     </section>`;
   document.body.append(root);
+  const welcome = document.createElement('div');
+  welcome.id = 'welcomeTour'; welcome.hidden = true;
+  welcome.innerHTML = `<section class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" aria-describedby="welcomeCopy">
+    <h2 id="welcomeTitle">Welcome to Fish Finder Ontario</h2>
+    <p id="welcomeCopy">Find waterbodies by fish, explore access points, and get fishing setup ideas.</p>
+    <div class="welcome-actions"><button id="welcomeSkip" type="button">Skip</button><button id="welcomeStart" type="button">Take tutorial</button></div>
+  </section>`;
+  document.body.append(welcome);
   const card = root.querySelector('.tour-card'), ring = root.querySelector('.tour-ring');
   const shades = [...root.querySelectorAll('.tour-shade')];
   const stepButton = $('#tourStep'), previousButton = $('#tourPrevious');
@@ -118,8 +126,21 @@
     if(frame){cancelAnimationFrame(frame);frame=0;}
     if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});
   }
+  let welcomeOpen = false, welcomeFocus = null;
+  function closeWelcome(skip=false) {
+    if(!welcomeOpen)return;
+    welcomeOpen=false;welcome.hidden=true;
+    if(skip)markSeen('map');
+    if(welcomeFocus?.isConnected)welcomeFocus.focus({preventScroll:true});
+  }
+  function showWelcome() {
+    if(welcomeOpen)return;
+    welcomeFocus=document.activeElement;welcomeOpen=true;welcome.hidden=false;
+    welcome.querySelector('#welcomeStart').focus({preventScroll:true});
+  }
   function start(kind,force=false) {
     if(!guides[kind]||(!force&&seen(kind))||(!force&&active===kind))return;
+    if(kind==='map'&&!force){showWelcome();return;}
     if(active)stop(false);
     active=kind;index=0;previousFocus=document.activeElement;
     root.hidden=false;document.body.classList.add('tour-running');showStep();
@@ -132,9 +153,20 @@
     setTimeout(()=>{if(active&&stamp===token)advance();},100);
   }
   root.querySelector('#tourExit').addEventListener('click',()=>stop());
+  welcome.querySelector('#welcomeStart').addEventListener('click',()=>{closeWelcome();start('map',true);});
+  welcome.querySelector('#welcomeSkip').addEventListener('click',()=>closeWelcome(true));
   stepButton.addEventListener('click',advance);
   previousButton.addEventListener('click',()=>{if(active&&index>0){index--;if(active==='map'&&index<=2)leaveSpot();showStep();}});
   document.addEventListener('keydown',e=>{
+    if(welcomeOpen){
+      if(e.key==='Escape'){e.preventDefault();closeWelcome(true);return;}
+      if(e.key==='Tab'){
+        const buttons=[welcome.querySelector('#welcomeSkip'),welcome.querySelector('#welcomeStart')];
+        const at=buttons.indexOf(document.activeElement);
+        e.preventDefault();buttons[e.shiftKey?(at<=0?1:0):(at===0?1:0)].focus();
+      }
+      return;
+    }
     if(!active)return;
     if(e.key==='Escape'){e.preventDefault();stop();return;}
     if(e.key==='Tab'){
@@ -144,6 +176,7 @@
     }
   });
   document.addEventListener('focusin',e=>{
+    if(welcomeOpen&&!welcome.contains(e.target)){welcome.querySelector('#welcomeStart').focus({preventScroll:true});return;}
     if(active&&!card.contains(e.target)&&!elements().some(el=>el===e.target||el.contains(e.target)))$('#tourExit').focus({preventScroll:true});
   });
   // Delegated events run after the real controls have changed state.
@@ -167,7 +200,7 @@
   new ResizeObserver(schedule).observe(card);
   document.getElementById('openIntroBtn').addEventListener('click',()=>{
     $('#settingsModal').classList.remove('open');leaveSpot();
-    window.switchAppView('view-map',mapNav());start('map',true);
+    window.switchAppView('view-map',mapNav());showWelcome();
   });
   document.getElementById('openAdvisorIntroBtn').addEventListener('click',()=>{
     $('#settingsModal').classList.remove('open');
