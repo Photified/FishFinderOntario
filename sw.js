@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v54-normal-map-scroll';
+const CACHE_NAME = 'fish-finder-v55-access-details';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

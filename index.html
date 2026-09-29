@@ -1273,13 +1273,13 @@
                 ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
                 ${lake.dataSources?.length ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : ''}
                 <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn google-maps-btn">View on Google Maps</a>
+                <button type="button" class="nearby-access-btn">Explore access points nearby</button>
                 </details>
                 <div class="note-section ${isFavorited ? 'visible' : ''}">
                   ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
                   <button class="note-btn" data-lakeid="${uniqueId}">📝 ${customNote ? 'Edit Note' : 'Add Note'}</button>
                 </div>
 
-                <button type="button" class="nearby-access-btn">Explore access points nearby</button>
                 ${lake.speciesStatus === 'unverified' ? '<p class="species-list">Use the Advisor tab for general setups once you know which species you are targeting.</p>' : `<button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Advisor Recommended Setup</button>`}
               </div>
             </div>`;
