@@ -3,7 +3,7 @@
   const keys = {map:'ffMapGuideV4', advisor:'ffAdvisorGuideV2'};
   const $ = selector => document.querySelector(selector);
   let active = null, index = 0, frame = 0, token = 0, previousFocus = null;
-  let frozenControl = null, wasInert = false;
+  let frozenControl = null, wasInert = false, previewStar = null;
   const root = document.createElement('div');
   root.id = 'guidedTour'; root.hidden = true;
   root.innerHTML = `<div class="tour-shade"></div><div class="tour-shade"></div><div class="tour-shade"></div><div class="tour-shade"></div><div class="tour-ring" aria-hidden="true"></div>
@@ -32,12 +32,13 @@
   const leaveSpot = () => {const b=$('#backResultsBtn');if(b && !b.hidden)b.click();};
   function unfreeze() {if(frozenControl){frozenControl.inert=wasInert;frozenControl=null;}}
   function freeze(control) {unfreeze();if(control){frozenControl=control;wasInert=control.inert;control.inert=true;}}
+  function clearStarPreview() {previewStar?.classList.remove('tour-star-preview');previewStar=null;}
   const guides = {
     map: [
       {title:'Find waterbodies near you',copy:'Tap this pin to use your location. Allow access if your browser asks; finding your position may take a few seconds.',target:'#locateMeBtn',event:'area'},
       {title:'What do you want to catch?',copy:'Swipe and tap a fish. Choose All Fish to keep every species in view.',target:'#fishSlider',event:'map-fish'},
       {title:'Open a waterbody',copy:'Tap a waterbody name in the list to see its details. You can explore the map pins afterward.',target:()=>$('#ff-results .lake-card .lake-title-group'),event:'spot'},
-      {title:'Explore and save a spot',copy:'This card shows recorded fish, stocking information and more details. Its star saves the waterbody; the star beside search shows saved spots after you return to results.',target:()=>$('#ff-results .lake-card.active-highlight') || $('#ff-results .lake-card'),event:'spot-info',next:'Continue'},
+      {title:'Explore and save a spot',copy:'This card shows recorded fish and stocking details. The pulsing star saves a waterbody you like; the star beside search shows saved spots after you return to results.',target:()=>$('#ff-results .lake-card.active-highlight') || $('#ff-results .lake-card'),event:'spot-info',next:'Continue'},
       {title:'Find access points',copy:'Boat launches and Shore access show places to start a trip. You can turn them on after the tutorial.',target:'.map-layer-controls',event:'layers-info',next:'Continue'},
       {title:'Fishing setup advice',copy:'Advisor suggests bait, gear and fishing strategies based on the fish and conditions you choose. Open it whenever you’re ready.',target:()=>advisorNav(),event:'advisor-info',next:'Finish tutorial'}
     ],
@@ -112,7 +113,7 @@
   }
   function showStep() {
     const stamp=++token,step=guides[active][index];
-    unfreeze();
+    unfreeze();clearStarPreview();
     step.enter?.();
     $('#tourTitle').textContent=step.title;$('#tourCopy').textContent=step.copy;
     $('#tourProgress').textContent=`${active==='map'?'Map':'Advisor'} · ${index+1} of ${guides[active].length}`;
@@ -120,6 +121,10 @@
     previousButton.hidden=index===0;
     if(step.event==='spot-info' && !$('#ff-results .lake-card.active-highlight')) {
       $('#tourCopy').textContent='Open a waterbody after the tutorial to see its recorded fish, stocking information and save star. The star beside search shows saved spots.';
+    }
+    if(step.event==='spot-info') {
+      previewStar=elements()[0]?.querySelector('.star-btn') || null;
+      previewStar?.classList.add('tour-star-preview');
     }
     if(step.event==='spot-info' || step.event==='layers-info')freeze(elements()[0]);
     if(step.event==='advisor-info')freeze(advisorNav());
@@ -141,10 +146,15 @@
   }
   function stop(mark=true) {
     if(!active)return;
+    const returnToMapResults=active==='map' && mark;
     if(mark)markSeen(active);
-    unfreeze();active=null;token++;root.hidden=true;document.body.classList.remove('tour-running');
+    unfreeze();clearStarPreview();active=null;token++;root.hidden=true;document.body.classList.remove('tour-running');
     targetObserver.disconnect();
     if(frame){cancelAnimationFrame(frame);frame=0;}
+    if(returnToMapResults) {
+      leaveSpot();
+      requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'instant'}));
+    }
     if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});
   }
   let welcomeOpen = false, welcomeFocus = null;
