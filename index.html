@@ -582,7 +582,7 @@
         </select>
       </div>
       
-      <button class="btn-secondary mb-3" id="openRegulationsBtn" style="margin-top: 0;">📜 Local Fishing Regulations</button>
+      <button class="btn-secondary mb-3" id="openRegulationsBtn" style="margin-top: 0;">Ontario fishing regulations</button>
       
       <button class="btn-secondary mb-3" id="openFeedbackBtn" style="margin-top: 0;">💬 Leave Feedback</button>
 
@@ -613,7 +613,7 @@
     <h3>Species and stocking</h3>
     <p>Species lists reflect available records. Stocking dates show the latest event included in the app, not a recent survey or a guarantee of fish currently present. Source dates are not available for every record.</p>
     <h3>Fishing regulations</h3>
-    <p>Check current seasons, limits and local exceptions before fishing. Each waterbody's More details section includes a link to the official regulations.</p>
+    <p>Check current seasons, limits and local exceptions before fishing. Open Ontario fishing regulations in Settings for the official guide.</p>
     <div class="data-sources">
       <h4>Government sources</h4>
       <p>Data source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence &ndash; Ontario</a>.</p>
@@ -622,7 +622,7 @@
         <li><a href="https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about" target="_blank" rel="noopener noreferrer">Aquatic Resource Area Polygon Segment</a></li>
         <li><a href="https://geohub.lio.gov.on.ca/datasets/mnrf::fish-stocking-data-for-recreational-purposes/explore" target="_blank" rel="noopener noreferrer">Fish Stocking Data for Recreational Purposes</a></li>
       </ul>
-      <p style="margin-top:10px;">Where records could be matched by government ID, map coordinates were updated from the Waterbody Location sheet in the 2026 regulations dataset.</p>
+      <p style="margin-top:10px;">Waterbody coverage was expanded using the Waterbody Location sheet in the 2026 regulations dataset. Locations and species records are matched by government Waterbody Location Identifier. Some waterbodies have no species information in the supplied data.</p>
       <p>Fish Finder Ontario is independently developed and is not endorsed by the Government of Ontario.</p>
     </div>
     <button class="btn-secondary" id="closeDataInfoBtn" type="button">Back to settings</button>
@@ -631,7 +631,7 @@
   <div class="modal-overlay" id="regulationsModal" style="z-index: 1060;">
     <div class="modal-content text-white">
       <h2 class="text-xl font-bold mb-2 text-blue-400">Fishing Regulations</h2>
-      <p class="text-sm text-gray-300 mb-6">View 2026 Ontario Fishing Regulations?</p>
+      <p class="text-sm text-gray-300 mb-6">View the official Ontario fishing regulations?</p>
       <button class="btn-primary mb-3" id="confirmRegulationsBtn">View Regulations</button>
       <button class="btn-secondary" id="cancelRegulationsBtn" style="margin-top:0;">Cancel</button>
     </div>
@@ -772,7 +772,7 @@
         settingsModal.classList.add('open');
       });
       document.getElementById('confirmRegulationsBtn').addEventListener('click', () => {
-        window.open('https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf', '_blank');
+        window.open('https://www.ontario.ca/document/ontario-fishing-regulations-summary', '_blank', 'noopener,noreferrer');
         regulationsModal.classList.remove('open');
       });
 
@@ -1458,10 +1458,8 @@
               </div>`;
           }
 
-          const knownSpecies = (lake.species || []).map(id => fishSpeciesList.find(f => f.id === id)?.name).filter(Boolean);
+          const knownSpecies = lake.recordedSpeciesNames?.length ? lake.recordedSpeciesNames : (lake.species || []).map(id => fishSpeciesList.find(f => f.id === id)?.name).filter(Boolean);
           const speciesDisplay = lake.speciesStatus === 'unverified' ? 'Species not yet verified' : knownSpecies.length ? 'Recorded species: ' + knownSpecies.join(', ') : 'Species records unavailable';
-          const officialUrl = lake.regulationsUrl || 'https://www.ontario.ca/document/ontario-fishing-regulations-summary';
-          const seasonDisplayHTML = `<a class="maps-btn regulations-btn" href="${officialUrl}" target="_blank" rel="noopener noreferrer">Check official fishing regulations${lake.fmz ? ' · Zone ' + lake.fmz : ''}</a>`;
           let cardClasses = `lake-card ${isStockedMatch ? 'stocked-highlight' : ''}`;
 
           ffResultsContainer.innerHTML += `
@@ -1488,7 +1486,6 @@
                   ${customNote ? `<div class="lake-note-display">"${customNote}"</div>` : ''}
                   <button type="button" class="maps-btn note-btn" data-lakeid="${uniqueId}">${customNote ? 'Edit Note' : 'Add Note'}</button>
                 </div>
-                ${seasonDisplayHTML}
                 ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
                 ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
                 ${lake.dataSources?.length ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : ''}

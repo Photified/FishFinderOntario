@@ -230,7 +230,7 @@ const lureMap = {
     'Bread': { image: 'images/lures/bread.png' },
     'Bright Pop-up Corn': { image: 'images/lures/popupcorn.png' },
     'Pop-up Corn': { image: 'images/lures/popupcorn.png' },
-    'Spawn Sacs': { image: 'images/lures/spawnsac.png' },
+    'Spawn Sacs': { image: 'images/lures/spawnsacs.png' },
     'Frog': { image: 'images/lures/frog.png' },
     'Jigging Spoon': { image: 'images/lures/jiggingspoon.png' },
     'Squarebill Crankbait': { image: 'images/lures/squarebillcrankbait.png' }

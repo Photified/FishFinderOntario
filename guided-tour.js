@@ -10,7 +10,7 @@
     <section class="tour-card" tabindex="-1" role="dialog" aria-labelledby="tourTitle" aria-describedby="tourCopy">
       <div class="tour-heading"><span id="tourProgress"></span><button id="tourExit" type="button">Skip tour</button></div>
       <div aria-live="polite" aria-atomic="true"><h2 id="tourTitle"></h2><p id="tourCopy"></p></div>
-      <div class="tour-actions"><button id="tourPrevious" type="button" hidden>Previous step</button><button id="tourStep" type="button">Skip step</button></div>
+      <div class="tour-actions"><button id="tourPrevious" type="button" hidden>Previous step</button><button id="tourStep" type="button">Next step</button></div>
     </section>`;
   document.body.append(root);
   const welcome = document.createElement('div');
@@ -38,8 +38,8 @@
       {title:'Find waterbodies near you',copy:'Tap this pin to use your location. Allow access if your browser asks; finding your position may take a few seconds.',target:'#locateMeBtn',event:'area'},
       {title:'What do you want to catch?',copy:'Swipe and tap a fish. Choose All Fish to keep every species in view.',target:'#fishSlider',event:'map-fish'},
       {title:'Open a waterbody',copy:'Tap a waterbody name in the list to see its details. You can explore the map pins afterward.',target:()=>$('#ff-results .lake-card .lake-title-group'),event:'spot'},
-      {title:'Explore and save a spot',copy:'This card shows recorded fish and stocking details. The pulsing star saves a waterbody you like; the star beside search shows saved spots after you return to results.',target:()=>$('#ff-results .lake-card.active-highlight') || $('#ff-results .lake-card'),event:'spot-info',next:'Continue'},
-      {title:'Find access points',copy:'Boat launches and Shore access show places to start a trip. You can turn them on after the tutorial.',target:'.map-layer-controls',event:'layers-info',next:'Continue'},
+      {title:'Explore and save a spot',copy:'This card shows recorded fish and stocking details. The pulsing star saves a waterbody you like; the star beside search shows saved spots after you return to results.',target:()=>$('#ff-results .lake-card.active-highlight') || $('#ff-results .lake-card'),event:'spot-info',next:'Next step'},
+      {title:'Find access points',copy:'Boat launches and Shore access show places to start a trip. You can turn them on after the tutorial.',target:'.map-layer-controls',event:'layers-info',next:'Next step'},
       {title:'Fishing setup advice',copy:'Advisor suggests bait, gear and fishing strategies based on the fish and conditions you choose. Open it whenever you’re ready.',target:()=>advisorNav(),event:'advisor-info',next:'Finish tutorial'}
     ],
     advisor: [
@@ -117,7 +117,7 @@
     step.enter?.();
     $('#tourTitle').textContent=step.title;$('#tourCopy').textContent=step.copy;
     $('#tourProgress').textContent=`${active==='map'?'Map':'Advisor'} · ${index+1} of ${guides[active].length}`;
-    stepButton.textContent=step.next||'Skip step';
+    stepButton.textContent=step.next||'Next step';
     previousButton.hidden=index===0;
     if(step.event==='spot-info' && !$('#ff-results .lake-card.active-highlight')) {
       $('#tourCopy').textContent='Open a waterbody after the tutorial to see its recorded fish, stocking information and save star. The star beside search shows saved spots.';

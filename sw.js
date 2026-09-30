@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v75-fish-slider-start-alignment';
+const CACHE_NAME = 'fish-finder-v76-waterbody-coverage';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
