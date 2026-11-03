@@ -1,10 +1,11 @@
-const CACHE_NAME = 'fish-finder-v77-location-advisor-fixes';
+const CACHE_NAME = 'fish-finder-v78-inline-fishing-setups';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
   './app-data.js',
   './access-points.js',
   './guided-tour.js',
+  './lake-setups.js',
   './accessPoints.json',
   './recommendations-data.js',
   './lakesData.json',

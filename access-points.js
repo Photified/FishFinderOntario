@@ -13,7 +13,7 @@ window.FishingAccess = {
     const svg = type => `<svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[type]}</svg>`;
     let points = [], visible = [], selected = null, listLimit = 20, mode = 'waters';
     let status = 'loading', dataDate = '', errorMessage = '';
-    let pendingNearby = null;
+    let pendingNearby = null, returnToLake = false;
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem('savedAccessPointsData')) || {}; } catch (_) {}
     const layer = L.layerGroup().addTo(map);
@@ -121,9 +121,9 @@ window.FishingAccess = {
       const s = ctx.state(), point = points.find(p => p.id === selected);
       const intro = `<p class="access-summary">${visible.length.toLocaleString()} access points in view${s.favoritesOnly ? ' · Saved spots only' : ''}. Distances from ${s.origin ? 'your starting location' : 'map centre'}. Boat launch and shore layers control these results.</p>`;
       if (point) {
-        host.innerHTML='<button type="button" class="access-back" data-access-action="back">← Back to access points</button>'+card(point,true);
+        host.innerHTML=(returnToLake ? '<button type="button" class="access-back" data-access-action="lake">← Back to waterbody</button>' : '')+'<button type="button" class="access-back" data-access-action="back">← Back to access points</button>'+card(point,true);
       } else {
-        host.innerHTML=intro+(visible.length ? visible.slice(0,listLimit).map(p => card(p,false)).join('') : `<p class="status-msg">${!enabled.launch && !enabled.shore ? 'Turn on Boat launches or Shore access above the map.' : s.favoritesOnly ? 'No saved access points in this view. Move the map or turn off Saved Spots.' : 'No access points recorded in this view with these filters. Move or zoom out, or clear your search. This does not mean access is unavailable.'}</p>`);
+        host.innerHTML=(returnToLake ? '<button type="button" class="access-back" data-access-action="lake">← Back to waterbody</button>' : '')+intro+(visible.length ? visible.slice(0,listLimit).map(p => card(p,false)).join('') : `<p class="status-msg">${!enabled.launch && !enabled.shore ? 'Turn on Boat launches or Shore access in Map options.' : s.favoritesOnly ? 'No saved access points in this view. Move the map or turn off Saved Spots.' : 'No access points recorded in this view with these filters. Move or zoom out, or clear your search. This does not mean access is unavailable.'}</p>`);
         if (visible.length > listLimit) host.innerHTML+=`<button type="button" class="btn-secondary" data-access-action="more">Show more (${Math.min(listLimit,visible.length)} of ${visible.length})</button>`;
         host.innerHTML+='<p class="access-source">Recorded access locations, including docks and piers. Fish filters apply to waterbodies only.</p>';
       }
@@ -136,6 +136,7 @@ window.FishingAccess = {
       const button = event.target.closest('[data-access-action]'); if (!button) return;
       const action = button.dataset.accessAction, article = button.closest('[data-access-id]');
       const p = article && points.find(p => p.id === article.dataset.accessId);
+      if (action === 'lake') {returnToLake=false;ctx.backToLake();return;}
       if (action === 'retry') {load();return;}
       if (action === 'more') {listLimit+=20;render();return;}
       if (action === 'back') {selected=null;render();return;}
@@ -181,12 +182,13 @@ window.FishingAccess = {
     load();
     return {
       refresh,
-      showWaters() {pendingNearby=null;setMode('waters',false);},
+      showWaters() {returnToLake=false;pendingNearby=null;setMode('waters',false);},
       searchMatches: matchPoints,
       nearby(lake) {
+        returnToLake = true;
         const favoritesButton = $('viewFavoritesBtn');
         if(ctx.state().favoritesOnly) favoritesButton.click();
-        ctx.clearSearch(); enabled.launch=enabled.shore=true;syncControls();setMode('access');selected=null;
+        ctx.clearSearch(); enabled.launch=enabled.shore=true;syncControls();setMode('access');selected=null;returnToLake=true;
         if(status === 'ready') {pendingNearby=null;frameNearbyAccess(lake);}
         else {pendingNearby={lat:lake.lat,lon:lake.lon};render();}
         host.scrollIntoView({behavior:'smooth',block:'start'});
