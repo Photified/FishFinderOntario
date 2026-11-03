@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v76-waterbody-coverage';
+const CACHE_NAME = 'fish-finder-v77-location-advisor-fixes';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

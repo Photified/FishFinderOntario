@@ -597,6 +597,10 @@
       <button class="btn-secondary" id="openAdvisorIntroBtn" type="button">Replay Advisor walkthrough</button>
 
       <button class="btn-secondary" id="openDataInfoBtn" type="button">About the data</button>
+      <div id="legacySavedNotice" hidden>
+        <p class="species-list">Some older saved spots have ambiguous locations and are hidden from the map. Their notes are preserved in this download.</p>
+        <button class="btn-secondary" id="downloadSavedNotesBtn" type="button">Download saved spots and notes</button>
+      </div>
 
       <button class="btn-secondary" id="closeSettingsBtn">Close</button>
     </div>
@@ -605,7 +609,7 @@
   <dialog class="data-info-dialog" id="dataInfoModal" aria-labelledby="dataInfoTitle">
     <h2 id="dataInfoTitle" tabindex="-1">About the data</h2>
     <h3>Map locations</h3>
-    <p>Blue and green pins identify waterbodies. Gold icons identify boat launches; purple icons identify shoreline access, including docks and piers. Some coordinates are approximate. Distances are straight-line distances.</p>
+    <p>Blue and green pins identify waterbodies. Gold icons identify boat launches; purple icons identify shoreline access, including docks and piers. Waterbody pins are reference locations, not confirmed access points. Ambiguous legacy locations are hidden pending review. Distances are straight-line distances.</p>
     <p>City searches use <a href="https://natural-resources.canada.ca/maps-tools-publications/satellite-elevation-air-photos/geolocation-service" target="_blank" rel="noopener noreferrer">Natural Resources Canada's Geolocator service</a> to place the red search pin. This search requires an internet connection.</p>
     <h3>Boat launches and shore access</h3>
     <p>Access points come from Ontario's Fishing Access Point dataset. Only records marked for public map display are included. Ownership, parking, fees and accessibility are shown as recorded, including unknown values. Check current access and posted signs. A listed site is not a guarantee of free access or permission to fish.</p>
@@ -615,9 +619,12 @@
     <h3>Fishing regulations</h3>
     <p>Check current seasons, limits and local exceptions before fishing. Open Ontario fishing regulations in Settings for the official guide.</p>
     <div class="data-sources">
+      <h4>Map attribution</h4>
+      <p>Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>, available under the Open Database Licence.</p>
       <h4>Government sources</h4>
       <p>Data source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence &ndash; Ontario</a>.</p>
       <ul>
+        <li><a href="https://data.ontario.ca/dataset/ontario-waterbody-location-identifier" target="_blank" rel="noopener noreferrer">Ontario Waterbody Location Identifier</a></li>
         <li><a href="https://data.ontario.ca/dataset/fishing-access-points" target="_blank" rel="noopener noreferrer">Fishing Access Point</a></li>
         <li><a href="https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about" target="_blank" rel="noopener noreferrer">Aquatic Resource Area Polygon Segment</a></li>
         <li><a href="https://geohub.lio.gov.on.ca/datasets/mnrf::fish-stocking-data-for-recreational-purposes/explore" target="_blank" rel="noopener noreferrer">Fish Stocking Data for Recreational Purposes</a></li>
@@ -917,7 +924,7 @@
       });
 
       let map = L.map('map').fitBounds([[41.7,-83.5],[46.5,-74.3]]);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>' }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
       let searchMarker = null;
       let accessUI = null, searchAreaHasWater = false;
@@ -1195,6 +1202,7 @@
           
           if(!lakesRes.ok) throw new Error("Lakes JSON not loaded");
           lakesData = await lakesRes.json();
+          updateLegacySavedNotice();
           
           if(seasonsRes && seasonsRes.ok) {
             seasonsRulebook = await seasonsRes.json();
@@ -1372,7 +1380,34 @@
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
       }
 
-      function getLakeId(lake) { return lake.legacyId || `${lake.name}-${lake.lat}-${lake.lon}`; }
+      function getLakeId(lake) { return lake.appId || lake.legacyId || `${lake.name}-${lake.lat}-${lake.lon}`; }
+
+      // Keep ambiguous old saves intact; never guess which unnamed lake a note belonged to.
+      function updateLegacySavedNotice() {
+        const affectedIds = new Set(lakesData.filter(l => l.appId && l.appId !== l.legacyId).map(l => l.legacyId));
+        document.getElementById('legacySavedNotice').hidden = !Object.keys(savedLakes).some(id => affectedIds.has(id));
+      }
+      document.getElementById('downloadSavedNotesBtn').addEventListener('click', () => {
+        const spots = Object.entries(savedLakes).map(([id, saved]) => {
+          const matches = lakesData.filter(l => getLakeId(l) === id || l.legacyId === id);
+          return { id, ...saved, locationReviewRequired: matches.length !== 1 || matches.some(l => l.locationReviewRequired),
+            possibleWaterbodies: matches.map(l => ({ id: getLakeId(l), name: l.name, town: l.town,
+              lat: l.lat, lon: l.lon, candidateWaterbodyIds: l.candidateWaterbodyIds })) };
+        });
+        const url = URL.createObjectURL(new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), spots }, null, 2)], { type: 'application/json' }));
+        const link = document.createElement('a');
+        link.href = url; link.download = 'fish-finder-saved-spots.json'; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+
+      function advisorSpeciesId(speciesId) {
+        return ({ largemouthbass: 'largemouth', smallmouthbass: 'smallmouth' })[speciesId] || speciesId;
+      }
+      function getAdvisorFishTypes(lake) {
+        if (!lake || lake.locationReviewRequired || lake.speciesStatus === 'unverified' || typeof fishTypes === 'undefined') return {};
+        return Object.fromEntries((lake.species || []).map(advisorSpeciesId)
+          .filter(id => Object.prototype.hasOwnProperty.call(fishTypes, id)).map(id => [id, fishTypes[id]]));
+      }
 
       const noteModal = document.getElementById('noteModal');
       const noteInput = document.getElementById('noteInput');
@@ -1494,7 +1529,7 @@
                 </details>
 
 
-                ${lake.speciesStatus === 'unverified' ? '<p class="species-list">Use the Advisor tab for general setups once you know which species you are targeting.</p>' : `<button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || 'walleye'}')">🎣 Get Advisor Recommended Setup</button>`}
+                ${Object.keys(getAdvisorFishTypes(lake)).length ? `<button class="pass-to-advisor-btn" onclick="sendToAdvisor('${safeUniqueId}', '${filteredSpeciesId || ''}')">🎣 Get Advisor Recommended Setup</button>` : '<p class="species-list">Advisor unavailable: no supported species records for this waterbody.</p>'}
               </div>
             </div>`;
         });
@@ -1584,19 +1619,13 @@
 
       window.sendToAdvisor = function(lakeId, speciesId) {
         const lake = lakesData.find(l => getLakeId(l) === lakeId);
-        if (!lake) return;
+        const finalFishTypes = getAdvisorFishTypes(lake);
+        if (!Object.keys(finalFishTypes).length) return;
 
         const defaultUnits = { distance: 'metric', depth: 'imperial', area: 'metric' };
         const appUnits = JSON.parse(localStorage.getItem('appUnitsData')) || defaultUnits;
 
-        const speciesMap = {
-          'largemouthbass': 'largemouth', 'smallmouthbass': 'smallmouth', 'walleye': 'walleye', 'pike': 'pike', 'muskie': 'muskie', 'perch': 'perch',
-          'crappie': 'crappie', 'bluegill': 'bluegill', 'laketrout': 'laketrout', 'brooktrout': 'brooktrout', 'rainbowtrout': 'rainbowtrout', 'browntrout': 'browntrout',
-          'chinooksalmon': 'chinooksalmon', 'cohosalmon': 'cohosalmon', 'atlanticsalmon': 'atlanticsalmon', 'catfish': 'catfish', 'carp': 'carp', 'freshwaterdrum': 'freshwaterdrum',
-          'lakewhitefish': 'lakewhitefish', 'splake': 'splake', 'sturgeon': 'sturgeon'
-        };
-
-        const translatedSpecies = speciesMap[speciesId] || speciesId || 'walleye';
+        const translatedSpecies = advisorSpeciesId(speciesId);
 
         const advisorBtn = document.querySelectorAll('.nav-btn')[1];
         switchAppView('view-advisor', advisorBtn);
@@ -1628,18 +1657,6 @@
             ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
           </div>
         `;
-
-        const availableTranslatedSpecies = (lake.species || []).map(s => speciesMap[s] || s);
-        const filteredFishTypes = {};
-        if (availableTranslatedSpecies.length > 0) {
-          for (const key of availableTranslatedSpecies) {
-            if (fishTypes[key]) {
-              filteredFishTypes[key] = fishTypes[key];
-            }
-          }
-        }
-
-        const finalFishTypes = Object.keys(filteredFishTypes).length > 0 ? filteredFishTypes : fishTypes;
 
         if (finalFishTypes[translatedSpecies]) {
           selectedFish = translatedSpecies;
