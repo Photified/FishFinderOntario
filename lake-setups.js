@@ -71,7 +71,7 @@ window.LakeSetups = (() => {
     if (!state) {state={fish:null, conditions:{weather:'',clarity:'',temp:''}, allowed};contexts.set(id,state);}
     state.allowed = allowed;
     if (!allowed[state.fish]) state.fish = null;
-    return `<div class="lake-setups" data-setup-context="${escape(id)}"><p class="record-note">Tap a fish for bait suggestions.</p>
+    return `<div class="lake-setups" data-setup-context="${escape(id)}"><h5 class="setup-choice-heading">Choose a fish for bait suggestions</h5>
       <div class="setup-fish-grid">${Object.entries(allowed).map(([key,fish]) => `<button type="button" class="setup-fish" data-setup-fish="${escape(key)}" aria-pressed="${state.fish === key}"><img src="${escape(fish.imageSrc)}" alt="" loading="lazy"><span>${escape(fish.name)}</span></button>`).join('')}</div>
       <div class="setup-output">${content(state)}</div></div>`;
   }

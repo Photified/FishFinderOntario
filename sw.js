@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v78-inline-fishing-setups';
+const CACHE_NAME = 'fish-finder-v79-separate-map-views';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

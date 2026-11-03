@@ -13,7 +13,8 @@ window.FishingAccess = {
     const svg = type => `<svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[type]}</svg>`;
     let points = [], visible = [], selected = null, listLimit = 20, mode = 'waters';
     let status = 'loading', dataDate = '', errorMessage = '';
-    let pendingNearby = null, returnToLake = false;
+    let pendingNearby = null, nearbyLake = null, accessKind = 'launch';
+    const contextLayer = L.layerGroup().addTo(map);
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem('savedAccessPointsData')) || {}; } catch (_) {}
     const layer = L.layerGroup().addTo(map);
@@ -33,41 +34,51 @@ window.FishingAccess = {
       term = term.trim().toLowerCase();
       return term ? points.filter(p => `${p.name} ${p.comments}`.toLowerCase().includes(term)) : points;
     }
-    function setMode(next, clearLake = true) {
-      mode = next;
-      if (next === 'access' && clearLake) ctx.clearLake();
-      $('ff-results').hidden = next === 'access';
-      host.hidden = next !== 'access';
-      $('fishSlider').hidden = false;
-      $('searchContext').hidden = next === 'access';
-      if (next === 'waters') selected = null;
-      if (next === 'access' && !enabled.launch && !enabled.shore) {
-        enabled.launch = enabled.shore = true;
-        syncControls();
-      }
+    function clearNearby() {
+      pendingNearby = null;
+      nearbyLake = null;
+      contextLayer.clearLayers();
+    }
+    function setMode(kind, clearLake = true) {
+      const center = map.getCenter(), zoom = map.getZoom();
+      mode = kind === 'waters' ? 'waters' : 'access';
+      if (mode === 'access') accessKind = kind;
+      enabled.waters = mode === 'waters';
+      enabled.launch = kind === 'launch';
+      enabled.shore = kind === 'shore';
+      selected = null;
+      listLimit = 20;
+      if (mode === 'waters') clearNearby();
+      if (clearLake) ctx.clearLake();
+      $('ff-results').hidden = mode === 'access';
+      host.hidden = mode !== 'access';
+      $('searchContext').hidden = mode === 'access';
+      $('view-map').classList.toggle('access-view', mode === 'access');
+      syncControls();
+      map.invalidateSize({pan:false});
+      map.setView(center, zoom, {animate:false});
       refresh();
     }
     function syncControls() {
-      document.querySelectorAll('[data-map-layer]').forEach(b => b.setAttribute('aria-pressed', enabled[b.dataset.mapLayer]));
+      document.querySelectorAll('[data-map-layer]').forEach(button => button.setAttribute('aria-pressed', enabled[button.dataset.mapLayer]));
       if (enabled.waters && !map.hasLayer(waterLayer)) map.addLayer(waterLayer);
       if (!enabled.waters && map.hasLayer(waterLayer)) map.removeLayer(waterLayer);
+      ctx.setWaterSearchVisible(enabled.waters);
     }
     document.querySelectorAll('[data-map-layer]').forEach(button => {
       const kind = button.dataset.mapLayer;
       if (kind !== 'waters') button.querySelector('.access-layer-icon').innerHTML = svg(kind);
       button.addEventListener('click', () => {
-        enabled[kind] = !enabled[kind]; selected = null;
-        syncControls();
-        if (kind !== 'waters' && enabled[kind]) setMode('access');
-        else if (kind === 'waters' && enabled.waters) setMode('waters');
-        else refresh();
+        if (enabled[kind]) return;
+        setMode(kind);
       });
     });
     function select(p, scroll = true) {
-      setMode('access'); selected = p.id; render();
+      setMode(accessKind); selected = p.id; render();
       if (scroll) host.scrollIntoView({behavior:'smooth',block:'start'});
     }
     function refresh() {
+      syncControls();
       const s = ctx.state(), bounds = map.getBounds();
       // A town/waterbody search establishes the area. Do not infer species at nearby access points.
       let matches = s.term && !s.waterMatches ? matchPoints(s.term) : points;
@@ -87,7 +98,7 @@ window.FishingAccess = {
           const lat = group.reduce((v,p) => v+p.lat,0)/group.length;
           const lon = group.reduce((v,p) => v+p.lon,0)/group.length;
           L.marker([lat,lon], {title:`${group.length} access points. Zoom to explore.`,icon:L.divIcon({className:'access-cluster',html:`${group.length}`,iconSize:[34,34]})})
-            .on('click', () => {setMode('access'); selected=null; map.setView([lat,lon],Math.min(18,map.getZoom()+2));}).addTo(layer);
+            .on('click', () => {setMode(accessKind); selected=null; map.setView([lat,lon],Math.min(18,map.getZoom()+2));}).addTo(layer);
         } else {
           // At maximum zoom the list keeps coincident sites separately selectable.
           group.forEach(p => L.marker([p.lat,p.lon], {title:`${title(p)}: ${labels[p.type]}`,icon:L.divIcon({className:'',html:`<span class="access-pin access-${p.type}${saved[p.id] ? ' access-saved' : ''}">${svg(p.type)}</span>`,iconSize:[30,34],iconAnchor:[15,34]})})
@@ -116,16 +127,17 @@ window.FishingAccess = {
     }
     function render() {
       if (mode !== 'access') return;
-      if (status === 'loading') {host.innerHTML='<p class="status-msg">Loading Ontario access points…</p>';return;}
-      if (status === 'error') {host.innerHTML=`<p class="status-msg">${escape(errorMessage)}</p><button type="button" class="btn-secondary" data-access-action="retry">Retry access points</button>`;return;}
+      const back = nearbyLake ? '<button type="button" class="access-back" data-access-action="lake">← Back to waterbody</button>' : '';
+      if (status === 'loading') {host.innerHTML=back+'<p class="status-msg">Loading Ontario access points…</p>';return;}
+      if (status === 'error') {host.innerHTML=back+`<p class="status-msg">${escape(errorMessage)}</p><button type="button" class="btn-secondary" data-access-action="retry">Retry access points</button>`;return;}
       const s = ctx.state(), point = points.find(p => p.id === selected);
-      const intro = `<p class="access-summary">${visible.length.toLocaleString()} access points in view${s.favoritesOnly ? ' · Saved spots only' : ''}. Distances from ${s.origin ? 'your starting location' : 'map centre'}. Boat launch and shore layers control these results.</p>`;
+      const intro = `<p class="access-summary">${visible.length.toLocaleString()} ${accessKind === 'launch' ? 'boat launches' : 'shore access points'} in view${s.favoritesOnly ? ' · Saved spots only' : ''}${nearbyLake ? ' · Near ' + escape(nearbyLake.name) : ''}. Distances from ${s.origin ? 'your starting location' : 'map centre'}.</p>`;
       if (point) {
-        host.innerHTML=(returnToLake ? '<button type="button" class="access-back" data-access-action="lake">← Back to waterbody</button>' : '')+'<button type="button" class="access-back" data-access-action="back">← Back to access points</button>'+card(point,true);
+        host.innerHTML=back+'<button type="button" class="access-back" data-access-action="back">← Back to access points</button>'+card(point,true);
       } else {
-        host.innerHTML=(returnToLake ? '<button type="button" class="access-back" data-access-action="lake">← Back to waterbody</button>' : '')+intro+(visible.length ? visible.slice(0,listLimit).map(p => card(p,false)).join('') : `<p class="status-msg">${!enabled.launch && !enabled.shore ? 'Turn on Boat launches or Shore access in Map options.' : s.favoritesOnly ? 'No saved access points in this view. Move the map or turn off Saved Spots.' : 'No access points recorded in this view with these filters. Move or zoom out, or clear your search. This does not mean access is unavailable.'}</p>`);
+        host.innerHTML=back+intro+(visible.length ? visible.slice(0,listLimit).map(p => card(p,false)).join('') : `<p class="status-msg">${s.favoritesOnly ? 'No saved access points in this view. Move the map or turn off Saved Spots.' : 'No access points recorded in this view with these filters. Move or zoom out, or clear your search. This does not mean access is unavailable.'}</p>`);
         if (visible.length > listLimit) host.innerHTML+=`<button type="button" class="btn-secondary" data-access-action="more">Show more (${Math.min(listLimit,visible.length)} of ${visible.length})</button>`;
-        host.innerHTML+='<p class="access-source">Recorded access locations, including docks and piers. Fish filters apply to waterbodies only.</p>';
+        host.innerHTML+='<p class="access-source">Recorded access locations. Shore access includes docks and piers.</p>';
       }
     }
     function persist() {
@@ -136,7 +148,7 @@ window.FishingAccess = {
       const button = event.target.closest('[data-access-action]'); if (!button) return;
       const action = button.dataset.accessAction, article = button.closest('[data-access-id]');
       const p = article && points.find(p => p.id === article.dataset.accessId);
-      if (action === 'lake') {returnToLake=false;ctx.backToLake();return;}
+      if (action === 'lake') {clearNearby();ctx.backToLake();return;}
       if (action === 'retry') {load();return;}
       if (action === 'more') {listLimit+=20;render();return;}
       if (action === 'back') {selected=null;render();return;}
@@ -154,7 +166,7 @@ window.FishingAccess = {
       if (action === 'map') {map.setView([p.lat,p.lon],16);$('map').scrollIntoView({behavior:'smooth',block:'center'});}
     });
     function frameNearbyAccess(lake) {
-      const nearest = points.map(point => ({point,
+      const nearest = points.filter(typeEnabled).map(point => ({point,
         distance:ctx.distance(lake.lat,lake.lon,point.lat,point.lon)
       })).sort((a,b) => a.distance-b.distance).slice(0,3);
       map.invalidateSize({pan:false});
@@ -182,15 +194,30 @@ window.FishingAccess = {
     load();
     return {
       refresh,
-      showWaters() {returnToLake=false;pendingNearby=null;setMode('waters',false);},
+      showWaters() {setMode('waters',false);},
+      isAccess() {return mode === 'access';},
+      exploreArea(origin) {
+        clearNearby(); selected=null;
+        if (status === 'ready') frameNearbyAccess(origin);
+        else {pendingNearby=origin;map.setView([origin.lat,origin.lon],10);render();}
+      },
       searchMatches: matchPoints,
       nearby(lake) {
-        returnToLake = true;
         const favoritesButton = $('viewFavoritesBtn');
         if(ctx.state().favoritesOnly) favoritesButton.click();
-        ctx.clearSearch(); enabled.launch=enabled.shore=true;syncControls();setMode('access');selected=null;returnToLake=true;
-        if(status === 'ready') {pendingNearby=null;frameNearbyAccess(lake);}
-        else {pendingNearby={lat:lake.lat,lon:lake.lon};render();}
+        ctx.clearSearch();
+        clearNearby();
+        nearbyLake = lake;
+        setMode('launch');
+        const label = document.createElement('span');
+        label.textContent = lake.name;
+        L.marker([lake.lat,lake.lon], {
+          title:lake.name,
+          icon:L.divIcon({className:'',html:'<div class="custom-pin pin-blue pin-active nearby-waterbody-pin"></div>',iconSize:[24,24],iconAnchor:[12,24]})
+        }).bindTooltip(label,{permanent:true,direction:'top',offset:[0,-24]})
+          .on('click', () => ctx.backToLake()).addTo(contextLayer);
+        if(status === 'ready') frameNearbyAccess(lake);
+        else {pendingNearby=lake;render();}
         host.scrollIntoView({behavior:'smooth',block:'start'});
       }
     };
