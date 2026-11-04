@@ -41,6 +41,7 @@ const tempTypes = {
 };
 
 const colorMap = {
+    'Green': { hex: '#008000' },
     'Green Pumpkin': { hex: '#4B5320', reason: 'The most versatile bass color. Perfectly mimics crawfish, gobies, and bluegill in most water clarities.' },
     'Watermelon': { hex: '#75A850', reason: 'A translucent, natural green that excels in clear water, mimicking small fish and other forage.' },
     'Bone White': { hex: '#F9F6EE', reason: 'A solid, highly visible color for topwater lures that provides a strong silhouette against the sky.' },
@@ -78,6 +79,27 @@ const colorMap = {
  * It maps the specific recommendation strings (e.g., "Flipping Jig") to an image.
  */
 const lureMap = {
+    'Deep Crankbait': { image: 'images/lures/crankbait.png' },
+    'Small Crankbaits': { image: 'images/lures/crankbait.png' },
+    'Large Spinnerbait': { image: 'images/lures/spinnerbait.png' },
+    'Bright Jig with Scent': { image: 'images/lures/jig.png' },
+    'Minnows under a Bobber': { image: 'images/lures/slipbobber.png' },
+    'Drop Shot Rig': { image: 'images/lures/dropshot.png' },
+    'Rattling Lures': { image: 'images/lures/liplesscrank.png' },
+    'Jigs': { image: 'images/lures/jig.png' },
+    'Live Bait under a Slip Float': { image: 'images/lures/slipbobber.png' },
+    'Tube Jigs': { image: 'images/lures/tube.png' },
+    'Heavy Spoons': { image: 'images/lures/spoon.png' },
+    'Bright Trolling Spoons': { image: 'images/lures/spoon.png' },
+    'Method Feeder with Scented Pack Bait': { image: 'images/lures/methodfeeder.png' },
+    'Pack Bait with Strong Scent': { image: 'images/lures/packbait.png' },
+    'Large Boilies': { image: 'images/lures/boilies.png' },
+    'Method Feeder with Oily Pack Bait': { image: 'images/lures/methodfeeder.png' },
+    'Bright Artificial Corn': { image: 'images/lures/popupcorn.png' },
+    'Corn on a Hair Rig': { image: 'images/lures/boilies.png' },
+    'Pack Bait with Corn': { image: 'images/lures/packbait.png' },
+    'Pack Bait with Strong Flavor': { image: 'images/lures/packbait.png' },
+
     'Flipping Jig': { image: 'images/lures/flippingjig.png' },
     'Football Jig': { image: 'images/lures/footballjig.png' },
     'Drop Shot': { image: 'images/lures/dropshot.png' },

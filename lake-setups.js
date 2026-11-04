@@ -24,7 +24,9 @@ window.LakeSetups = (() => {
     const matches = matchingRecommendations(fish, conditions);
     if (matches.length === 1) return {...matches[0], specific:true};
     const baits = new Map();
+    const colorCounts = new Map();
     for (const rec of matches) {
+      for (const color of rec.colors || []) colorCounts.set(color, (colorCounts.get(color) || 0) + 1);
       for (const lure of rec.lures) {
         if (!baits.has(lure.name)) baits.set(lure.name, {count:0, techniques:new Map()});
         const item = baits.get(lure.name);
@@ -35,12 +37,13 @@ window.LakeSetups = (() => {
     const lures = [...baits].sort((a,b) => b[1].count-a[1].count).slice(0,3).map(([name,item]) => ({
       name, technique:[...item.techniques].sort((a,b) => b[1]-a[1])[0]?.[0] || ''
     }));
-    return {lures, gear:gearMap[fish], specific:false};
+    const colors = [...colorCounts].sort((a,b) => b[1]-a[1]).slice(0,3).map(([color]) => color);
+    return {lures, colors, gear:gearMap[fish], specific:false};
   }
 
   function lureHTML(lure) {
-    const image = lureMap[lure.name]?.image || 'images/icon.png';
-    return `<article class="setup-lure"><img src="${escape(image)}" alt="" loading="lazy"><div><h5>${escape(lure.name)}</h5><p>${escape(lure.technique)}</p>${lure.reason ? `<p>${escape(lure.reason)}</p>` : ''}</div></article>`;
+    const image = lureMap[lure.name]?.image || lureMap[lureBaseMap[lure.name]]?.image;
+    return `<article class="setup-lure">${image ? `<img src="${escape(image)}" alt="${escape(lure.name)}" loading="lazy">` : '<span class="setup-image-unavailable">Image unavailable</span>'}<div><h5>${escape(lure.name)}</h5><p>${escape(lure.technique)}</p>${lure.reason ? `<p>${escape(lure.reason)}</p>` : ''}</div></article>`;
   }
 
   function content(state) {
@@ -52,13 +55,13 @@ window.LakeSetups = (() => {
       'General starting suggestions for this species. Adjust conditions for more tailored advice.';
     const conditionFields = [['weather','Weather'],['clarity','Water clarity'],['temp','Water temperature']].map(([key,label]) =>
       `<label>${label}<select name="${key}"><option value="">Not sure / any</option>${Object.entries(groups[key]).map(([value,item]) => `<option value="${value}"${state.conditions[key] === value ? ' selected' : ''}>${escape(item.name)}</option>`).join('')}</select></label>`).join('');
-    return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)} bait suggestions</h4><button type="button" data-setup-action="close" aria-label="Close bait suggestions">✕</button></div>
+    return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)} bait and tackle recommendations</h4><button type="button" data-setup-action="close" aria-label="Close bait and tackle recommendations">✕</button></div>
       <p class="setup-intro">${escape(intro)}</p>
       ${rec.lures.map(lureHTML).join('') || '<p class="record-note">Suggestions are unavailable for these selections.</p>'}
-      <details class="setup-refine"><summary>Adjust conditions</summary><form class="setup-conditions">${conditionFields}<button type="submit">Update suggestions</button></form></details>
-      <details class="setup-extra"><summary>Gear${rec.specific ? ', colours & fishing tips' : ' suggestions'}</summary>
+      ${rec.colors?.length ? `<div class="setup-color-section"><h5>Suggested colours</h5><div class="setup-colors">${rec.colors.map(color => `<span><i style="background:${escape(colorMap[color]?.hex || '#ccc')}" aria-hidden="true"></i>${escape(color)}</span>`).join('')}</div></div>` : '<div class="setup-color-section"><h5>Suggested colours</h5><p class="record-note">No colour preference specified for these recommendations.</p></div>'}
+      <details class="setup-refine"><summary>Adjust conditions</summary><form class="setup-conditions">${conditionFields}<button type="submit">Update recommendations</button></form></details>
+      <details class="setup-extra"><summary>Gear${rec.specific ? ' & fishing tips' : ' recommendations'}</summary>
       <h5>Rod</h5><p>${escape(rec.gear?.rod || 'Not specified')}</p><h5>Line</h5><p>${escape(rec.gear?.line || 'Not specified')}</p>
-      ${rec.colors ? `<h5>Colours</h5><div class="setup-colors">${rec.colors.map(color => `<span><i style="background:${escape(colorMap[color]?.hex || '#ccc')}"></i>${escape(color)}</span>`).join('')}</div>` : ''}
       ${rec.location ? `<h5>${escape(rec.location.title)}</h5><p>${escape(rec.location.description)}</p>` : ''}
       ${(rec.tips || []).map(tip => `<h5>${escape(tip.title)}</h5><p>${escape(tip.description)}</p>`).join('')}</details>
       <a class="setup-regulations" href="https://www.ontario.ca/document/ontario-fishing-regulations-summary" target="_blank" rel="noopener noreferrer">Check fishing seasons and bait rules</a>
@@ -66,12 +69,12 @@ window.LakeSetups = (() => {
   }
 
   function render(id, allowed) {
-    if (!Object.keys(allowed).length) return '<p class="record-note">Bait suggestions are not available for these species records.</p>';
+    if (!Object.keys(allowed).length) return '<p class="record-note">Bait and tackle recommendations are not available for these species records.</p>';
     let state = contexts.get(id);
     if (!state) {state={fish:null, conditions:{weather:'',clarity:'',temp:''}, allowed};contexts.set(id,state);}
     state.allowed = allowed;
     if (!allowed[state.fish]) state.fish = null;
-    return `<div class="lake-setups" data-setup-context="${escape(id)}"><h5 class="setup-choice-heading">Choose a fish for bait suggestions</h5>
+    return `<div class="lake-setups" data-setup-context="${escape(id)}"><h5 class="setup-choice-heading">Choose a fish for bait and tackle recommendations</h5>
       <div class="setup-fish-grid">${Object.entries(allowed).map(([key,fish]) => `<button type="button" class="setup-fish" data-setup-fish="${escape(key)}" aria-pressed="${state.fish === key}"><img src="${escape(fish.imageSrc)}" alt="" loading="lazy"><span>${escape(fish.name)}</span></button>`).join('')}</div>
       <div class="setup-output">${content(state)}</div></div>`;
   }

@@ -97,7 +97,7 @@ window.FishingAccess = {
         if (group.length > 1 && map.getZoom() < 18) {
           const lat = group.reduce((v,p) => v+p.lat,0)/group.length;
           const lon = group.reduce((v,p) => v+p.lon,0)/group.length;
-          L.marker([lat,lon], {title:`${group.length} access points. Zoom to explore.`,icon:L.divIcon({className:'access-cluster',html:`${group.length}`,iconSize:[34,34]})})
+          L.marker([lat,lon], {title:`${group.length} access points. Zoom to explore.`,icon:L.divIcon({className:accessKind === 'shore' ? 'access-cluster access-cluster-shore' : 'access-cluster',html:`${group.length}`,iconSize:[34,34]})})
             .on('click', () => {setMode(accessKind); selected=null; map.setView([lat,lon],Math.min(18,map.getZoom()+2));}).addTo(layer);
         } else {
           // At maximum zoom the list keeps coincident sites separately selectable.

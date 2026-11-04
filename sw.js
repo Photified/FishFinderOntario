@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v79-separate-map-views';
+const CACHE_NAME = 'fish-finder-v80-tackle-colours-images';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
