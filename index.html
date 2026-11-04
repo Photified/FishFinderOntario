@@ -461,6 +461,19 @@
     .setup-image-unavailable {width:76px;min-height:76px;flex:none;display:grid;place-items:center;font-size:.7rem;text-align:center;color:#94a3b8;}
     .access-cluster-shore,.legend-cluster.access.shore {background:#30264a;border-color:#c4b5fd;color:#ede9fe;}
     @media(max-width:999px) {#backResultsBtn {margin-top:12px;}}
+    .location-loading {position:absolute;top:16px;left:60px;right:16px;max-width:360px;margin:0 auto;padding:12px 14px;z-index:2;border:1px solid #475569;border-radius:10px;background:#172131;color:#f8fafc;box-shadow:0 3px 12px #0005;pointer-events:none;font-size:.9rem;}
+    .location-loading[hidden] {display:none;}
+    .location-loading-track {height:5px;margin-top:9px;overflow:hidden;border-radius:999px;background:#334155;}
+    .location-loading-track::after {content:'';display:block;width:40%;height:100%;border-radius:inherit;background:#7dd3fc;animation:location-loading 1.3s ease-in-out infinite alternate;}
+    @keyframes location-loading {from {transform:translateX(0);} to {transform:translateX(150%);}}
+    .waterbody-search {position:relative;min-width:0;}
+    .waterbody-suggestions {position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:1002;margin:0;padding:4px;list-style:none;max-height:min(360px,45dvh);overflow-y:auto;overscroll-behavior:contain;background:#1e293b;border:1px solid #52657b;border-radius:10px;box-shadow:0 8px 24px #0007;}
+    .waterbody-suggestions[hidden] {display:none;}
+    .waterbody-suggestions li {padding:10px;border-radius:6px;min-height:44px;box-sizing:border-box;cursor:pointer;overflow-wrap:anywhere;}
+    .waterbody-suggestions li:hover,.waterbody-suggestions li[aria-selected="true"] {background:#29465f;}
+    .waterbody-suggestions strong {display:block;font-size:.9rem;color:#f8fafc;}
+    .waterbody-suggestions small {display:block;margin-top:3px;font-size:.75rem;color:#b9c9da;}
+    .search-announcement {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -481,7 +494,11 @@
     <div class="map-top-spacing" style="padding-top: 15px;"></div>
     <div class="search-container" role="group" aria-label="Location, search and saved spots" style="padding-top: 0;">
 
-      <input type="search" id="lakeSearchInput" placeholder="Town or lake..." aria-label="Search town or waterbody" enterkeyhint="search">
+      <div class="waterbody-search">
+        <input type="search" id="lakeSearchInput" placeholder="Town or lake..." aria-label="Search town or waterbody" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="waterbodySuggestions" autocomplete="off">
+        <ul id="waterbodySuggestions" class="waterbody-suggestions" role="listbox" aria-label="Matching waterbodies" hidden></ul>
+        <span id="searchAnnouncement" class="search-announcement" role="status" aria-live="polite"></span>
+      </div>
       <button id="lakeSearchBtn" type="button" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></button>
 
     </div>
@@ -490,6 +507,10 @@
       <div class="desktop-map-canvas">
     <div class="map-wrapper">
       <div id="map"></div>
+      <div id="locationLoading" class="location-loading" role="status" aria-live="polite" hidden>
+        <span>Finding your location…</span>
+        <div class="location-loading-track" aria-hidden="true"></div>
+      </div>
     </div>
       </div>
       <div class="desktop-map-controls">
@@ -1048,6 +1069,8 @@
         button.setAttribute('aria-busy', String(busy));
         button.setAttribute('aria-label', label);
         button.title = label;
+        button.querySelector('span').textContent = busy ? 'Locating…' : 'My location';
+        document.getElementById('locationLoading').hidden = !busy;
       }
 
       document.getElementById('locateMeBtn').addEventListener('click', () => {
@@ -1066,18 +1089,19 @@
             lakeSearchInput.value = '';
             if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
 
-            setLocationButtonState(false);
             document.getElementById('manualLocation').value = 'gps';
             findClosestLakes(currentActiveSpecies || 'all');
             if (accessUI?.isAccess()) accessUI.exploreArea(cachedUserLocation);
             else frameNearbyWaterbodies();
+            setLocationButtonState(false);
             window.FFGuide?.action('area');
           },
           (error) => {
-            alert("Unable to retrieve your location.");
             setLocationButtonState(false);
+            alert("Unable to retrieve your location.");
             window.FFGuide?.feedback('area','Could not get your location. Try the pin again, or skip this step and search for a city later.');
-          }
+          },
+          { timeout: 20000 }
         );
       });
 
@@ -1101,6 +1125,68 @@
       const lakeSearchBtn = document.getElementById('lakeSearchBtn');
 
       let searchTimer, searchRequest = 0;
+      const suggestionsList = document.getElementById('waterbodySuggestions');
+      const searchAnnouncement = document.getElementById('searchAnnouncement');
+      let suggestedWaters = [], activeSuggestion = -1;
+      function closeSuggestions() {
+        suggestionsList.hidden = true;
+        activeSuggestion = -1;
+        lakeSearchInput.setAttribute('aria-expanded','false');
+        lakeSearchInput.removeAttribute('aria-activedescendant');
+        searchAnnouncement.textContent = '';
+      }
+      function showSuggestions() {
+        const term = lakeSearchInput.value.trim().toLowerCase();
+        closeSuggestions();
+        if(term.length < 3) return;
+        const names = lake => [lake.name,lake.aliasName].filter(Boolean).map(name=>name.toLowerCase());
+        const rank = lake => Math.min(...names(lake).map(name => name === term ? 0 : name.replace(/^lake\s+/, '').startsWith(term) ? 1 : 2));
+        suggestedWaters = lakesData.filter(lake => !lake.locationReviewRequired && Number.isFinite(lake.lat) && Number.isFinite(lake.lon)
+          && names(lake).some(name=>name.includes(term)))
+          .sort((a,b)=>rank(a)-rank(b) || a.name.localeCompare(b.name) || (a.town || '').localeCompare(b.town || '') || a.lat-b.lat || a.lon-b.lon).slice(0,8);
+        suggestionsList.replaceChildren();
+        if(!suggestedWaters.length) return;
+        suggestedWaters.forEach((lake,index)=>{
+          const option = document.createElement('li');
+          option.id = 'waterbody-option-'+index;
+          option.dataset.index = index;
+          option.setAttribute('role','option');
+          option.setAttribute('aria-selected','false');
+          const title = document.createElement('strong'); title.textContent = lake.name;
+          const area = document.createElement('small');
+          const locality = lake.town || lake.region || lake.mnrfDistrict || (lake.fmz ? 'Fishing zone '+lake.fmz : 'Ontario');
+          const duplicate = suggestedWaters.some(other=>other!==lake && other.name===lake.name && (other.town || other.region || other.mnrfDistrict || '')===(lake.town || lake.region || lake.mnrfDistrict || ''));
+          const alias = !lake.name.toLowerCase().includes(term) && lake.aliasName ? lake.aliasName+' · ' : '';
+          area.textContent = alias + locality + (duplicate ? ' · '+lake.lat.toFixed(3)+', '+lake.lon.toFixed(3) : '');
+          option.append(title,area); suggestionsList.append(option);
+        });
+        suggestionsList.hidden = false;
+        lakeSearchInput.setAttribute('aria-expanded','true');
+        searchAnnouncement.textContent = suggestedWaters.length+' waterbody suggestions. Use the arrow keys to choose.';
+      }
+      function chooseSuggestion(index) {
+        const lake = suggestedWaters[index];
+        if(!lake) return;
+        ++searchRequest; clearTimeout(searchTimer); lakeSearchBtn.disabled = false;
+        closeSuggestions(); lakeSearchInput.blur();
+        lakeSearchInput.value = lake.name;
+        areaCenter = {lat:lake.lat,lon:lake.lon,label:lake.name,lakeId:getLakeId(lake),term:lake.name.toLowerCase().trim()};
+        accessUI?.showWaters();
+        findClosestLakes(currentActiveSpecies || 'all');
+        map.setView([lake.lat,lake.lon],12,{animate:false});
+        updateSelection(getLakeId(lake),true);
+      }
+      suggestionsList.addEventListener('mousedown',event=>event.preventDefault());
+      suggestionsList.addEventListener('click',event=>{
+        const option = event.target.closest('[data-index]');
+        if(option) chooseSuggestion(Number(option.dataset.index));
+      });
+      lakeSearchInput.addEventListener('focus',showSuggestions);
+      lakeSearchInput.addEventListener('blur',closeSuggestions);
+      document.addEventListener('pointerdown',event=>{
+        if(!event.target.closest('.waterbody-search')) closeSuggestions();
+      });
+
       const cityCache = new Map();
       async function locateCity(term) {
         const city = term.replace(/,?\s*(Ontario|ON|Canada)\s*$/i, '').trim();
@@ -1130,6 +1216,7 @@
       }
       async function triggerSearch(event) {
         if(event?.type === 'keydown') event.preventDefault();
+        closeSuggestions();
         clearTimeout(searchTimer);
         const request = ++searchRequest, term = lakeSearchInput.value.trim();
         if(!term) {areaCenter=null;findClosestLakes(currentActiveSpecies || 'all');return;}
@@ -1167,13 +1254,31 @@
         ++searchRequest;
         lakeSearchBtn.disabled=false;
         const term=lakeSearchInput.value.trim();
+        showSuggestions();
         if(!term) {areaCenter=null;findClosestLakes(currentActiveSpecies || 'all');}
         else {
           if(areaCenter && areaCenter.term!==term.toLowerCase()) {areaCenter=null;findClosestLakes(currentActiveSpecies || 'all');}
           document.getElementById('searchContext').textContent='Tap the magnifying glass or press Enter to search for “'+term+'”.';
         }
       });
-      lakeSearchInput.addEventListener('keydown', e => {if(e.key === 'Enter') triggerSearch(e);});
+      lakeSearchInput.addEventListener('keydown', e => {
+        if(e.isComposing) return;
+        if(e.key === 'Escape') {closeSuggestions();return;}
+        if(e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          if(suggestionsList.hidden) showSuggestions();
+          if(suggestionsList.hidden) return;
+          e.preventDefault();
+          activeSuggestion = (activeSuggestion + (e.key === 'ArrowDown' ? 1 : -1) + suggestedWaters.length) % suggestedWaters.length;
+          if(e.key === 'ArrowUp' && !lakeSearchInput.hasAttribute('aria-activedescendant')) activeSuggestion = suggestedWaters.length-1;
+          [...suggestionsList.children].forEach((option,index)=>option.setAttribute('aria-selected',String(index===activeSuggestion)));
+          const option = suggestionsList.children[activeSuggestion];
+          lakeSearchInput.setAttribute('aria-activedescendant',option.id);
+          option.scrollIntoView({block:'nearest'});
+        } else if(e.key === 'Enter') {
+          if(!suggestionsList.hidden && activeSuggestion >= 0) {e.preventDefault();chooseSuggestion(activeSuggestion);}
+          else triggerSearch(e);
+        }
+      });
       lakeSearchBtn.addEventListener('click', triggerSearch);
 
       async function loadLakeData() {
@@ -1185,6 +1290,7 @@
           
           if(!lakesRes.ok) throw new Error("Lakes JSON not loaded");
           lakesData = await lakesRes.json();
+          if(document.activeElement === lakeSearchInput) showSuggestions();
           updateLegacySavedNotice();
           
           if(seasonsRes && seasonsRes.ok) {

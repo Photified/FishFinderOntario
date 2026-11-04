@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v80-tackle-colours-images';
+const CACHE_NAME = 'fish-finder-v82-waterbody-search';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
