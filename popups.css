@@ -53,11 +53,5 @@
   font-size:16px;
 }
 .popup-date-error {margin:8px 0;color:var(--popup-error);}
-.leaflet-tooltip.app-map-tooltip {
-  background:var(--card-bg);
-  color:var(--text-main);
-  border-color:var(--popup-border);
-}
-.leaflet-tooltip-top.app-map-tooltip::before {border-top-color:var(--card-bg);}
 :root {--popup-option:#f8fafc;--popup-border:#bac6d1;--popup-error:#982f29;}
 :root[data-theme="dark"] {--popup-option:#202e40;--popup-border:#556579;--popup-error:#fecaca;}

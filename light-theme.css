@@ -30,11 +30,10 @@ input::placeholder,textarea::placeholder {color:#67727e;opacity:1;}
 .species-list,.record-note,.lake-card .species-list,.access-summary,.access-note,.access-source,.access-distance,.access-facts dt,.access-note-label,.map-key-list dd span,#searchContext,.map-start-hint,.location-actions span,.legend-heading {color:var(--text-muted);}
 .stat-item {background:#f0f3f6;border:1px solid #d8dfe5;color:#354553;border-radius:4px;}
 .lake-note-display {background:#fff9e7;color:#4d5359;border-left-color:#b78a20;}
-.nearby-access-btn {background:#eee7f7;color:#60417f;border-color:#b29acb;border-radius:4px;}
 .setup-fish {background:#f8f9fb;color:#354553;border:1px solid #bdc7d2;border-radius:5px;}
 .setup-fish[aria-pressed="true"] {background:#e5edf8;border-color:#315f9b;}
 .setup-content {background:#fff;border:1px solid #bdc7d2;border-radius:5px;}
-.setup-heading h4,.setup-content summary,.setup-regulations,.lake-more summary,.access-source a {color:#315f9b;}
+.setup-heading h4,.setup-content summary,.lake-more summary,.access-source a {color:#315f9b;}
 .setup-heading button {color:#536475;}
 .setup-intro,.setup-lure p,.setup-extra p,.setup-conditions label {color:#53616e;}
 .setup-lure,.setup-color-section,.setup-content details {border-color:#d8dfe5;}
@@ -87,4 +86,3 @@ input::placeholder,textarea::placeholder {color:#67727e;opacity:1;}
 
 .lake-closure-badge {display:block;font-size:.73rem;line-height:1.4;color:#982f29;margin-top:5px;font-weight:600;}
 
-.stocking-previous {margin-top:10px;font-size:.8rem;color:#53616e;}.stocking-previous summary {min-height:44px;padding:10px 0;cursor:pointer;color:#315f9b;}.stocking-previous p {line-height:1.5;}

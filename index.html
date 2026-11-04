@@ -289,7 +289,6 @@
     .access-note-label textarea {display:block;box-sizing:border-box;width:100%;background:#121212;color:white;border:1px solid #475569;border-radius:8px;padding:10px;font:inherit;margin:6px 0 8px;resize:vertical;}
     .access-note-feedback {font-size:.8rem;color:#6ee7b7;margin-left:8px;}
     .access-back {margin:0 0 12px;}
-    .nearby-access-btn {width:100%;margin:12px 0 0;background:#30264a;color:#ddd6fe;border:1px solid #8b5cf6;border-radius:8px;min-height:44px;font:inherit;font-size:.85rem;cursor:pointer;}
     .map-wrapper {margin-bottom:6px;}
     .legend-icon {display:inline-flex;align-items:center;justify-content:center;flex:none;width:16px;height:18px;}
     .legend-icon svg {width:16px;height:18px;}
@@ -429,7 +428,6 @@
     .setup-colors {display:flex;flex-wrap:wrap;gap:8px;font-size:.8rem;}
     .setup-colors span {display:flex;align-items:center;gap:6px;}
     .setup-colors i {width:14px;height:14px;border-radius:50%;border:1px solid #94a3b8;}
-    .setup-regulations {color:#7dd3fc;text-decoration:underline;font-size:.8rem;display:inline-block;margin:12px 0 0;}
     .help-steps {padding-left:22px;line-height:1.6;font-size:.9rem;}
     .help-steps li {margin-bottom:16px;}
     @media(min-width:1000px) {
@@ -495,11 +493,6 @@
     #openMapOptions {flex-wrap:wrap;column-gap:4px;row-gap:0;}
     #mapLayerCount {font-size:.7rem;font-weight:700;}
     #crownLandDetails summary {color:var(--accent);cursor:pointer;padding:10px 0;}
-    .nearby-preview {list-style:none;margin:8px 0;padding:0;}
-    .nearby-preview li {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;font-size:.85rem;}
-    .nearby-preview small {display:block;color:var(--text-muted);}
-    .lake-section .nearby-preview button {width:auto;margin:0;padding:0 8px;flex:none;}
-    .nearby-preview li > div {min-width:0;overflow-wrap:anywhere;}
     .lake-section .rules-zones a,.rule-record a {color:var(--accent);text-decoration:underline;}
 
 </style>
@@ -1006,7 +999,6 @@
       let savedLakes = JSON.parse(localStorage.getItem('savedLakesData')) || {};
       let lakeMarkers = {};
       let areaCenter = null, selectedLakeId = null, favoritesOnly = false;
-      let accessReturnState = null;
       let matchingWaters = [], visibleWaters = [], listLimit = 30, refreshingMap = false;
       let preserveViewport = false, resultsScroll = 0;
       window.addEventListener('map-return', () => map.invalidateSize({pan:false}));
@@ -1643,9 +1635,8 @@
           if (lake.isStocked && lake.stockingInfo) {
             stockingContentHTML = `
               <div style="margin-top: 10px; font-size: 0.75rem; line-height: 1.4;">
-                <span style="color: #354553; font-weight: bold;">${(() => { const years = (lake.stockingInfo + ' ' + (lake.previousStockingInfo || '')).match(/\b20\d{2}\b/g); return years ? 'Last recorded stocking: ' + Math.max(...years.map(Number)) : 'Stocking record (year unknown)'; })()}:</span><br>
+                <span style="color: #354553; font-weight: bold;">${(() => { const years = lake.stockingInfo.match(/\b20\d{2}\b/g); return years ? 'Last recorded stocking: ' + Math.max(...years.map(Number)) : 'Stocking record (year unknown)'; })()}</span><br>
                 <span style="color: ${isStockedMatch ? '#237346' : '#53616e'};">${LakeSetups.escape(lake.stockingInfo)}</span>
-                ${lake.previousStockingInfo ? `<details class="stocking-previous"><summary>Previously included stocking record</summary><p>${LakeSetups.escape(lake.previousStockingInfo)}</p></details>` : ''}
               </div>`;
           }
 
@@ -1675,7 +1666,7 @@
                 ${lake.stockedSpeciesNames?.length ? `<p class="species-list"><strong>Stocking records:</strong> ${LakeSetups.escape(lake.stockedSpeciesNames.join(', '))}. Stocked species are also available below.</p>` : ''}
                 ${uniqueId === selectedLakeId ? LakeSetups.render(uniqueId, getAdvisorFishTypes(lake), lake) : ''}</section>
                 <section class="lake-section"><h4>Waterbody details</h4>${statsTextHTML}</section>
-                <section class="lake-section"><h4>Stocking history</h4>${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}</section>
+                <section class="lake-section"><h4>Stocking history</h4>${stockingContentHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'}</section>
 
                 <section class="lake-section"><h4>Your notes &amp; sources</h4>
                 <div class="note-section">
@@ -1687,7 +1678,6 @@
                 ${lake.dataSources?.length ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : ''}
                 <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn google-maps-btn">View on Google Maps</a>
                 </section>
-                ${uniqueId === selectedLakeId ? `<section class="lake-section"><h4>Nearby access</h4><div data-nearby-preview>${accessUI?.preview(lake) || ''}</div></section>` : ''}
               </div>
             </div>`;
         });
@@ -1696,17 +1686,6 @@
       }
 
       document.getElementById('ff-results').addEventListener('click', function(e) {
-        const accessButton = e.target.closest('[data-nearby-point], [data-nearby-browse], [data-nearby-retry]');
-        if(accessButton) {
-          if(accessButton.hasAttribute('data-nearby-retry')) {accessUI?.retry();return;}
-          const lake = lakesData.find(l => getLakeId(l) === e.target.closest('.lake-card').dataset.lakeid);
-          if(lake) {
-            accessReturnState = {id:getLakeId(lake), center:map.getCenter(), zoom:map.getZoom(),
-              area:areaCenter, search:lakeSearchInput.value, favorites:favoritesOnly};
-            accessUI?.nearby(lake, accessButton.dataset.nearbyPoint);
-          }
-          return;
-        }
         const infoToggle = e.target.closest('.info-toggle, .lake-header-left');
         if (infoToggle && !e.target.closest('.star-btn')) {
           const id = e.target.closest('.lake-card').dataset.lakeid;
@@ -1738,31 +1717,12 @@
         map, waterLayer: markersLayer,
         state: () => ({origin:areaCenter || cachedUserLocation,units:appUnits,favoritesOnly,term:lakeSearchInput.value.trim(),waterMatches:searchAreaHasWater}),
         distance: calculateDistance,
-        refreshPreview: () => {
-          const container = document.querySelector('[data-nearby-preview]');
-          const lake = container && lakesData.find(l => getLakeId(l) === selectedLakeId);
-          if(lake && accessUI) container.innerHTML = accessUI.preview(lake);
-        },
         clearLake: () => updateSelection(null),
         setWaterSearchVisible: visible => {
           if (!searchMarker) return;
           if (visible && !map.hasLayer(searchMarker)) searchMarker.addTo(map);
           if (!visible && map.hasLayer(searchMarker)) map.removeLayer(searchMarker);
         },
-        backToLake: () => {
-          if (!accessReturnState) return;
-          const previous = accessReturnState;
-          areaCenter = previous.area; lakeSearchInput.value = previous.search;
-          favoritesOnly = previous.favorites;
-          const savedButton = document.getElementById('viewFavoritesBtn');
-          savedButton.classList.toggle('active', favoritesOnly);
-          savedButton.setAttribute('aria-pressed', favoritesOnly);
-          preserveViewport = true; findClosestLakes(currentActiveSpecies || 'all'); preserveViewport = false;
-          map.setView(previous.center, previous.zoom, {animate:false});
-          updateSelection(previous.id, true);
-          accessReturnState = null;
-        },
-        clearSearch: () => {lakeSearchInput.value='';areaCenter=null;findClosestLakes(currentActiveSpecies || 'all');}
       });
       loadLakeData();
 
