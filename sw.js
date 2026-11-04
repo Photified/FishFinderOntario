@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v96-compact-map-layers';
+const CACHE_NAME = 'fish-finder-v97-separate-help-settings';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
