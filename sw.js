@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v95-fisheries-zones';
+const CACHE_NAME = 'fish-finder-v96-compact-map-layers';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

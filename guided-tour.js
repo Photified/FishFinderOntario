@@ -9,6 +9,20 @@
     <li><strong>Tap a fish inside its card.</strong> The main fish filter hides when a waterbody is open. Pictured fish inside its card open bait and tackle recommendations right there. Adjust conditions if you know them, or use the general suggestions.</li>
     <li><strong>Find access and save spots.</strong> Use Boat launches or Shore access above the results. The three browsing choices show one type of location at a time. Map layers contains overlays and the map symbols. Stars save spots on this device.</li></ol>
     <p class="record-note">Recorded fish and access information do not guarantee current conditions. Check the official fishing regulations before your trip.</p>
+    <p class="record-note">The Fisheries Management Zones layer uses teal outlines and FMZ labels to show approximate zone boundaries.</p>
+    <details id="crownLandDetails">
+      <summary>Crown land sources and access cautions</summary>
+      <p>Green shading shows Crown land records, including some lakebeds. Dashed purple outlines show land use policy areas. Tap the map to look up a policy ID when that layer is on.</p>
+      <ul>
+        <li>Mapping is approximate and may be incomplete or out of date. Do not use it as a legal survey or navigation guide. Unshaded land is not necessarily private land.</li>
+        <li>Shading does not confirm a public route, a usable shoreline, parking or permission to enter. Check private property, leases, posted signs and road closures.</li>
+        <li>Local rules may restrict vehicles, camping or other activities. Parks, conservation reserves and Far North community land use plans may have separate requirements.</li>
+        <li>Check the official policy report and current fishing regulations before visiting. The overlay requires an internet connection.</li>
+      </ul>
+      <p><a href="https://www.ontario.ca/page/crown-land-use-policy-atlas" target="_blank" rel="noopener noreferrer">Ontario Crown Land Use Policy Atlas and reports</a><br>
+      <a href="https://www.ontario.ca/page/recreational-activities-on-crown-land" target="_blank" rel="noopener noreferrer">Official recreation and access guidance</a></p>
+      <p>Source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence – Ontario</a>. Fish Finder Ontario is not endorsed by the Government of Ontario.</p>
+    </details>
     <div class="help-dialog-actions"><button class="btn-secondary" type="button" data-help-settings>Settings</button></div>`;
   document.body.append(help);
   help.querySelector('button').addEventListener('click', () => help.close());

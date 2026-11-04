@@ -488,8 +488,9 @@
     .crown-status[hidden],.crown-status button[hidden] {display:none;}
     .crown-status button {display:block;min-height:36px;margin-top:5px;padding:5px 12px;background:#29465f;color:#fff;border:1px solid #7dd3fc;border-radius:5px;cursor:pointer;}
     .crown-key-row {display:flex;align-items:center;gap:10px;margin:12px 0;}
-    .crown-policy-option {display:flex;align-items:center;gap:10px;min-height:44px;margin:12px 0;font-weight:600;cursor:pointer;}
-    .crown-policy-option input {width:20px;height:20px;}
+    .map-layer-option {display:flex;align-items:center;gap:10px;min-height:44px;margin:0;font-weight:600;cursor:pointer;}
+    .map-layer-dependent {margin-left:30px;font-size:.9rem;}
+    .map-layer-option input {width:20px;height:20px;flex:none;}
     #crownLandDetails p,#crownLandDetails li {font-size:.86rem;line-height:1.5;color:#cbd5e1;}
     #crownLandDetails ul {padding-left:20px;list-style:disc;}
     #crownLandDetails li {margin:8px 0;}
@@ -587,23 +588,10 @@
 
 <dialog id="mapOptionsDialog" class="simple-dialog" aria-labelledby="mapOptionsTitle">
   <div class="dialog-heading"><h2 id="mapOptionsTitle">Map layers</h2><button type="button" data-close-dialog aria-label="Close map layers">✕</button></div>
-  <label class="crown-policy-option"><input id="crownLandToggle" type="checkbox"><span class="crown-swatch" aria-hidden="true"></span>Crown land</label>
-  <p class="record-note">Green shading shows Crown land records, including some lakebeds. Check access before visiting.</p>
-  <label class="crown-policy-option"><input id="crownPolicyToggle" type="checkbox" checked disabled><span class="crown-policy-swatch" aria-hidden="true"></span>Policy boundaries with Crown land</label>
-  <p class="record-note">Dashed purple outlines show land use policy areas. Tap the map to look up a policy ID when the layer is on.</p>
-  <details id="crownLandDetails"><summary>Crown land sources and access cautions</summary>
-  <ul>
-    <li>Mapping is approximate and may be incomplete or out of date. Do not use it as a legal survey or navigation guide. Unshaded land is not necessarily private land.</li>
-    <li>Shading does not confirm a public route, a usable shoreline, parking or permission to enter. Check private property, leases, posted signs and road closures.</li>
-    <li>Local rules may restrict vehicles, camping or other activities. Parks, conservation reserves and Far North community land use plans may have separate requirements.</li>
-    <li>Check the official policy report and current fishing regulations before visiting. The overlay requires an internet connection.</li>
-  </ul>
-  <p><a href="https://www.ontario.ca/page/crown-land-use-policy-atlas" target="_blank" rel="noopener noreferrer">Ontario Crown Land Use Policy Atlas and reports</a><br>
-  <a href="https://www.ontario.ca/page/recreational-activities-on-crown-land" target="_blank" rel="noopener noreferrer">Official recreation and access guidance</a></p>
-  <p>Source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence – Ontario</a>. Fish Finder Ontario is not endorsed by the Government of Ontario.</p>
-  </details>
-  <label class="crown-policy-option"><input id="fisheriesZonesToggle" type="checkbox"><span class="fisheries-zone-swatch" aria-hidden="true"></span>Fisheries Management Zones</label>
-  <p class="record-note">Teal outlines and FMZ labels show approximate zone boundaries.</p>
+  <label class="map-layer-option"><input id="crownLandToggle" type="checkbox"><span class="crown-swatch" aria-hidden="true"></span>Crown land</label>
+  <label class="map-layer-option"><input id="fisheriesZonesToggle" type="checkbox"><span class="fisheries-zone-swatch" aria-hidden="true"></span>Fisheries Management Zones</label>
+  <label class="map-layer-option map-layer-dependent"><input id="crownPolicyToggle" type="checkbox" checked disabled><span class="crown-policy-swatch" aria-hidden="true"></span>Policy boundaries with Crown land</label>
+  <p class="record-note">Crown land shading does not confirm public access. See Help for access guidance.</p>
   <p id="fisheriesZonesStatus" class="record-note" role="status" hidden></p>
   <h3>Map symbols</h3>
   <dl class="map-key-list">
@@ -715,7 +703,7 @@
       <h4>Map attribution</h4>
       <p>Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>, available under the Open Database Licence.</p>
       <h4>Crown land overlay sources</h4>
-      <p>Live Ontario mapping. Green shading combines <a href="https://data.ontario.ca/dataset/crown-land-ministry-unpatented-land" target="_blank" rel="noopener noreferrer">ministry unpatented land</a> and <a href="https://data.ontario.ca/dataset/crown-land-ministry-acquisitions" target="_blank" rel="noopener noreferrer">ministry acquisitions</a>. Dashed boundaries use <a href="https://data.ontario.ca/dataset/b2232809-7974-4dcf-b9b4-01721aa324f3" target="_blank" rel="noopener noreferrer">CLUPA Provincial policy areas</a>. Open Crown land sources and access cautions in Map layers for access cautions and official policy guidance.</p>
+      <p>Live Ontario mapping. Green shading combines <a href="https://data.ontario.ca/dataset/crown-land-ministry-unpatented-land" target="_blank" rel="noopener noreferrer">ministry unpatented land</a> and <a href="https://data.ontario.ca/dataset/crown-land-ministry-acquisitions" target="_blank" rel="noopener noreferrer">ministry acquisitions</a>. Dashed boundaries use <a href="https://data.ontario.ca/dataset/b2232809-7974-4dcf-b9b4-01721aa324f3" target="_blank" rel="noopener noreferrer">CLUPA Provincial policy areas</a>. Open Crown land sources and access cautions in Help for access cautions and official policy guidance.</p>
       <h4>Government sources</h4>
       <p>Data source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence &ndash; Ontario</a>.</p>
       <ul>
