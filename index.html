@@ -474,6 +474,25 @@
     .waterbody-suggestions strong {display:block;font-size:.9rem;color:#f8fafc;}
     .waterbody-suggestions small {display:block;margin-top:3px;font-size:.75rem;color:#b9c9da;}
     .search-announcement {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+    .crown-control {display:flex;overflow:hidden;border:1px solid #52657b;border-radius:9px;box-shadow:0 2px 8px #0004;background:#172131;color:#f8fafc;}
+    .crown-control button {min-height:44px;border:0;background:transparent;color:inherit;font:600 13px system-ui;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 10px;}
+    .crown-control #crownLandInfo {min-width:44px;border-left:1px solid #52657b;font-size:20px;}
+    .crown-control button[aria-pressed="true"] {background:#314c2c;color:#e3f4d8;}
+    .crown-swatch {display:inline-block;width:14px;height:14px;flex:none;background:#8bac75;border:1px solid #39672b;border-radius:2px;}
+    .crown-policy-swatch {display:inline-block;width:24px;height:16px;border:2px dashed #773e92;flex:none;}
+    .crown-status {max-width:230px;padding:7px 10px;border-radius:7px;background:#172131ee;color:#f1f5f9;font:12px/1.4 system-ui;box-shadow:0 2px 8px #0003;}
+    .leaflet-bottom .crown-status {margin-bottom:42px;}
+    .crown-status[hidden],.crown-status button[hidden] {display:none;}
+    .crown-status button {display:block;min-height:36px;margin-top:5px;padding:5px 12px;background:#29465f;color:#fff;border:1px solid #7dd3fc;border-radius:5px;cursor:pointer;}
+    .crown-key-row {display:flex;align-items:center;gap:10px;margin:12px 0;}
+    .crown-policy-option {display:flex;align-items:center;gap:10px;min-height:44px;margin:12px 0;font-weight:600;cursor:pointer;}
+    .crown-policy-option input {width:20px;height:20px;}
+    #crownLandDialog p,#crownLandDialog li {font-size:.86rem;line-height:1.5;color:#cbd5e1;}
+    #crownLandDialog ul {padding-left:20px;list-style:disc;}
+    #crownLandDialog li {margin:8px 0;}
+    #crownLandDialog a {color:#7dd3fc;text-decoration:underline;}
+    .crown-policy-popup {font:13px/1.45 system-ui;}
+    .location-loading {top:68px;}
 </style>
 </head>
 <body>
@@ -540,7 +559,26 @@
     </div>
   </div>
 
+<dialog id="crownLandDialog" class="simple-dialog">
+  <div class="dialog-heading"><h2>Crown land &amp; policy areas</h2><button type="button" data-close-dialog aria-label="Close Crown land information">✕</button></div>
+  <div class="crown-key-row"><span class="crown-swatch" aria-hidden="true"></span><strong>Green shading · Crown land records</strong></div>
+  <p>Ontario ministry unpatented land and acquisition records. These include some land under water and land subject to leases or other interests. Coverage is not a complete map of all public land.</p>
+  <div class="crown-key-row"><span class="crown-policy-swatch" aria-hidden="true"></span><strong>Dashed purple · Land use policy areas</strong></div>
+  <p>Ontario’s CLUPA Provincial boundaries show where area-specific policies apply. They are not ownership boundaries or confirmation of shore access. Tap the map with the overlay on to look up an area’s name and policy ID.</p>
+  <label class="crown-policy-option"><input id="crownPolicyToggle" type="checkbox" checked>Show policy boundaries with Crown land</label>
+  <ul>
+    <li>Mapping is approximate and may be incomplete or out of date. Do not use it as a legal survey or navigation guide. Unshaded land is not necessarily private land.</li>
+    <li>Shading does not confirm a public route, a usable shoreline, parking or permission to enter. Check private property, leases, posted signs and road closures.</li>
+    <li>Local rules may restrict vehicles, camping or other activities. Parks, conservation reserves and Far North community land use plans may have separate requirements.</li>
+    <li>Check the official policy report and current fishing regulations before visiting. The overlay requires an internet connection.</li>
+  </ul>
+  <p><a href="https://www.ontario.ca/page/crown-land-use-policy-atlas" target="_blank" rel="noopener noreferrer">Ontario Crown Land Use Policy Atlas and reports</a><br>
+  <a href="https://www.ontario.ca/page/recreational-activities-on-crown-land" target="_blank" rel="noopener noreferrer">Official recreation and access guidance</a></p>
+  <p>Source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence – Ontario</a>. Fish Finder Ontario is not endorsed by the Government of Ontario.</p>
+</dialog>
 <dialog id="mapOptionsDialog" class="simple-dialog"><div class="dialog-heading"><h2>Map key</h2><button type="button" data-close-dialog aria-label="Close map key">✕</button></div><dl class="map-key-list">
+      <dt><span class="crown-swatch" aria-hidden="true"></span></dt><dd><strong>Crown land overlay</strong><span>Green land records, including some lakebeds. Access is not confirmed.</span></dd>
+      <dt><span class="crown-policy-swatch" aria-hidden="true"></span></dt><dd><strong>Policy boundaries</strong><span>Dashed purple land use policy areas. Not ownership boundaries.</span></dd>
       <dt><i class="legend-dot pin-blue" aria-hidden="true"></i></dt><dd><strong>Waterbodies</strong><span>Recorded waterbody location, not an access point.</span></dd>
       <dt><span class="legend-icon access-launch"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h16l-3 5H7zM8 14V7h7l3 7M11 7V4M3 22l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span></dt><dd><strong>Boat launches</strong><span>Recorded places to launch a boat.</span></dd>
       <dt><span class="legend-icon access-shore"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 17l4-6 3 3 5-10M15 4h5v5M3 23l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span></dt><dd><strong>Shore access</strong><span>Recorded shoreline fishing access.</span></dd>
@@ -647,6 +685,8 @@
     <div class="data-sources">
       <h4>Map attribution</h4>
       <p>Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>, available under the Open Database Licence.</p>
+      <h4>Crown land overlay sources</h4>
+      <p>Live Ontario mapping. Green shading combines <a href="https://data.ontario.ca/dataset/crown-land-ministry-unpatented-land" target="_blank" rel="noopener noreferrer">ministry unpatented land</a> and <a href="https://data.ontario.ca/dataset/crown-land-ministry-acquisitions" target="_blank" rel="noopener noreferrer">ministry acquisitions</a>. Dashed boundaries use <a href="https://data.ontario.ca/dataset/b2232809-7974-4dcf-b9b4-01721aa324f3" target="_blank" rel="noopener noreferrer">CLUPA Provincial policy areas</a>. Use the map’s Crown land information button for access cautions and official policy guidance.</p>
       <h4>Government sources</h4>
       <p>Data source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence &ndash; Ontario</a>.</p>
       <ul>
@@ -718,6 +758,7 @@
 
   <script src="access-points.js"></script>
   <script src="lake-setups.js"></script>
+  <script src="crown-land.js"></script>
   <script src="guided-tour.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -930,6 +971,7 @@
       });
 
       let map = L.map('map').fitBounds([[41.7,-83.5],[46.5,-74.3]]);
+      CrownLand.init(map);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>' }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
       let searchMarker = null;

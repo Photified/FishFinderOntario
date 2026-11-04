@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v82-waterbody-search';
+const CACHE_NAME = 'fish-finder-v83-crown-land-overlay';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -6,6 +6,7 @@ const ASSETS_TO_CACHE = [
   './access-points.js',
   './guided-tour.js',
   './lake-setups.js',
+  './crown-land.js',
   './accessPoints.json',
   './recommendations-data.js',
   './lakesData.json',
