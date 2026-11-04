@@ -1368,6 +1368,7 @@
           
           if(!lakesRes.ok) throw new Error("Lakes JSON not loaded");
           lakesData = await lakesRes.json();
+          mergeDuplicateLakeSaves();
           let rulesData = null;
           try { if(rulesRes?.ok) rulesData = await rulesRes.json(); } catch(error) { console.warn('Fishing rules unavailable'); }
           FishingRules.init(rulesData);
@@ -1551,6 +1552,19 @@
       }
 
       function getLakeId(lake) { return lake.appId || lake.legacyId || `${lake.name}-${lake.lat}-${lake.lon}`; }
+
+      function mergeDuplicateLakeSaves() {
+        for (const lake of lakesData) {
+          const oldId = lake.mergedFromId;
+          if (!oldId || !savedLakes[oldId]) continue;
+          const id = getLakeId(lake);
+          const oldSave = savedLakes[oldId];
+          const currentSave = savedLakes[id];
+          const notes = new Set([currentSave?.note, oldSave.note].filter(Boolean));
+          savedLakes[id] = { ...oldSave, ...currentSave, note: [...notes].join('\n\n') };
+          delete savedLakes[oldId];
+        }
+      }
 
       // Keep ambiguous old saves intact; never guess which unnamed lake a note belonged to.
       function updateLegacySavedNotice() {

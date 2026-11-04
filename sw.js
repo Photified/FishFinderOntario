@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v93-osm-tile-url';
+const CACHE_NAME = 'fish-finder-v94-french-river-waterbodies';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
