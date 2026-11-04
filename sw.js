@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v94-french-river-waterbodies';
+const CACHE_NAME = 'fish-finder-v95-fisheries-zones';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -7,6 +7,7 @@ const ASSETS_TO_CACHE = [
   './guided-tour.js',
   './lake-setups.js',
   './crown-land.js',
+  './fisheries-zones.js',
   './fishing-rules.js',
   './fishingRulesData.json',
   './light-theme.css',
@@ -62,7 +63,7 @@ self.addEventListener('fetch', event => {
     const cached = await cache.match(event.request);
     if (cached) return cached;
     const response = await fetch(event.request);
-    if (response.ok && url.pathname.includes('/images/')) {
+    if (response.ok && (url.pathname.includes('/images/') || url.pathname.endsWith('/fisheries-zones.geojson'))) {
       await cache.put(event.request, response.clone()).catch(() => {});
     }
     return response;

@@ -481,6 +481,8 @@
     .crown-control button[aria-pressed="true"] {background:#314c2c;color:#e3f4d8;}
     .crown-swatch {display:inline-block;width:14px;height:14px;flex:none;background:#8bac75;border:1px solid #39672b;border-radius:2px;}
     .crown-policy-swatch {display:inline-block;width:24px;height:16px;border:2px dashed #773e92;flex:none;}
+    .fisheries-zone-swatch {display:inline-block;width:24px;height:16px;border:2px solid #08656d;flex:none;}
+    .fisheries-zone-label {display:grid;place-items:center;color:#064e55;background:#f5fffe;border:1px solid #08656d;border-radius:4px;font:700 11px/1 system-ui;white-space:nowrap;}
     .crown-status {max-width:230px;padding:7px 10px;border-radius:7px;background:#172131ee;color:#f1f5f9;font:12px/1.4 system-ui;box-shadow:0 2px 8px #0003;}
     .leaflet-bottom .crown-status {margin-bottom:42px;}
     .crown-status[hidden],.crown-status button[hidden] {display:none;}
@@ -600,6 +602,9 @@
   <a href="https://www.ontario.ca/page/recreational-activities-on-crown-land" target="_blank" rel="noopener noreferrer">Official recreation and access guidance</a></p>
   <p>Source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence – Ontario</a>. Fish Finder Ontario is not endorsed by the Government of Ontario.</p>
   </details>
+  <label class="crown-policy-option"><input id="fisheriesZonesToggle" type="checkbox"><span class="fisheries-zone-swatch" aria-hidden="true"></span>Fisheries Management Zones</label>
+  <p class="record-note">Teal outlines and FMZ labels show approximate zone boundaries.</p>
+  <p id="fisheriesZonesStatus" class="record-note" role="status" hidden></p>
   <h3>Map symbols</h3>
   <dl class="map-key-list">
       <dt><i class="legend-dot pin-blue" aria-hidden="true"></i></dt><dd><strong>Waterbodies</strong><span>Recorded waterbody location, not an access point.</span></dd>
@@ -716,6 +721,7 @@
       <ul>
         <li><a href="https://data.ontario.ca/dataset/recreational-fishing-regulations-data" target="_blank" rel="noopener noreferrer">2026 Recreational fishing regulations, November 3 source file</a></li>
         <li><a href="https://www.ontario.ca/page/bait-and-fisheries-management-zones" target="_blank" rel="noopener noreferrer">Bait and fisheries management zones</a></li>
+        <li><a href="https://data.ontario.ca/en/dataset/fisheries-management-zone" target="_blank" rel="noopener noreferrer">Fisheries Management Zone boundaries</a> (simplified for map display)</li>
         <li><a href="https://data.ontario.ca/dataset/ontario-waterbody-location-identifier" target="_blank" rel="noopener noreferrer">Ontario Waterbody Location Identifier</a></li>
         <li><a href="https://data.ontario.ca/dataset/fishing-access-points" target="_blank" rel="noopener noreferrer">Fishing Access Point</a></li>
         <li><a href="https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about" target="_blank" rel="noopener noreferrer">Aquatic Resource Area Polygon Segment</a></li>
@@ -791,6 +797,7 @@
   <script src="fishing-rules.js"></script>
   <script src="lake-setups.js"></script>
   <script src="crown-land.js"></script>
+  <script src="fisheries-zones.js"></script>
   <script src="guided-tour.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -1006,6 +1013,7 @@
 
       let map = L.map('map').fitBounds([[41.7,-83.5],[46.5,-74.3]]);
       CrownLand.init(map);
+      FisheriesZones.init(map);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>' }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
       let searchMarker = null;
@@ -1593,7 +1601,14 @@
           .filter(id => Object.prototype.hasOwnProperty.call(fishTypes, id)).map(id => [id, fishTypes[id]]));
       }
 
-      document.getElementById('openMapOptions').addEventListener('click', () => document.getElementById('mapOptionsDialog').showModal());
+      const mapOptionsDialog = document.getElementById('mapOptionsDialog');
+      const mapLayerCount = document.getElementById('mapLayerCount');
+      mapOptionsDialog.addEventListener('change', () => {
+        const count = mapOptionsDialog.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)').length;
+        mapLayerCount.hidden = count === 0;
+        mapLayerCount.textContent = count ? `${count} active` : '';
+      });
+      document.getElementById('openMapOptions').addEventListener('click', () => mapOptionsDialog.showModal());
       document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
       document.getElementById('openGeneralAdviceBtn').addEventListener('click', () => {
         settingsModal.classList.remove('open');

@@ -32,14 +32,9 @@ window.CrownLand = {
     statusControl.addTo(map);
     const toggle = document.getElementById('crownLandToggle');
     const policyCheckbox = document.getElementById('crownPolicyToggle');
-    const count = document.getElementById('mapLayerCount');
     toggle.checked = enabled;
     policyCheckbox.checked = policies;
     policyCheckbox.disabled = !enabled;
-    function syncCount() {
-      count.hidden = !enabled;
-      count.textContent = enabled ? (policies ? '2 active' : '1 active') : '';
-    }
     function showStatus() {
       statusBox.hidden = !enabled;
       if(!enabled) return;
@@ -112,13 +107,12 @@ window.CrownLand = {
     toggle.addEventListener('change',()=>{
       enabled = toggle.checked;
       policyCheckbox.disabled = !enabled;
-      syncCount();
       clearTimeout(refreshTimer); stopQuery();
       if(enabled) {map.attributionControl.addAttribution(attribution);refresh();}
       else {layers.forEach(clearLayer);map.attributionControl.removeAttribution(attribution);showStatus();}
     });
     policyCheckbox.addEventListener('change',()=>{
-      policies = policyCheckbox.checked; syncCount(); stopQuery(); refresh();
+      policies = policyCheckbox.checked; stopQuery(); refresh();
     });
     retry.addEventListener('click',refresh);
     map.on('moveend resize',scheduleRefresh);
