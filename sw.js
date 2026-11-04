@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v85-rules-and-themes';
+const CACHE_NAME = 'fish-finder-v87-themed-popups';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -12,6 +12,8 @@ const ASSETS_TO_CACHE = [
   './light-theme.css',
   './dark-theme.css',
   './theme.js',
+  './app-popups.js',
+  './popups.css',
   './accessPoints.json',
   './recommendations-data.js',
   './lakesData.json',

@@ -20,14 +20,6 @@ window.CrownLand = {
       {name:'Crown land',service:landService,ids:[34,32],policy:false},
       {name:'Policy boundaries',service:policyService,ids:[5],policy:true}
     ].map(layer=>({...layer,state:'idle',image:null,timer:null,signature:'',generation:0}));
-    const control = L.control({position:'topright'});
-    control.onAdd = () => {
-      const box = L.DomUtil.create('div','crown-control');
-      box.innerHTML = '<button type="button" id="crownLandToggle" aria-pressed="false" title="Show Crown land overlay"><span class="crown-swatch" aria-hidden="true"></span>Crown land</button><button type="button" id="crownLandInfo" aria-label="Crown land information and policy boundaries" title="Crown land information"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg></button>';
-      L.DomEvent.disableClickPropagation(box); L.DomEvent.disableScrollPropagation(box);
-      return box;
-    };
-    control.addTo(map);
     const statusControl = L.control({position:'bottomleft'});
     let statusBox, statusText, retry;
     statusControl.onAdd = () => {
@@ -39,9 +31,15 @@ window.CrownLand = {
     };
     statusControl.addTo(map);
     const toggle = document.getElementById('crownLandToggle');
-    const dialog = document.getElementById('crownLandDialog');
     const policyCheckbox = document.getElementById('crownPolicyToggle');
-    document.getElementById('crownLandInfo').addEventListener('click',()=>dialog.showModal());
+    const count = document.getElementById('mapLayerCount');
+    toggle.checked = enabled;
+    policyCheckbox.checked = policies;
+    policyCheckbox.disabled = !enabled;
+    function syncCount() {
+      count.hidden = !enabled;
+      count.textContent = enabled ? (policies ? '2 active' : '1 active') : '';
+    }
     function showStatus() {
       statusBox.hidden = !enabled;
       if(!enabled) return;
@@ -111,16 +109,16 @@ window.CrownLand = {
       queryController?.abort(); queryController = null;
       if(policyPopup) {map.closePopup(policyPopup);policyPopup=null;}
     }
-    toggle.addEventListener('click',()=>{
-      enabled = !enabled;
-      toggle.setAttribute('aria-pressed',String(enabled));
-      toggle.title = enabled ? 'Hide Crown land overlay' : 'Show Crown land overlay';
+    toggle.addEventListener('change',()=>{
+      enabled = toggle.checked;
+      policyCheckbox.disabled = !enabled;
+      syncCount();
       clearTimeout(refreshTimer); stopQuery();
       if(enabled) {map.attributionControl.addAttribution(attribution);refresh();}
       else {layers.forEach(clearLayer);map.attributionControl.removeAttribution(attribution);showStatus();}
     });
     policyCheckbox.addEventListener('change',()=>{
-      policies = policyCheckbox.checked; stopQuery(); refresh();
+      policies = policyCheckbox.checked; syncCount(); stopQuery(); refresh();
     });
     retry.addEventListener('click',refresh);
     map.on('moveend resize',scheduleRefresh);
@@ -135,7 +133,7 @@ window.CrownLand = {
       const caution = document.createElement('p'); caution.textContent='Policy areas do not confirm Crown ownership or public access. Check the official report and local restrictions.';
       const link = document.createElement('a');link.href=atlasURL;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open Ontario’s policy atlas';
       content.append(heading,detail,caution,link);
-      policyPopup=L.popup({maxWidth:290}).setLatLng(event.latlng).setContent(content).openOn(map);
+      policyPopup=L.popup({maxWidth:290,className:'custom-popup'}).setLatLng(event.latlng).setContent(content).openOn(map);
       const timer = setTimeout(()=>controller.abort(),12000);
       try {
         const params = new URLSearchParams({f:'json',geometry:event.latlng.lng+','+event.latlng.lat,geometryType:'esriGeometryPoint',inSR:'4326',spatialRel:'esriSpatialRelIntersects',

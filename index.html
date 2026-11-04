@@ -487,15 +487,25 @@
     .crown-key-row {display:flex;align-items:center;gap:10px;margin:12px 0;}
     .crown-policy-option {display:flex;align-items:center;gap:10px;min-height:44px;margin:12px 0;font-weight:600;cursor:pointer;}
     .crown-policy-option input {width:20px;height:20px;}
-    #crownLandDialog p,#crownLandDialog li {font-size:.86rem;line-height:1.5;color:#cbd5e1;}
-    #crownLandDialog ul {padding-left:20px;list-style:disc;}
-    #crownLandDialog li {margin:8px 0;}
-    #crownLandDialog a {color:#7dd3fc;text-decoration:underline;}
+    #crownLandDetails p,#crownLandDetails li {font-size:.86rem;line-height:1.5;color:#cbd5e1;}
+    #crownLandDetails ul {padding-left:20px;list-style:disc;}
+    #crownLandDetails li {margin:8px 0;}
+    #crownLandDetails a {color:#7dd3fc;text-decoration:underline;}
     .crown-policy-popup {font:13px/1.45 system-ui;}
-    .location-loading {top:68px;}
+    #openMapOptions {flex-wrap:wrap;column-gap:4px;row-gap:0;}
+    #mapLayerCount {font-size:.7rem;font-weight:700;}
+    #crownLandDetails summary {color:var(--accent);cursor:pointer;padding:10px 0;}
+    .nearby-preview {list-style:none;margin:8px 0;padding:0;}
+    .nearby-preview li {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;font-size:.85rem;}
+    .nearby-preview small {display:block;color:var(--text-muted);}
+    .lake-section .nearby-preview button {width:auto;margin:0;padding:0 8px;flex:none;}
+    .nearby-preview li > div {min-width:0;overflow-wrap:anywhere;}
+    .lake-section .rules-zones a,.rule-record a {color:var(--accent);text-decoration:underline;}
+
 </style>
   <link id="lightTheme" rel="stylesheet" href="light-theme.css">
   <link id="darkTheme" rel="stylesheet" href="dark-theme.css" media="not all">
+  <link rel="stylesheet" href="popups.css">
   <script src="theme.js"></script>
 </head>
 <body>
@@ -536,7 +546,7 @@
     </div>
       </div>
       <div class="desktop-map-controls">
-<div class="map-toolbar">      <button id="locateMeBtn" class="locate-btn" type="button" aria-label="Use my location" title="Use my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>My location</span></button>      <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg><span>Saved spots</span></button><button id="openMapOptions" type="button">Map key <span aria-hidden="true">☷</span></button></div>
+<div class="map-toolbar">      <button id="locateMeBtn" class="locate-btn" type="button" aria-label="Use my location" title="Use my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>My location</span></button>      <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg><span>Saved spots</span></button><button id="openMapOptions" type="button"><span>Map layers</span><span id="mapLayerCount" hidden></span></button></div>
 
 
     <div class="map-layer-controls" role="group" aria-label="Browse waterbodies, boat launches or shore access">
@@ -562,13 +572,13 @@
     </div>
   </div>
 
-<dialog id="crownLandDialog" class="simple-dialog">
-  <div class="dialog-heading"><h2>Crown land &amp; policy areas</h2><button type="button" data-close-dialog aria-label="Close Crown land information">✕</button></div>
-  <div class="crown-key-row"><span class="crown-swatch" aria-hidden="true"></span><strong>Green shading · Crown land records</strong></div>
-  <p>Ontario ministry unpatented land and acquisition records. These include some land under water and land subject to leases or other interests. Coverage is not a complete map of all public land.</p>
-  <div class="crown-key-row"><span class="crown-policy-swatch" aria-hidden="true"></span><strong>Dashed purple · Land use policy areas</strong></div>
-  <p>Ontario’s CLUPA Provincial boundaries show where area-specific policies apply. They are not ownership boundaries or confirmation of shore access. Tap the map with the overlay on to look up an area’s name and policy ID.</p>
-  <label class="crown-policy-option"><input id="crownPolicyToggle" type="checkbox" checked>Show policy boundaries with Crown land</label>
+<dialog id="mapOptionsDialog" class="simple-dialog" aria-labelledby="mapOptionsTitle">
+  <div class="dialog-heading"><h2 id="mapOptionsTitle">Map layers</h2><button type="button" data-close-dialog aria-label="Close map layers">✕</button></div>
+  <label class="crown-policy-option"><input id="crownLandToggle" type="checkbox"><span class="crown-swatch" aria-hidden="true"></span>Crown land</label>
+  <p class="record-note">Green shading shows Crown land records, including some lakebeds. Check access before visiting.</p>
+  <label class="crown-policy-option"><input id="crownPolicyToggle" type="checkbox" checked disabled><span class="crown-policy-swatch" aria-hidden="true"></span>Policy boundaries with Crown land</label>
+  <p class="record-note">Dashed purple outlines show land use policy areas. Tap the map to look up a policy ID when the layer is on.</p>
+  <details id="crownLandDetails"><summary>Crown land sources and access cautions</summary>
   <ul>
     <li>Mapping is approximate and may be incomplete or out of date. Do not use it as a legal survey or navigation guide. Unshaded land is not necessarily private land.</li>
     <li>Shading does not confirm a public route, a usable shoreline, parking or permission to enter. Check private property, leases, posted signs and road closures.</li>
@@ -578,10 +588,9 @@
   <p><a href="https://www.ontario.ca/page/crown-land-use-policy-atlas" target="_blank" rel="noopener noreferrer">Ontario Crown Land Use Policy Atlas and reports</a><br>
   <a href="https://www.ontario.ca/page/recreational-activities-on-crown-land" target="_blank" rel="noopener noreferrer">Official recreation and access guidance</a></p>
   <p>Source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence – Ontario</a>. Fish Finder Ontario is not endorsed by the Government of Ontario.</p>
-</dialog>
-<dialog id="mapOptionsDialog" class="simple-dialog"><div class="dialog-heading"><h2>Map key</h2><button type="button" data-close-dialog aria-label="Close map key">✕</button></div><dl class="map-key-list">
-      <dt><span class="crown-swatch" aria-hidden="true"></span></dt><dd><strong>Crown land overlay</strong><span>Green land records, including some lakebeds. Access is not confirmed.</span></dd>
-      <dt><span class="crown-policy-swatch" aria-hidden="true"></span></dt><dd><strong>Policy boundaries</strong><span>Dashed purple land use policy areas. Not ownership boundaries.</span></dd>
+  </details>
+  <h3>Map symbols</h3>
+  <dl class="map-key-list">
       <dt><i class="legend-dot pin-blue" aria-hidden="true"></i></dt><dd><strong>Waterbodies</strong><span>Recorded waterbody location, not an access point.</span></dd>
       <dt><span class="legend-icon access-launch"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h16l-3 5H7zM8 14V7h7l3 7M11 7V4M3 22l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span></dt><dd><strong>Boat launches</strong><span>Recorded places to launch a boat.</span></dd>
       <dt><span class="legend-icon access-shore"><svg viewBox="0 0 24 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 17l4-6 3 3 5-10M15 4h5v5M3 23l3-2 3 2 3-2 3 2 3-2 3 2"/></svg></span></dt><dd><strong>Shore access</strong><span>Recorded shoreline fishing access.</span></dd>
@@ -690,7 +699,7 @@
       <h4>Map attribution</h4>
       <p>Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>, available under the Open Database Licence.</p>
       <h4>Crown land overlay sources</h4>
-      <p>Live Ontario mapping. Green shading combines <a href="https://data.ontario.ca/dataset/crown-land-ministry-unpatented-land" target="_blank" rel="noopener noreferrer">ministry unpatented land</a> and <a href="https://data.ontario.ca/dataset/crown-land-ministry-acquisitions" target="_blank" rel="noopener noreferrer">ministry acquisitions</a>. Dashed boundaries use <a href="https://data.ontario.ca/dataset/b2232809-7974-4dcf-b9b4-01721aa324f3" target="_blank" rel="noopener noreferrer">CLUPA Provincial policy areas</a>. Use the map’s Crown land information button for access cautions and official policy guidance.</p>
+      <p>Live Ontario mapping. Green shading combines <a href="https://data.ontario.ca/dataset/crown-land-ministry-unpatented-land" target="_blank" rel="noopener noreferrer">ministry unpatented land</a> and <a href="https://data.ontario.ca/dataset/crown-land-ministry-acquisitions" target="_blank" rel="noopener noreferrer">ministry acquisitions</a>. Dashed boundaries use <a href="https://data.ontario.ca/dataset/b2232809-7974-4dcf-b9b4-01721aa324f3" target="_blank" rel="noopener noreferrer">CLUPA Provincial policy areas</a>. Open Crown land sources and access cautions in Map layers for access cautions and official policy guidance.</p>
       <h4>Government sources</h4>
       <p>Data source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence &ndash; Ontario</a>.</p>
       <ul>
@@ -758,6 +767,11 @@
   </div>
 
 <dialog id="generalAdviceDialog" class="simple-dialog"><div class="dialog-heading"><h2>General fishing advice</h2><button type="button" data-close-dialog aria-label="Close fishing advice">✕</button></div><p class="record-note">Choose any supported species. These suggestions are independent of waterbody records.</p><div id="generalAdviceContent"></div></dialog>
+  <dialog id="appPopup" class="simple-dialog" aria-labelledby="appPopupTitle">
+    <div class="dialog-heading"><h2 id="appPopupTitle"></h2><button class="popup-close" type="button" aria-label="Close">✕</button></div>
+    <div id="appPopupBody"></div>
+  </dialog>
+  <script src="app-popups.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="recommendations-data.js"></script>
   <script src="app-data.js"></script>
@@ -1125,7 +1139,7 @@
       document.getElementById('locateMeBtn').addEventListener('click', () => {
         if (!navigator.geolocation) {
           window.FFGuide?.feedback('area','This browser cannot find your location. You can skip this step and search for a city later.');
-          alert("Geolocation is not supported by your browser."); return;
+          AppPopups.notice("Location unavailable", "This browser does not support geolocation."); return;
         }
         ++searchRequest;
         setLocationButtonState(true);
@@ -1138,7 +1152,9 @@
             lakeSearchInput.value = '';
             if(routeLineLayer) { map.removeLayer(routeLineLayer); routeLineLayer = null; }
 
-            document.getElementById('manualLocation').value = 'gps';
+            const locationField = document.getElementById('manualLocation');
+            locationField.value = 'gps';
+            locationField.dispatchEvent(new Event('input'));
             findClosestLakes(currentActiveSpecies || 'all');
             if (accessUI?.isAccess()) accessUI.exploreArea(cachedUserLocation);
             else frameNearbyWaterbodies();
@@ -1147,7 +1163,7 @@
           },
           (error) => {
             setLocationButtonState(false);
-            alert("Unable to retrieve your location.");
+            AppPopups.notice("Location unavailable", "The app could not retrieve your location.");
             window.FFGuide?.feedback('area','Could not get your location. Try the pin again, or skip this step and search for a city later.');
           },
           { timeout: 20000 }
@@ -1502,13 +1518,13 @@
             markersLayer.addLayer(marker);
           }
         });
-        if(cachedUserLocation && !areaCenter) L.marker([cachedUserLocation.lat,cachedUserLocation.lon],{icon:L.divIcon({className:'',html:'<div class="custom-pin pin-user"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).bindPopup('Starting location').addTo(markersLayer);
+        if(cachedUserLocation && !areaCenter) L.marker([cachedUserLocation.lat,cachedUserLocation.lon],{icon:L.divIcon({className:'',html:'<div class="custom-pin pin-user"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).bindPopup('Starting location',{className:'custom-popup'}).addTo(markersLayer);
         if(areaCenter) {
           if(!searchMarker) searchMarker=L.marker([areaCenter.lat,areaCenter.lon],{zIndexOffset:1000,
             icon:L.divIcon({className:'',html:'<div class="custom-pin pin-search"></div>',iconSize:[24,24],iconAnchor:[12,24]})}).addTo(map);
           else searchMarker.setLatLng([areaCenter.lat,areaCenter.lon]);
           const label=document.createElement('strong');label.textContent='Searched place: '+areaCenter.label;
-          searchMarker.bindPopup(label);
+          searchMarker.bindPopup(label,{className:'custom-popup'});
           searchMarker.off('click');
           if(areaCenter.lakeId) searchMarker.on('click',()=>updateSelection(areaCenter.lakeId,true));
         } else if(searchMarker) {map.removeLayer(searchMarker);searchMarker=null;}
@@ -1670,8 +1686,8 @@
                 ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
                 ${lake.dataSources?.length ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : ''}
                 <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn google-maps-btn">View on Google Maps</a>
-                <button type="button" class="nearby-access-btn">Explore access points nearby</button>
                 </section>
+                ${uniqueId === selectedLakeId ? `<section class="lake-section"><h4>Nearby access</h4><div data-nearby-preview>${accessUI?.preview(lake) || ''}</div></section>` : ''}
               </div>
             </div>`;
         });
@@ -1680,12 +1696,14 @@
       }
 
       document.getElementById('ff-results').addEventListener('click', function(e) {
-        if(e.target.closest('.nearby-access-btn')) {
+        const accessButton = e.target.closest('[data-nearby-point], [data-nearby-browse], [data-nearby-retry]');
+        if(accessButton) {
+          if(accessButton.hasAttribute('data-nearby-retry')) {accessUI?.retry();return;}
           const lake = lakesData.find(l => getLakeId(l) === e.target.closest('.lake-card').dataset.lakeid);
           if(lake) {
             accessReturnState = {id:getLakeId(lake), center:map.getCenter(), zoom:map.getZoom(),
               area:areaCenter, search:lakeSearchInput.value, favorites:favoritesOnly};
-            accessUI?.nearby(lake);
+            accessUI?.nearby(lake, accessButton.dataset.nearbyPoint);
           }
           return;
         }
@@ -1720,6 +1738,11 @@
         map, waterLayer: markersLayer,
         state: () => ({origin:areaCenter || cachedUserLocation,units:appUnits,favoritesOnly,term:lakeSearchInput.value.trim(),waterMatches:searchAreaHasWater}),
         distance: calculateDistance,
+        refreshPreview: () => {
+          const container = document.querySelector('[data-nearby-preview]');
+          const lake = container && lakesData.find(l => getLakeId(l) === selectedLakeId);
+          if(lake && accessUI) container.innerHTML = accessUI.preview(lake);
+        },
         clearLake: () => updateSelection(null),
         setWaterSearchVisible: visible => {
           if (!searchMarker) return;

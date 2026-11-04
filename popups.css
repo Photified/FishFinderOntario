@@ -1,0 +1,63 @@
+.popup-trigger {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  width:100%;
+  min-height:44px;
+  padding:8px 12px;
+  border:1px solid var(--popup-border);
+  border-radius:8px;
+  background:var(--popup-option);
+  color:var(--text-main);
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.popup-trigger::after {
+  content:'';
+  width:8px;
+  height:8px;
+  flex:none;
+  border:solid currentColor;
+  border-width:0 1.5px 1.5px 0;
+  transform:rotate(45deg) translateY(-2px);
+}
+.fishing-date-label .popup-trigger {width:auto;}
+.popup-options {display:grid;gap:4px;}
+.popup-options button {
+  min-height:44px;
+  padding:10px 12px;
+  text-align:left;
+  color:var(--text-main);
+  background:var(--popup-option);
+  border:1px solid var(--popup-border);
+  border-radius:8px;
+}
+.popup-options button:hover,.popup-trigger:hover {border-color:var(--accent);}
+.popup-options button[aria-current="true"] {border-color:var(--accent);font-weight:700;}
+.popup-options button[aria-current="true"]::after {content:'✓';float:right;color:var(--accent);}
+.popup-options button:disabled,.popup-trigger:disabled {opacity:.6;cursor:default;}
+#appPopup {max-width:420px;}
+#appPopupBody p {line-height:1.5;}
+.popup-date-fields {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.popup-date-fields label {font-size:.85rem;}
+.popup-date-fields input {
+  width:100%;
+  min-height:44px;
+  padding:8px;
+  background:var(--popup-option);
+  border:1px solid var(--popup-border);
+  border-radius:8px;
+  color:var(--text-main);
+  font-size:16px;
+}
+.popup-date-error {margin:8px 0;color:var(--popup-error);}
+.leaflet-tooltip.app-map-tooltip {
+  background:var(--card-bg);
+  color:var(--text-main);
+  border-color:var(--popup-border);
+}
+.leaflet-tooltip-top.app-map-tooltip::before {border-top-color:var(--card-bg);}
+:root {--popup-option:#f8fafc;--popup-border:#bac6d1;--popup-error:#982f29;}
+:root[data-theme="dark"] {--popup-option:#202e40;--popup-border:#556579;--popup-error:#fecaca;}

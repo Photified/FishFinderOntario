@@ -142,7 +142,7 @@ window.FishingAccess = {
     }
     function persist() {
       try {localStorage.setItem('savedAccessPointsData',JSON.stringify(saved));return true;}
-      catch (_) {alert('Your browser could not save this point. Check available storage or browser settings.');return false;}
+      catch (_) {AppPopups.notice('Could not save this point', 'Check your available storage or browser settings.');return false;}
     }
     host.addEventListener('click', event => {
       const button = event.target.closest('[data-access-action]'); if (!button) return;
@@ -177,8 +177,26 @@ window.FishingAccess = {
       }
       refresh();
     }
+    function preview(lake) {
+      if (status === 'loading') return '<p class="record-note">Loading nearby access…</p>';
+      if (status === 'error') return '<p class="record-note">Access points could not load.</p><button type="button" class="nearby-access-btn" data-nearby-retry>Retry access points</button>';
+      const candidates = points.map(point => ({
+        point, km:ctx.distance(lake.lat,lake.lon,point.lat,point.lon)
+      })).filter(item => item.km <= 25).sort((a,b) => a.km-b.km);
+      const nearest = [
+        candidates.find(({point}) => point.type === 'launch'),
+        candidates.find(({point}) => point.type !== 'launch')
+      ].filter(Boolean);
+      const miles = ctx.state().units.distance === 'imperial';
+      const rows = nearest.map(({point,km}) => `<li><div><strong>${escape(title(point))}</strong>
+        <small>${labels[point.type]} · ${(km * (miles ? 0.621371 : 1)).toFixed(1)} ${miles ? 'mi' : 'km'}</small></div>
+        <button type="button" class="nearby-access-btn" data-nearby-point="${escape(point.id)}" aria-label="Show ${escape(title(point))} on map">Show on map</button></li>`);
+      return (rows.length ? '<ul class="nearby-preview">'+rows.join('')+'</ul><p class="record-note">Straight-line distances from the waterbody pin. Nearby sites may serve a different waterbody.</p>'
+        : '<p class="record-note">No access points recorded within '+(miles ? '15.5 mi' : '25 km')+' of this waterbody pin.</p>')
+        + '<button type="button" class="nearby-access-btn" data-nearby-browse>Browse access points</button>';
+    }
     async function load() {
-      status='loading';render();
+      status='loading';render();ctx.refreshPreview?.();
       try {
         const response=await fetch('accessPoints.json'); if (!response.ok) throw new Error('Fetch failed');
         const data=await response.json();
@@ -188,12 +206,13 @@ window.FishingAccess = {
         if(pendingNearby && mode === 'access') {const lake=pendingNearby;pendingNearby=null;frameNearbyAccess(lake);}
         else refresh();
       } catch (_) {status='error';errorMessage='Could not load access points. Check your connection and try again. Waterbody search is still available.';render();}
+      finally {ctx.refreshPreview?.();}
     }
     syncControls();
     map.on('moveend', () => {listLimit=20;refresh();});
     load();
     return {
-      refresh,
+      refresh, preview, retry:load,
       showWaters() {setMode('waters',false);},
       isAccess() {return mode === 'access';},
       exploreArea(origin) {
@@ -202,23 +221,31 @@ window.FishingAccess = {
         else {pendingNearby=origin;map.setView([origin.lat,origin.lon],10);render();}
       },
       searchMatches: matchPoints,
-      nearby(lake) {
+      nearby(lake, pointId) {
+        const point = points.find(p => p.id === pointId);
         const favoritesButton = $('viewFavoritesBtn');
         if(ctx.state().favoritesOnly) favoritesButton.click();
         ctx.clearSearch();
         clearNearby();
         nearbyLake = lake;
-        setMode('launch');
+        setMode(point && point.type !== 'launch' ? 'shore' : 'launch');
         const label = document.createElement('span');
         label.textContent = lake.name;
         L.marker([lake.lat,lake.lon], {
           title:lake.name,
           icon:L.divIcon({className:'',html:'<div class="custom-pin pin-blue pin-active nearby-waterbody-pin"></div>',iconSize:[24,24],iconAnchor:[12,24]})
-        }).bindTooltip(label,{permanent:true,direction:'top',offset:[0,-24]})
+        }).bindTooltip(label,{permanent:true,direction:'top',offset:[0,-24],className:'app-map-tooltip'})
           .on('click', () => ctx.backToLake()).addTo(contextLayer);
-        if(status === 'ready') frameNearbyAccess(lake);
-        else {pendingNearby=lake;render();}
-        host.scrollIntoView({behavior:'smooth',block:'start'});
+        if(point) {
+          map.setView([point.lat,point.lon],18,{animate:false});
+          selected=point.id;
+          render();
+          $('map').scrollIntoView({behavior:'smooth',block:'center'});
+        } else {
+          if(status === 'ready') frameNearbyAccess(lake);
+          else {pendingNearby=lake;render();}
+          host.scrollIntoView({behavior:'smooth',block:'start'});
+        }
       }
     };
   }

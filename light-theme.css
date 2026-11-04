@@ -47,8 +47,8 @@ input::placeholder,textarea::placeholder {color:#67727e;opacity:1;}
 .modal-content .bg-gray-800,.modal-content .bg-gray-900 {background:#f4f6f8;color:#293a49;}
 .modal-content .border-gray-500,.modal-content .border-gray-600,.modal-content .border-gray-700 {border-color:#c3ccd5;}
 .data-info-dialog h3,.data-info-dialog a {color:#315f9b;}
-.data-info-dialog p,#crownLandDialog p,#crownLandDialog li {color:#53616e;}
-#crownLandDialog a {color:#315f9b;}
+.data-info-dialog p,#crownLandDetails p,#crownLandDetails li {color:#53616e;}
+#crownLandDetails a {color:#315f9b;}
 .waterbody-suggestions {background:#fff;border-color:#b1bdca;border-radius:4px;box-shadow:0 5px 16px #0002;}
 .waterbody-suggestions li:hover,.waterbody-suggestions li[aria-selected="true"] {background:#e6eef8;}
 .waterbody-suggestions strong {color:#263748;}.waterbody-suggestions small {color:#586674;}
