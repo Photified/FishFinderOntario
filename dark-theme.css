@@ -1,0 +1,25 @@
+:root {color-scheme:dark;}
+.rules-summary {display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+.rule-status {display:inline-block;font-size:.82rem;line-height:1.4;padding:5px 8px;border-radius:4px;background:#253a50;color:#bfdbfe;}
+.rule-status.closed {background:#4c252b;color:#fecaca;}.rule-status.open {background:#173f32;color:#a7f3d0;}.rule-status.check {background:#40351f;color:#fde68a;}
+.fishing-date-label {display:flex;align-items:center;gap:8px;font-size:.76rem;color:#b6c6d6;}
+.fishing-date {box-sizing:border-box;max-width:160px;min-height:40px;padding:7px;border:1px solid #475569;border-radius:4px;background:#17212d;color:#e2e8f0;font-size:.8rem;}
+.rules-zones,.rules-details p,.species-rules p {font-size:.8rem;line-height:1.5;color:#b6c6d6;margin:9px 0;}
+.rules-details summary,.species-rules summary {cursor:pointer;min-height:44px;padding:12px 0;color:#7dd3fc;font-size:.82rem;}
+.rules-details h5 {font-size:.85rem;font-weight:700;margin:14px 0 6px;}
+.rules-details a,.species-rules a {color:#7dd3fc;text-decoration:underline;}
+.rules-details {margin-top:4px;}.rule-record {border-top:1px solid #334155;padding:9px 0;overflow-wrap:anywhere;}
+.rule-record p {margin:4px 0;}.rule-record b {font-weight:600;}
+.rule-caution {color:#fde68a !important;}
+.species-rules {padding:12px;background:#172b3b;border:1px solid #475569;border-radius:4px;margin:10px 0;}
+.species-rules>p {margin:6px 0;}.species-rules details {margin:0;}
+@media(max-width:999px){#backResultsBtn {margin-top:14px;}}
+@media(max-width:480px){.rules-summary {gap:8px;}.fishing-date-label {width:100%;justify-content:space-between;}.lake-card {padding:12px;}.rules-details summary {line-height:1.5;}}
+
+.lake-closure-badge {display:block;font-size:.73rem;line-height:1.4;color:#fecaca;margin-top:5px;font-weight:600;}
+
+.stocking-previous {margin-top:10px;font-size:.8rem;color:#b6c6d6;}.stocking-previous summary {min-height:44px;padding:10px 0;cursor:pointer;color:#7dd3fc;}.stocking-previous p {line-height:1.5;}
+
+#fishSlider .fish-btn:first-child img {filter:brightness(0) invert(1);}
+.lake-card [style*="color: #354553"] {color:#e2e8f0 !important;}
+.lake-card [style*="color: #53616e"],.lake-card [style*="color: #237346"] {color:#b6c6d6 !important;}

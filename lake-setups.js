@@ -20,14 +20,15 @@ window.LakeSetups = (() => {
   }
 
   // Unknown conditions draw from all matching entries instead of assuming weather or temperature.
-  function getRecommendation(fish, conditions = {}) {
+  function getRecommendation(fish, conditions = {}, allow = () => true) {
     const matches = matchingRecommendations(fish, conditions);
-    if (matches.length === 1) return {...matches[0], specific:true};
+    if (matches.length === 1) return {...matches[0], lures:matches[0].lures.filter(allow), specific:true};
     const baits = new Map();
     const colorCounts = new Map();
     for (const rec of matches) {
       for (const color of rec.colors || []) colorCounts.set(color, (colorCounts.get(color) || 0) + 1);
       for (const lure of rec.lures) {
+        if (!allow(lure)) continue;
         if (!baits.has(lure.name)) baits.set(lure.name, {count:0, techniques:new Map()});
         const item = baits.get(lure.name);
         item.count++;
@@ -48,7 +49,9 @@ window.LakeSetups = (() => {
 
   function content(state) {
     if (!state.fish || !state.allowed[state.fish]) return '';
-    const rec = getRecommendation(state.fish, state.conditions);
+    const rule = window.FishingRules?.forSpecies(state.lake, state.fish) || {html:'',blocked:false,allow:()=>true};
+    if(rule.blocked) return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)}</h4><button type="button" data-setup-action="close" aria-label="Close recommendations">✕</button></div>${rule.html}</div>`;
+    const rec = getRecommendation(state.fish, state.conditions, rule.allow);
     const selected = Object.entries(state.conditions).filter(([,value]) => value).map(([key,value]) => groups[key][value].name);
     const intro = rec.specific ? `For ${selected.join(' · ').toLowerCase()}.` :
       selected.length ? `Starting suggestions for ${selected.join(' · ').toLowerCase()}. Unspecified conditions remain open.` :
@@ -56,6 +59,7 @@ window.LakeSetups = (() => {
     const conditionFields = [['weather','Weather'],['clarity','Water clarity'],['temp','Water temperature']].map(([key,label]) =>
       `<label>${label}<select name="${key}"><option value="">Not sure / any</option>${Object.entries(groups[key]).map(([value,item]) => `<option value="${value}"${state.conditions[key] === value ? ' selected' : ''}>${escape(item.name)}</option>`).join('')}</select></label>`).join('');
     return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)} bait and tackle recommendations</h4><button type="button" data-setup-action="close" aria-label="Close bait and tackle recommendations">✕</button></div>
+      ${rule.html}
       <p class="setup-intro">${escape(intro)}</p>
       ${rec.lures.map(lureHTML).join('') || '<p class="record-note">Suggestions are unavailable for these selections.</p>'}
       ${rec.colors?.length ? `<div class="setup-color-section"><h5>Suggested colours</h5><div class="setup-colors">${rec.colors.map(color => `<span><i style="background:${escape(colorMap[color]?.hex || '#ccc')}" aria-hidden="true"></i>${escape(color)}</span>`).join('')}</div></div>` : '<div class="setup-color-section"><h5>Suggested colours</h5><p class="record-note">No colour preference specified for these recommendations.</p></div>'}
@@ -68,11 +72,12 @@ window.LakeSetups = (() => {
       <p class="record-note">Suggestions depend on the species and conditions you choose. Check rules for your waterbody before fishing.</p></div>`;
   }
 
-  function render(id, allowed) {
+  function render(id, allowed, lake = null) {
     if (!Object.keys(allowed).length) return '<p class="record-note">Bait and tackle recommendations are not available for these species records.</p>';
     let state = contexts.get(id);
     if (!state) {state={fish:null, conditions:{weather:'',clarity:'',temp:''}, allowed};contexts.set(id,state);}
     state.allowed = allowed;
+    state.lake = lake;
     if (!allowed[state.fish]) state.fish = null;
     return `<div class="lake-setups" data-setup-context="${escape(id)}"><h5 class="setup-choice-heading">Choose a fish for bait and tackle recommendations</h5>
       <div class="setup-fish-grid">${Object.entries(allowed).map(([key,fish]) => `<button type="button" class="setup-fish" data-setup-fish="${escape(key)}" aria-pressed="${state.fish === key}"><img src="${escape(fish.imageSrc)}" alt="" loading="lazy"><span>${escape(fish.name)}</span></button>`).join('')}</div>
@@ -112,5 +117,6 @@ window.LakeSetups = (() => {
     heading.focus({preventScroll:true});
     heading.scrollIntoView({behavior:'smooth',block:'nearest'});
   });
-  return {render, escape, getRecommendation, speciesName: id => speciesLabels[id.replace(/[^a-z]/g, '')] || id};
+  function refresh() { document.querySelectorAll('.lake-setups').forEach(root=>{ const state=contexts.get(root.dataset.setupContext);if(state) root.querySelector('.setup-output').innerHTML=content(state); }); }
+  return {render, refresh, escape, getRecommendation, speciesName: id => speciesLabels[id.replace(/[^a-z]/g, '')] || id};
 })();

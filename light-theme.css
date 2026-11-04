@@ -1,0 +1,90 @@
+/* Fish Finder Ontario: restrained blue controls, light panels, independent branding. */
+:root {color-scheme:light;--bg-color:#f3f4f6;--card-bg:#fff;--text-main:#252a30;--text-muted:#56636f;--accent:#315f9b;--line:#d1d7de;}
+header {background:#333;box-shadow:none;border-bottom:1px solid #222;}
+body {background:var(--bg-color);color:var(--text-main);}
+button,input,select,textarea {font:inherit;}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible {outline:3px solid #3977bc;outline-offset:3px;}
+a {color:var(--accent);}
+.map-wrapper {border-radius:5px;box-shadow:0 1px 4px #0002;border:1px solid #c3cad0;}
+.lake-card,.access-card {border:1px solid var(--line);border-radius:5px;box-shadow:0 1px 2px #0001;}
+.lake-card.active-highlight {border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.lake-card.stocked-highlight {background:#f4faf6;border-color:#52876a;box-shadow:none;}
+.search-container input,.custom-textarea,.access-note-label textarea {background:#fff;color:var(--text-main);border:1px solid #b8c1ca;border-radius:4px;}
+input::placeholder,textarea::placeholder {color:#67727e;opacity:1;}
+.map-toolbar button,.map-layer-controls button,.btn-secondary,.note-btn,.access-actions button,.access-actions a,.access-back,.access-note-save,.dialog-heading button,.info-toggle,.fish-scroll-arrow {background:#f5f6f7;color:#31547a;border:1px solid #bdc7d2;border-radius:4px;box-shadow:none;}
+.map-toolbar button:hover,.map-layer-controls button:hover,.btn-secondary:hover,.info-toggle:hover,.fish-scroll-arrow:hover,.note-btn:hover {background:#e7edf4;}
+.map-toolbar #viewFavoritesBtn.active {background:#fff1c5;border-color:#b38312;color:#6c4d00;}
+.map-layer-controls button[aria-pressed="true"] {background:#e4edf8;border-color:#315f9b;color:#244c7c;font-weight:600;}
+.map-layer-controls button[data-map-layer="launch"][aria-pressed="true"] {background:#fff3d5;border-color:#b77c10;color:#76500a;}
+.map-layer-controls button[data-map-layer="shore"][aria-pressed="true"] {background:#eee7f7;border-color:#7955a5;color:#60417f;}
+.btn-primary,.maps-btn,.setup-conditions button,.access-actions .access-primary,.search-container #lakeSearchBtn {background:#315f9b;color:#fff;border-radius:4px;box-shadow:none;}
+#updateAppPromptBtn {background:#315f9b !important;color:white;}
+.btn-danger {color:#ad2929;border-color:#c34b4b;border-radius:4px;}
+.fish-btn {border:1px solid #d0d6dc;border-radius:5px;background:#fff;}
+.fish-btn.active,#fishSlider .fish-btn.active {border:2px solid #315f9b;background:#e9f0f9;}
+.fish-scroll-arrow {opacity:.95;}
+.distance-badge {background:#edf2f7;color:#315f9b;border-radius:4px;}
+.star-btn {color:#75808a;}.star-btn.active,.access-save {color:#a47300;}
+.lake-info-expanded.open,.lake-section,.lake-more,.lake-more summary,.data-sources,.access-facts,.filter-bar,.map-legend>.map-key-list {border-color:var(--line);}
+.lake-section h4,.setup-choice-heading,.setup-lure h5,.setup-extra h5,.setup-color-section h5,.advisor-section h2 {color:var(--text-main);}
+.species-list,.record-note,.lake-card .species-list,.access-summary,.access-note,.access-source,.access-distance,.access-facts dt,.access-note-label,.map-key-list dd span,#searchContext,.map-start-hint,.location-actions span,.legend-heading {color:var(--text-muted);}
+.stat-item {background:#f0f3f6;border:1px solid #d8dfe5;color:#354553;border-radius:4px;}
+.lake-note-display {background:#fff9e7;color:#4d5359;border-left-color:#b78a20;}
+.nearby-access-btn {background:#eee7f7;color:#60417f;border-color:#b29acb;border-radius:4px;}
+.setup-fish {background:#f8f9fb;color:#354553;border:1px solid #bdc7d2;border-radius:5px;}
+.setup-fish[aria-pressed="true"] {background:#e5edf8;border-color:#315f9b;}
+.setup-content {background:#fff;border:1px solid #bdc7d2;border-radius:5px;}
+.setup-heading h4,.setup-content summary,.setup-regulations,.lake-more summary,.access-source a {color:#315f9b;}
+.setup-heading button {color:#536475;}
+.setup-intro,.setup-lure p,.setup-extra p,.setup-conditions label {color:#53616e;}
+.setup-lure,.setup-color-section,.setup-content details {border-color:#d8dfe5;}
+.setup-lure img {background:#fff;border-radius:0;}
+.setup-conditions select {background:#fff;color:#293a49;border-color:#aebac6;border-radius:4px;}
+.simple-dialog,.modal-content,.data-info-dialog {background:#fff;color:var(--text-main);border:1px solid #bcc6d0;border-radius:7px;}
+.simple-dialog::backdrop,.data-info-dialog::backdrop {background:#11182788;}
+.modal-content .text-white,.modal-content.text-white {color:var(--text-main);}
+.modal-content .text-gray-300,.modal-content .text-gray-400,.modal-content .text-slate-300 {color:#53616e;}
+.modal-content .bg-gray-800,.modal-content .bg-gray-900 {background:#f4f6f8;color:#293a49;}
+.modal-content .border-gray-500,.modal-content .border-gray-600,.modal-content .border-gray-700 {border-color:#c3ccd5;}
+.data-info-dialog h3,.data-info-dialog a {color:#315f9b;}
+.data-info-dialog p,#crownLandDialog p,#crownLandDialog li {color:#53616e;}
+#crownLandDialog a {color:#315f9b;}
+.waterbody-suggestions {background:#fff;border-color:#b1bdca;border-radius:4px;box-shadow:0 5px 16px #0002;}
+.waterbody-suggestions li:hover,.waterbody-suggestions li[aria-selected="true"] {background:#e6eef8;}
+.waterbody-suggestions strong {color:#263748;}.waterbody-suggestions small {color:#586674;}
+.crown-control {background:#fff;color:#3d4f5a;border-color:#aebbc5;border-radius:4px;}
+.crown-control #crownLandInfo {border-color:#c3ccd5;}
+.crown-control button[aria-pressed="true"] {background:#e5eedc;color:#36532c;}
+.crown-status,.location-loading {background:#fff;color:#35495a;border:1px solid #aebbc5;border-radius:5px;box-shadow:0 2px 8px #0002;}
+.crown-status button {background:#e8eff7;color:#315f9b;border-color:#aebbc5;}
+.location-loading-track {background:#dbe4ef;}.location-loading-track::after {background:#315f9b;}
+.line-tooltip {background:#fff;color:#293a49;border-color:#7b9fbe;}
+.custom-popup .leaflet-popup-content-wrapper {border-color:#bbc7d2;box-shadow:0 3px 10px #0002;}
+.access-pin {background:#fff;box-shadow:0 1px 4px #0003;}.access-launch {color:#976700;}.access-shore,.access-pier {color:#7955a5;}
+.access-cluster {background:#fff0ca;color:#795300;border-color:#b78018;box-shadow:0 1px 4px #0003;}
+.access-cluster-shore,.legend-cluster.access.shore {background:#eee5f8;border-color:#7955a5;color:#624283;}
+.water-cluster {background:#315f9b;border-color:#b9cfe9;box-shadow:0 1px 4px #0003;}
+.access-note-feedback {color:#237346;}
+.tour-card,.welcome-card {background:#fff;color:#273745;border-color:#bac8d6;}
+.tour-card p,.welcome-card p,#tourExit,#welcomeSkip {color:#53616e;}
+#tourProgress {color:#315f9b;}#tourStep,#tourPrevious {background:#e5edf8;color:#315f9b;border-color:#aac1dc;}
+.rules-summary {display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+.rule-status {display:inline-block;font-size:.82rem;line-height:1.4;padding:5px 8px;border-radius:4px;background:#eaf0f7;color:#355675;}
+.rule-status.closed {background:#fbe8e7;color:#982f29;}.rule-status.open {background:#e6f2e9;color:#28623d;}.rule-status.check {background:#f5efdf;color:#735b20;}
+.fishing-date-label {display:flex;align-items:center;gap:8px;font-size:.76rem;color:#53616e;}
+.fishing-date {box-sizing:border-box;max-width:160px;min-height:40px;padding:7px;border:1px solid #b8c5d1;border-radius:4px;background:#fff;color:#293a49;font-size:.8rem;}
+.rules-zones,.rules-details p,.species-rules p {font-size:.8rem;line-height:1.5;color:#52616e;margin:9px 0;}
+.rules-details summary,.species-rules summary {cursor:pointer;min-height:44px;padding:12px 0;color:#315f9b;font-size:.82rem;}
+.rules-details h5 {font-size:.85rem;font-weight:700;margin:14px 0 6px;}
+.rules-details a,.species-rules a {color:#315f9b;text-decoration:underline;}
+.rules-details {margin-top:4px;}.rule-record {border-top:1px solid #d8dfe5;padding:9px 0;overflow-wrap:anywhere;}
+.rule-record p {margin:4px 0;}.rule-record b {font-weight:600;}
+.rule-caution {color:#785514 !important;}
+.species-rules {padding:12px;background:#f4f7fb;border:1px solid #d4dfe9;border-radius:4px;margin:10px 0;}
+.species-rules>p {margin:6px 0;}.species-rules details {margin:0;}
+@media(max-width:999px){#backResultsBtn {margin-top:14px;}}
+@media(max-width:480px){.rules-summary {gap:8px;}.fishing-date-label {width:100%;justify-content:space-between;}.lake-card {padding:12px;}.rules-details summary {line-height:1.5;}}
+
+.lake-closure-badge {display:block;font-size:.73rem;line-height:1.4;color:#982f29;margin-top:5px;font-weight:600;}
+
+.stocking-previous {margin-top:10px;font-size:.8rem;color:#53616e;}.stocking-previous summary {min-height:44px;padding:10px 0;cursor:pointer;color:#315f9b;}.stocking-previous p {line-height:1.5;}

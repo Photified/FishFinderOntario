@@ -48,10 +48,11 @@ window.CrownLand = {
       const active = layers.filter(layer=>!layer.policy || policies);
       retry.hidden = !active.some(layer=>layer.state==='error');
       const failed = active.filter(layer=>layer.state==='error').map(layer=>layer.name);
+      statusBox.hidden = map.getZoom() >= 7 && !failed.length && !active.some(layer=>layer.state==='loading');
       statusText.textContent = map.getZoom()<7 ? 'Zoom in to see Crown land and policy areas.'
         : failed.length ? failed.join(' and ')+' unavailable. Check your connection or retry.'
         : active.some(layer=>layer.state==='loading') ? 'Loading Crown land'+(policies?' and policy boundaries':'')+'…'
-        : 'Access not confirmed. '+(policies?'Tap the map for policy details.':'See ⓘ for land information.');
+        : ''; 
     }
     function clearLayer(layer) {
       layer.generation++;

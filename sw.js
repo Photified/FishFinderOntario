@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v83-crown-land-overlay';
+const CACHE_NAME = 'fish-finder-v85-rules-and-themes';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -7,6 +7,11 @@ const ASSETS_TO_CACHE = [
   './guided-tour.js',
   './lake-setups.js',
   './crown-land.js',
+  './fishing-rules.js',
+  './fishingRulesData.json',
+  './light-theme.css',
+  './dark-theme.css',
+  './theme.js',
   './accessPoints.json',
   './recommendations-data.js',
   './lakesData.json',
@@ -34,7 +39,7 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-  const dataRequest = /\/(lakesData|seasonsData|accessPoints)\.json$/.test(url.pathname);
+  const dataRequest = /\/(lakesData|seasonsData|accessPoints|fishingRulesData)\.json$/.test(url.pathname);
   const navigation = event.request.mode === 'navigate';
 
   event.respondWith((async () => {

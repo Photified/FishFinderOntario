@@ -4,8 +4,8 @@
   "description": "Find nearby lakes based on fish species in Ontario.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#0ea5e9",
+  "background_color": "#f3f4f6",
+  "theme_color": "#333333",
   "icons": [
     {
       "src": "images/iconblue.png",

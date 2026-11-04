@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>Fish Finder Ontario</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#006eb3">
+  <meta name="theme-color" content="#333333">
   
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -494,6 +494,9 @@
     .crown-policy-popup {font:13px/1.45 system-ui;}
     .location-loading {top:68px;}
 </style>
+  <link id="lightTheme" rel="stylesheet" href="light-theme.css">
+  <link id="darkTheme" rel="stylesheet" href="dark-theme.css" media="not all">
+  <script src="theme.js"></script>
 </head>
 <body>
 
@@ -594,6 +597,7 @@
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-content text-white">
       <h2 class="text-xl font-bold mb-4 text-accent">Settings & Info</h2>
+      <div class="mb-4"><label for="appearanceTheme" class="block text-sm font-bold mb-2">Appearance</label><select id="appearanceTheme" class="w-full bg-gray-800 text-white border border-gray-600 p-2 rounded"><option value="light">Light</option><option value="dark">Dark</option></select></div>
       
       <div class="mb-4 bg-gray-800 p-3 rounded-lg border border-gray-600">
         <div class="grid grid-cols-3 gap-2">
@@ -681,7 +685,7 @@
     <h3>Species and stocking</h3>
     <p>Species lists reflect available records. Stocking dates show the latest event included in the app, not a recent survey or a guarantee of fish currently present. Source dates are not available for every record.</p>
     <h3>Fishing regulations</h3>
-    <p>Check current seasons, limits and local exceptions before fishing. Open Ontario fishing regulations in Settings for the official guide.</p>
+    <p>Lake cards include 2026 seasons, limits, waterbody exceptions and sanctuary notices. Select a fish and fishing date to see the relevant season. Partial areas and uncertain matches require checking the exact official description. This app does not confirm legal access. Rules are not automatically updated when the year changes.</p>
     <div class="data-sources">
       <h4>Map attribution</h4>
       <p>Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>, available under the Open Database Licence.</p>
@@ -690,12 +694,14 @@
       <h4>Government sources</h4>
       <p>Data source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence &ndash; Ontario</a>.</p>
       <ul>
+        <li><a href="https://data.ontario.ca/dataset/recreational-fishing-regulations-data" target="_blank" rel="noopener noreferrer">2026 Recreational fishing regulations, November 3 source file</a></li>
+        <li><a href="https://www.ontario.ca/page/bait-and-fisheries-management-zones" target="_blank" rel="noopener noreferrer">Bait and fisheries management zones</a></li>
         <li><a href="https://data.ontario.ca/dataset/ontario-waterbody-location-identifier" target="_blank" rel="noopener noreferrer">Ontario Waterbody Location Identifier</a></li>
         <li><a href="https://data.ontario.ca/dataset/fishing-access-points" target="_blank" rel="noopener noreferrer">Fishing Access Point</a></li>
         <li><a href="https://geohub.lio.gov.on.ca/datasets/lio::aquatic-resource-area-polygon-segment-/about" target="_blank" rel="noopener noreferrer">Aquatic Resource Area Polygon Segment</a></li>
         <li><a href="https://geohub.lio.gov.on.ca/datasets/mnrf::fish-stocking-data-for-recreational-purposes/explore" target="_blank" rel="noopener noreferrer">Fish Stocking Data for Recreational Purposes</a></li>
       </ul>
-      <p style="margin-top:10px;">Waterbody coverage was expanded using the Waterbody Location sheet in the 2026 regulations dataset. Locations and species records are matched by government Waterbody Location Identifier. Some waterbodies have no species information in the supplied data.</p>
+      <p style="margin-top:10px;">Waterbody coverage includes named lakes, rivers, creeks, bays and other waters from the Ontario Waterbody Location Identifier, plus the regulations location table. Fish and stocking records are joined by government waterbody ID. Missing fish records mean unknown species, not an empty waterbody. This is not a complete inventory of every Ontario waterbody. Bait and fisheries zones are based on official boundaries at each mapped point; check boundaries for large waters.</p>
       <p>Fish Finder Ontario is independently developed and is not endorsed by the Government of Ontario.</p>
     </div>
     <button class="btn-secondary" id="closeDataInfoBtn" type="button">Back to settings</button>
@@ -757,6 +763,7 @@
   <script src="app-data.js"></script>
 
   <script src="access-points.js"></script>
+  <script src="fishing-rules.js"></script>
   <script src="lake-setups.js"></script>
   <script src="crown-land.js"></script>
   <script src="guided-tour.js"></script>
@@ -1325,13 +1332,17 @@
 
       async function loadLakeData() {
         try {
-          const [lakesRes, seasonsRes] = await Promise.all([
+          const [lakesRes, seasonsRes, rulesRes] = await Promise.all([
             fetch('lakesData.json'),
-            fetch('seasonsData.json').catch(() => null) 
+            fetch('seasonsData.json').catch(() => null),
+            fetch('fishingRulesData.json').catch(() => null) 
           ]);
           
           if(!lakesRes.ok) throw new Error("Lakes JSON not loaded");
           lakesData = await lakesRes.json();
+          let rulesData = null;
+          try { if(rulesRes?.ok) rulesData = await rulesRes.json(); } catch(error) { console.warn('Fishing rules unavailable'); }
+          FishingRules.init(rulesData);
           if(document.activeElement === lakeSearchInput) showSuggestions();
           updateLegacySavedNotice();
           
@@ -1356,7 +1367,7 @@
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'fish-btn' + (fish.id === currentActiveSpecies ? ' active' : '');
-          const imgSrc = fish.id === 'all' ? 'images/icon.png' : `images/${fish.id}.png`;
+          const imgSrc = fish.id === 'all' ? 'images/iconblue.png' : `images/${fish.id}.png`;
           btn.innerHTML = `<img src="${imgSrc}" alt="${fish.name}"><span>${fish.name}</span>`;
           btn.addEventListener('click', () => {
             document.querySelectorAll('#fishSlider .fish-btn').forEach(b => {
@@ -1601,7 +1612,7 @@
           if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${lake.fmz}</span>`);
           if (['approximate','needs_review'].includes(lake.coordinateStatus)) statsArray.push('<span class="stat-item" title="Exact waterbody location not verified">Approx. location</span>');
           if (lake.waterbodyType) {
-            let type = lake.waterbodyType.includes('Stream') ? 'River' : 'Lake';
+            let type = LakeSetups.escape(lake.waterbodyType);
             statsArray.push(`<span class="stat-item">${type === 'River' ? '💧' : '🌊'} ${type}</span>`);
           }
           if (depthStr) statsArray.push(`<span class="stat-item">⚓ ${depthStr} deep</span>`);
@@ -1616,12 +1627,13 @@
           if (lake.isStocked && lake.stockingInfo) {
             stockingContentHTML = `
               <div style="margin-top: 10px; font-size: 0.75rem; line-height: 1.4;">
-                <span style="color: #d1d5db; font-weight: bold;">${(() => { const years = lake.stockingInfo.match(/\b20\d{2}\b/g); return years ? 'Last recorded stocking: ' + Math.max(...years.map(Number)) : 'Stocking record (year unknown)'; })()}:</span><br>
-                <span style="color: ${isStockedMatch ? '#34d399' : '#9ca3af'};">${lake.stockingInfo}</span>
+                <span style="color: #354553; font-weight: bold;">${(() => { const years = (lake.stockingInfo + ' ' + (lake.previousStockingInfo || '')).match(/\b20\d{2}\b/g); return years ? 'Last recorded stocking: ' + Math.max(...years.map(Number)) : 'Stocking record (year unknown)'; })()}:</span><br>
+                <span style="color: ${isStockedMatch ? '#237346' : '#53616e'};">${LakeSetups.escape(lake.stockingInfo)}</span>
+                ${lake.previousStockingInfo ? `<details class="stocking-previous"><summary>Previously included stocking record</summary><p>${LakeSetups.escape(lake.previousStockingInfo)}</p></details>` : ''}
               </div>`;
           }
 
-          const knownSpecies = lake.recordedSpeciesNames?.length ? lake.recordedSpeciesNames : (lake.species || []).map(id => fishSpeciesList.find(f => f.id === id)?.name || LakeSetups.speciesName(id)).filter(Boolean);
+          const knownSpecies = lake.recordedSpeciesNames?.length ? lake.recordedSpeciesNames : (lake.araRecordCount || lake.stockedSpeciesNames?.length ? [] : (lake.species || [])).map(id => fishSpeciesList.find(f => f.id === id)?.name || LakeSetups.speciesName(id)).filter(Boolean);
           const speciesDisplay = lake.speciesStatus === 'unverified' ? 'Species not yet verified' : knownSpecies.length ? 'Recorded species: ' + knownSpecies.join(', ') : 'Species records unavailable';
           let cardClasses = `lake-card ${isStockedMatch ? 'stocked-highlight' : ''}`;
 
@@ -1632,7 +1644,7 @@
                   <button type="button" class="star-btn ${starActiveClass}" data-lakeid="${LakeSetups.escape(uniqueId)}" aria-label="Save spot" aria-pressed="${isFavorited}">★</button>
                   <button type="button" class="lake-title-group" aria-label="Open ${LakeSetups.escape(lake.name)}">
                     <h3>${LakeSetups.escape(lake.name)}</h3>
-                    <div class="lake-town">${LakeSetups.escape(townName)}${stockedEmoji}</div> 
+                    <div class="lake-town">${LakeSetups.escape(townName)}${stockedEmoji}</div><span class="fishing-badge">${FishingRules.badge(lake)}</span> 
                   </button>
                 </div>
                 <div class="lake-header-right">
@@ -1641,9 +1653,11 @@
                 </div>
               </div>
               <div class="lake-info-expanded">
+                ${uniqueId === selectedLakeId ? FishingRules.render(uniqueId, lake) : ''}
                 <section class="lake-section lake-fish-section"><h4>Recorded fish</h4>
                 <p class="species-list">${LakeSetups.escape(speciesDisplay.replace('Recorded species: ', ''))}</p>
-                ${uniqueId === selectedLakeId ? LakeSetups.render(uniqueId, getAdvisorFishTypes(lake)) : ''}</section>
+                ${lake.stockedSpeciesNames?.length ? `<p class="species-list"><strong>Stocking records:</strong> ${LakeSetups.escape(lake.stockedSpeciesNames.join(', '))}. Stocked species are also available below.</p>` : ''}
+                ${uniqueId === selectedLakeId ? LakeSetups.render(uniqueId, getAdvisorFishTypes(lake), lake) : ''}</section>
                 <section class="lake-section"><h4>Waterbody details</h4>${statsTextHTML}</section>
                 <section class="lake-section"><h4>Stocking history</h4>${stockingContentHTML || '<p class="record-note">No stocking record included for this waterbody.</p>'}</section>
 
