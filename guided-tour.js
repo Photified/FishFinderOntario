@@ -1,4 +1,4 @@
-/* Optional, concise help. Exploration starts immediately. */
+/* Optional first-visit welcome and an on-demand guide. */
 (() => {
   const help = document.createElement('dialog');
   help.className = 'simple-dialog';
@@ -8,18 +8,54 @@
     <li><strong>Open a waterbody.</strong> Tap a map pin or a name in the list. The pills under the name show key facts like the zone and last stocked year, when available. Open <strong>View recorded fish</strong> for the full list and <strong>Fishing information</strong> for rules. When available, <strong>View earlier years</strong> shows older records from the same Ontario stocking dataset.</li>
     <li><strong>Tap a fish inside its card.</strong> The main fish filter hides when a waterbody is open. Pictured fish inside its card open bait and tackle recommendations right there. Adjust conditions if you know them, or use the general suggestions.</li>
     <li><strong>Find access and save spots.</strong> Use Boat launches or Shore access above the results. The three browsing choices show one type of location at a time. Map layers contains overlays and the map symbols. Stars save spots on this device.</li></ol>
-    <p class="record-note">Recorded fish and access information do not guarantee current conditions. Check the official fishing regulations before your trip.</p>`;
+    <p class="record-note">Recorded fish and access information do not guarantee current conditions. Check the official fishing regulations before your trip.</p>
+    <div class="help-dialog-actions"><button class="btn-secondary" type="button" data-help-settings>Settings</button></div>`;
   document.body.append(help);
   help.querySelector('button').addEventListener('click', () => help.close());
+  const welcome = document.createElement('dialog');
+  welcome.className = 'simple-dialog';
+  welcome.setAttribute('aria-labelledby', 'welcomeTitle');
+  welcome.setAttribute('aria-describedby', 'welcomeDescription');
+  welcome.innerHTML = `<div class="dialog-heading"><h2 id="welcomeTitle">Welcome to Fish Finder Ontario</h2></div>
+    <p id="welcomeDescription">Find waterbodies, check fishing information, and choose a setup. Take a quick look at how it works or jump straight to the map.</p>
+    <form method="dialog" class="help-dialog-actions">
+      <button class="btn-primary" value="guide">Show me around</button>
+      <button class="btn-secondary" value="explore" autofocus>Start exploring</button>
+    </form>`;
+  document.body.append(welcome);
+
   document.addEventListener('DOMContentLoaded', () => {
-    const trigger = document.getElementById('openIntroBtn');
-    trigger.addEventListener('click', () => {
-      document.getElementById('settingsModal').classList.remove('open');
+    const headerHelp = document.getElementById('openHelpBtn');
+    const settingsHelp = document.getElementById('openIntroBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const welcomeKey = 'ffo-welcome-seen';
+    let helpOpenedFromSettings = false;
+
+    function openHelp(fromSettings = false) {
+      helpOpenedFromSettings = fromSettings;
+      help.returnValue = '';
+      if (fromSettings) settingsModal.classList.remove('open');
       help.showModal();
-    });
+    }
+
+    headerHelp.addEventListener('click', () => openHelp());
+    settingsHelp.addEventListener('click', () => openHelp(true));
+    help.querySelector('[data-help-settings]').addEventListener('click', () => help.close('settings'));
     help.addEventListener('close', () => {
-      document.getElementById('settingsModal').classList.add('open');
-      trigger.focus();
+      if (helpOpenedFromSettings || help.returnValue === 'settings') {
+        settingsModal.classList.add('open');
+        (helpOpenedFromSettings ? settingsHelp : document.getElementById('closeSettingsBtn')).focus();
+      } else {
+        headerHelp.focus();
+      }
     });
+
+    welcome.addEventListener('close', () => {
+      try { localStorage.setItem(welcomeKey, '1'); } catch {}
+      if (welcome.returnValue === 'guide') openHelp();
+    });
+    let seen = false;
+    try { seen = localStorage.getItem(welcomeKey) === '1'; } catch {}
+    if (!seen) welcome.showModal();
   });
 })();
