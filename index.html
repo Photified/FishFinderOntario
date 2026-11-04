@@ -1006,7 +1006,7 @@
 
       let map = L.map('map').fitBounds([[41.7,-83.5],[46.5,-74.3]]);
       CrownLand.init(map);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>' }).addTo(map);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>' }).addTo(map);
       let markersLayer = L.layerGroup().addTo(map);
       let searchMarker = null;
       let accessUI = null, searchAreaHasWater = false;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v92-first-visit-help';
+const CACHE_NAME = 'fish-finder-v93-osm-tile-url';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
