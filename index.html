@@ -495,6 +495,23 @@
     #crownLandDetails summary {color:var(--accent);cursor:pointer;padding:10px 0;}
     .lake-section .rules-zones a,.rule-record a {color:var(--accent);text-decoration:underline;}
 
+    .lake-info-expanded > .lake-stats-grid {margin:0 0 12px;}
+    .lake-info-expanded .stat-item {border-radius:999px;}
+    .lake-disclosure > summary {min-height:44px;align-content:center;color:var(--accent);cursor:pointer;font-size:.85rem;font-weight:600;}
+    .lake-disclosure .rules-zones {margin-top:4px;}
+    .lake-section.lake-rules {padding-block:6px;}
+    .lake-rules .rule-status {display:inline-block;margin-top:6px;}
+    .lake-card:has(.lake-rules) .fishing-badge {display:none;}
+    .recorded-fish-list,.lake-source-list {padding:0 0 0 18px;margin:0 0 8px;font-size:.85rem;list-style:disc;}
+    .recorded-fish-list li,.lake-source-list li {padding-block:3px;overflow-wrap:anywhere;}
+    .stocking-year {font-size:.85rem;margin:6px 0 10px;max-width:28rem;}
+    .stocking-year h5 {font-weight:700;margin:0 0 4px;}
+    .stocking-rows {list-style:none;margin:0;padding:0;}
+    .stocking-rows li {display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--popup-border,#64748b);}
+    .stocking-count {font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;}
+    .lake-card-actions {display:flex;gap:8px;flex-wrap:wrap;}
+    .lake-card-actions .maps-btn {width:auto;min-height:44px;margin:0;padding:6px 12px;}
+    @media(min-width:1024px){.recorded-fish-list {columns:2;column-gap:24px;}.recorded-fish-list li {break-inside:avoid;}}
 </style>
   <link id="lightTheme" rel="stylesheet" href="light-theme.css">
   <link id="darkTheme" rel="stylesheet" href="dark-theme.css" media="not all">
@@ -1585,10 +1602,31 @@
         pendingNoteLakeId = null;
       });
 
+      function stockingByYear(history) {
+        const years = new Map();
+        for (const entry of (history || '').split(';')) {
+          if (!entry.trim()) continue;
+          const match = entry.trim().match(/^(\d{4}):\s+([\d,]+)\s+(.+)$/);
+          const year = match ? match[1] : 'Year unknown';
+          const rows = years.get(year) || [];
+          rows.push(match ? {count: match[2], species: match[3]} : {species: entry.trim()});
+          years.set(year, rows);
+        }
+        return [...years.entries()].sort(([a], [b]) => (Number(b) || 0) - (Number(a) || 0));
+      }
+
+      function stockingYearHTML([year, rows]) {
+        const escape = LakeSetups.escape;
+        return `<div class="stocking-year"><h5>${escape(year)}</h5><ul class="stocking-rows">
+          ${rows.map(({species, count}) => `<li><span>${escape(species)}</span>${count ? `<span class="stocking-count">${escape(count)}</span>` : ''}</li>`).join('')}
+        </ul></div>`;
+      }
+
       function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId) {
         ffResultsContainer.innerHTML = '';
         lakesArray.forEach(lake => {
           const uniqueId = getLakeId(lake);
+          const isSelected = uniqueId === selectedLakeId;
           const isFavorited = !!savedLakes[uniqueId];
           const starActiveClass = isFavorited ? 'active' : '';
           const customNote = isFavorited && savedLakes[uniqueId].note ? savedLakes[uniqueId].note : '';
@@ -1615,9 +1653,10 @@
           const townName = lake.town ? lake.town : 'Ontario';
 
           
-          let statsTextHTML = '';
+          const stockYears = isSelected && lake.isStocked ? stockingByYear(lake.stockingInfo) : [];
+          const [latestStock, ...earlierStock] = stockYears;
           const statsArray = [];
-          if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${lake.fmz}</span>`);
+          if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${LakeSetups.escape(lake.fmz)}</span>`);
           if (['approximate','needs_review'].includes(lake.coordinateStatus)) statsArray.push('<span class="stat-item" title="Exact waterbody location not verified">Approx. location</span>');
           if (lake.waterbodyType) {
             let type = LakeSetups.escape(lake.waterbodyType);
@@ -1627,21 +1666,19 @@
           if (areaStr) statsArray.push(`<span class="stat-item">🗺️ ${areaStr}</span>`);
           if (lake.secchiDepth) statsArray.push(`<span class="stat-item">🕶️ ${parseFloat(lake.secchiDepth).toFixed(1).replace(/\.0$/, '')}m recorded Secchi depth</span>`);
           
-          if (statsArray.length > 0) {
-            statsTextHTML = `<div class="lake-stats-grid">${statsArray.join('')}</div>`;
-          }
-
-          let stockingContentHTML = '';
-          if (lake.isStocked && lake.stockingInfo) {
-            stockingContentHTML = `
-              <div style="margin-top: 10px; font-size: 0.75rem; line-height: 1.4;">
-                <span style="color: #354553; font-weight: bold;">${(() => { const years = lake.stockingInfo.match(/\b20\d{2}\b/g); return years ? 'Last recorded stocking: ' + Math.max(...years.map(Number)) : 'Stocking record (year unknown)'; })()}</span><br>
-                <span style="color: ${isStockedMatch ? '#237346' : '#53616e'};">${LakeSetups.escape(lake.stockingInfo)}</span>
-              </div>`;
-          }
+          if (latestStock && latestStock[0] !== 'Year unknown') statsArray.push(`<span class="stat-item">Last stocked: ${latestStock[0]}</span>`);
+          const statsTextHTML = statsArray.length ? `<div class="lake-stats-grid">${statsArray.join('')}</div>` : '';
+          const stockingContentHTML = latestStock
+            ? stockingYearHTML(latestStock) + (earlierStock.length ? `<details class="lake-disclosure"><summary>View earlier years</summary>${earlierStock.map(stockingYearHTML).join('')}</details>` : '')
+            : '';
 
           const knownSpecies = lake.recordedSpeciesNames?.length ? lake.recordedSpeciesNames : (lake.araRecordCount || lake.stockedSpeciesNames?.length ? [] : (lake.species || [])).map(id => fishSpeciesList.find(f => f.id === id)?.name || LakeSetups.speciesName(id)).filter(Boolean);
-          const speciesDisplay = lake.speciesStatus === 'unverified' ? 'Species not yet verified' : knownSpecies.length ? 'Recorded species: ' + knownSpecies.join(', ') : 'Species records unavailable';
+          const speciesList = isSelected ? [...new Set(knownSpecies)].sort((a, b) => a.localeCompare(b, 'en')) : [];
+          const recordedFishHTML = lake.speciesStatus === 'unverified'
+            ? '<p class="record-note">Species not yet verified.</p>'
+            : speciesList.length
+              ? `<ul class="recorded-fish-list">${speciesList.map(name => `<li>${LakeSetups.escape(name)}</li>`).join('')}</ul>`
+              : '<p class="record-note">Species records unavailable.</p>';
           let cardClasses = `lake-card ${isStockedMatch ? 'stocked-highlight' : ''}`;
 
           ffResultsContainer.innerHTML += `
@@ -1659,25 +1696,24 @@
                   <button class="info-toggle" aria-label="Show waterbody details" aria-expanded="false">▼</button>
                 </div>
               </div>
-              <div class="lake-info-expanded">
-                ${uniqueId === selectedLakeId ? FishingRules.render(uniqueId, lake) : ''}
-                <section class="lake-section lake-fish-section"><h4>Recorded fish</h4>
-                <p class="species-list">${LakeSetups.escape(speciesDisplay.replace('Recorded species: ', ''))}</p>
-                ${lake.stockedSpeciesNames?.length ? `<p class="species-list"><strong>Stocking records:</strong> ${LakeSetups.escape(lake.stockedSpeciesNames.join(', '))}. Stocked species are also available below.</p>` : ''}
-                ${uniqueId === selectedLakeId ? LakeSetups.render(uniqueId, getAdvisorFishTypes(lake), lake) : ''}</section>
-                <section class="lake-section"><h4>Waterbody details</h4>${statsTextHTML}</section>
-                <section class="lake-section"><h4>Stocking history</h4>${stockingContentHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'}</section>
-
-                <section class="lake-section"><h4>Your notes &amp; sources</h4>
-                <div class="note-section">
-                  ${customNote ? `<div class="lake-note-display">${LakeSetups.escape(customNote)}</div>` : ''}
-                  <button type="button" class="maps-btn note-btn" data-lakeid="${LakeSetups.escape(uniqueId)}">${customNote ? 'Edit Note' : 'Add Note'}</button>
-                </div>
-                ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
-                ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
-                ${lake.dataSources?.length ? `<p class="species-list">Sources: ${lake.dataSources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}${source.date ? ' (' + source.date + ')' : ''}</a>`).join(' · ')}</p>` : ''}
-                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn google-maps-btn">View on Google Maps</a>
+              <div class="lake-info-expanded" ${isSelected ? '' : 'hidden'}>
+                ${isSelected ? `${statsTextHTML}
+                ${FishingRules.render(uniqueId, lake)}
+                <section class="lake-section lake-fish-section">
+                  ${LakeSetups.render(uniqueId, getAdvisorFishTypes(lake), lake)}
+                  <details class="lake-disclosure"><summary>View recorded fish</summary>${recordedFishHTML}</details>
                 </section>
+                <section class="lake-section"><h4>Stocking records</h4>${stockingContentHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'}</section>
+                <section class="lake-section">
+                  ${customNote ? `<div class="lake-note-display">${LakeSetups.escape(customNote)}</div>` : ''}
+                  ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
+                  ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
+                  <div class="lake-card-actions">
+                    <button type="button" class="maps-btn note-btn" data-lakeid="${LakeSetups.escape(uniqueId)}">${customNote ? 'Edit note' : 'Add note'}</button>
+                    <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn google-maps-btn">View on Google Maps</a>
+                  </div>
+                  ${lake.dataSources?.length ? `<details class="lake-disclosure"><summary>Data sources</summary><ul class="lake-source-list">${lake.dataSources.map(source => `<li><a href="${LakeSetups.escape(source.url)}" target="_blank" rel="noopener noreferrer">${LakeSetups.escape(source.title)}${source.date ? ' (' + LakeSetups.escape(source.date) + ')' : ''}</a></li>`).join('')}</ul></details>` : ''}
+                </section>` : ''}
               </div>
             </div>`;
         });

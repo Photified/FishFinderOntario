@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v89-cleaner-waterbody-cards';
+const CACHE_NAME = 'fish-finder-v90-compact-lake-cards';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
