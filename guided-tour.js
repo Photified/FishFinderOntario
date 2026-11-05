@@ -25,7 +25,7 @@
     </details>
     <details>
       <summary>Fishing rules and bait zones</summary>
-      <p>Use the Lake-specific rules, Fishing rules and Bait rules buttons on a waterbody card for detailed source wording. Select a fish to see its season and licence limits. Lake-specific rules always shows all recorded exceptions and sanctuary notices for the lake, grouped by species. Fishing rules starts with your selected fish; Show all species reveals the other zone and species records.</p>
+      <p>Use the Lake-specific rules and Fishing rules buttons on a waterbody card for detailed source wording. Select a fish to see its season and licence limits for today. For trip planning, use Change date in the rules popup; Use today returns to the current date. Lake-specific rules always shows all recorded exceptions and sanctuary notices for the lake, grouped by species. Fishing rules starts with your selected fish; Show all species reveals the other zone and species records. Matched bait and gear restrictions appear in Fishing rules. View restriction beside a recommendation opens the exact wording.</p>
       <p>Zones refer to the mapped waterbody location. Large waters can cross boundaries. A season being open does not confirm public access. Lake-specific notices may cover only part of a waterbody; read the exact area and dates.</p>
       <p>Bait zones control movement and use of baitfish and leeches. Live or dead baitfish and leeches generally cannot cross bait zone boundaries, with limited exceptions. Receipt and personal harvest rules also apply. <a href="https://www.ontario.ca/document/ontario-fishing-regulations-summary/bait" target="_blank" rel="noopener noreferrer">Official bait rules ↗</a></p>
     </details>
