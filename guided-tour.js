@@ -16,7 +16,7 @@
       <dt><i class="legend-dot pin-green" aria-hidden="true"></i></dt><dd><strong>Stocking record</strong><span>Matches the selected fish where applicable. Check the stocking year.</span></dd>
       <dt><span style="color:#fbbf24" aria-hidden="true">★</span></dt><dd><strong>Saved spot</strong><span>A waterbody or access point saved on this device.</span></dd>
       <dt><i class="legend-dot pin-user" aria-hidden="true"></i></dt><dd><strong>Starting location</strong><span>Your chosen starting point for straight-line distances.</span></dd>
-      <dt><i class="legend-dot pin-search" aria-hidden="true"></i></dt><dd><strong>Searched place</strong><span>Red pin marking the city or waterbody you searched for.</span></dd>
+      <dt><i class="legend-dot pin-search" aria-hidden="true"></i></dt><dd><strong>Searched place</strong><span>Grey pin marking the city or waterbody you searched for.</span></dd>
       <dt><span class="legend-cluster" aria-hidden="true">3</span></dt><dd><strong>Grouped waterbodies</strong><span>The number counts nearby waterbodies. Tap to zoom in.</span></dd>
       <dt><span class="legend-cluster access" aria-hidden="true">3</span></dt><dd><strong>Grouped boat launches</strong><span>The number counts nearby boat launches. Tap to zoom in.</span></dd>
       <dt><span class="legend-cluster access shore" aria-hidden="true">3</span></dt><dd><strong>Grouped shore access</strong><span>The number counts nearby shore access points, docks and piers. Tap to zoom in.</span></dd>

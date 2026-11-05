@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v114-full-rule-descriptions';
+const CACHE_NAME = 'fish-finder-v115-search-pin-colour';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
