@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v99-interactive-guide';
+const CACHE_NAME = 'fish-finder-v101-catch-limits';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

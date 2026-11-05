@@ -60,6 +60,71 @@ window.FishingRules = (() => {
     return `<div class="rule-record">${partial ? '<p class="rule-caution">Applies to the area described below. Check the exact boundaries.</p>' : ''}${r.description?`<p><strong>${esc(r.description)}</strong></p>`:''}${r.kind==='nonCanadian'?'<p><strong>Non-Canadian resident rules</strong></p>':''}${fields.filter(([,v])=>v).map(([k,v])=>`<p><b>${k}:</b> ${esc(v)}</p>`).join('')}${r.aggregate==='Yes'?'<p>Counts toward the aggregate trout and salmon limit. Check the official guide.</p>':''}${r.description && r.zone ? `<p>${zoneLink(r.zone, 'Official zone ' + r.zone + ' wording')}</p>` : ''}${r.description?.length>=250?'<p class="rule-caution">The source description may be shortened. Read the complete area description in the official guide.</p>':''}</div>`;
   }
   function detailList(rows){const seen=new Set();return rows.filter(r=>{const k=JSON.stringify(r);if(seen.has(k))return false;seen.add(k);return true;}).map(ruleHTML).join('');}
+  const officialGuide = '<a href="https://www.ontario.ca/document/ontario-fishing-regulations-summary" target="_blank" rel="noopener noreferrer">Official Ontario fishing regulations ↗</a>';
+
+  function limitEntry(rule) {
+    if (!rule.limit || /^refer to\b/i.test(rule.limit)) return null;
+    const type = rule.limitType || '';
+    const wording = rule.limit.replace(/^Possession limit\s+/i, '');
+    const code = wording.match(/^([SC])\s*[-–—]\s*/i);
+    const licence = /conservation/i.test(type) ? 'C' : /sport/i.test(type) ? 'S' : code?.[1].toUpperCase();
+    if (!licence) return null;
+    const label = /catch.*possession/i.test(type) ? 'Daily catch and possession'
+      : /possession/i.test(type) ? 'Possession'
+      : /catch/i.test(type) || /\bin one day\b/i.test(wording) ? 'Daily catch'
+      : 'Limit';
+    const value = code ? wording.slice(code[0].length) : wording;
+    return {licence, label, wording:label === 'Daily catch' ? value.replace(/^(\d+) in one day$/i, '$1') : value};
+  }
+
+  function limitGroups(rules, local = false) {
+    const groups = new Map();
+    for (const rule of rules) {
+      const entry = limitEntry(rule);
+      if (!entry) continue;
+      const key = JSON.stringify([rule.zone, rule.species, rule.description, rule.kind]);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({rule, ...entry});
+    }
+    return Array.from(groups.values(), entries => {
+      const {rule} = entries[0];
+      const variedSeasons = new Set(entries.map(({rule:r}) => r.season)).size > 1;
+      const commonSize = entries.every(({rule:r}) => r.sizeLimit === rule.sizeLimit) ? rule.sizeLimit : '';
+      const columns = [['S','Sport licence'], ['C','Conservation licence']].map(([code,name]) => {
+        const rows = new Set();
+        const licenceEntries = entries.filter(item => item.licence === code)
+          .sort((a,b) => Number(a.label === 'Possession') - Number(b.label === 'Possession'));
+        for (const entry of licenceEntries) {
+          const {rule:r, label, wording} = entry;
+          const season = r.season && !/^refer to\b/i.test(r.season) && (local || variedSeasons) ? r.season : '';
+          const conditions = [season, !commonSize && r.sizeLimit, r.general].filter(Boolean);
+          rows.add(`<div><strong>${label}:</strong> ${esc(wording)}${conditions.map(text => `<small>${esc(text)}</small>`).join('')}</div>`);
+        }
+        return `<div><dt>${name}</dt><dd>${Array.from(rows).join('') || 'See official rules'}</dd></div>`;
+      }).join('');
+      return `<div class="catch-limit-group"><p><strong>${esc(rule.species || 'All species')}</strong> · FMZ ${esc(rule.zone)}${rule.kind === 'nonCanadian' ? ' · Non-Canadian residents' : ''}</p>
+        ${local && rule.description ? `<p>${esc(rule.description)}${rule.description.length >= 250 ? '… ' + zoneLink(rule.zone, 'Full area description') : ''}</p>` : ''}
+        <dl class="catch-limit-licences">${columns}</dl>${commonSize ? `<p>${esc(commonSize)}</p>` : ''}</div>`;
+    }).join('');
+  }
+
+  function catchLimits(zoneRules, local, blocked, uncertain) {
+    const title = '<h5>Catch and possession limits</h5>';
+    if (blocked) return `<section class="catch-limits">${title}<p>Fishing is closed for this selection on the chosen date.</p></section>`;
+    const standard = limitGroups(zoneRules);
+    const exceptions = limitGroups(local, true);
+    const localChanges = local.some(r => r.limit && !/^refer to\b/i.test(r.limit) || r.sizeLimit || r.general || r.tag || r.season && !/^refer to\b/i.test(r.season));
+    const reference = localChanges || uncertain;
+    const baseline = standard ? (reference ? `<details><summary>Zone-wide limits for reference</summary>${standard}</details>` : standard)
+      : '<p>No zone-wide limit is listed for this species in the app’s data. Check the official regulations.</p>';
+    return `<section class="catch-limits">${title}
+      ${localChanges ? '<p><strong>Local rules may change these limits.</strong> Confirm the exact area and dates in the official regulations.</p>' : ''}
+      ${!localChanges && uncertain ? '<p>Check the exact zone and any local closures for where you plan to fish.</p>' : ''}
+      ${exceptions}${baseline}
+      ${zoneRules.some(r => r.aggregate === 'Yes') ? '<p>Also counts toward the combined trout and salmon limit.</p>' : ''}
+      <p>${officialGuide}</p></section>`;
+  }
+
   function overview(l) {
     const available=data&&current(data), local=records(l.regulationIds), sanct=notices(l), bmz=l.bmz||[], z=zones(l);
     const label=!available?'Rules need checking':closedWater(l)?'No fishing on this date':sanct.length?'Sanctuary notices to check':local.length?'Waterbody exceptions listed':'Choose a fish to check its season';
@@ -76,7 +141,7 @@ window.FishingRules = (() => {
   }
   function forSpecies(l,fish) {
     if(!l)return {html:'',blocked:false,allow:()=>true};
-    if(!data||!current(data))return {html:'<div class="species-rules"><strong>Check the official rules for this date.</strong><p>Current fishing status and bait restrictions cannot be confirmed from the included data. See Ontario fishing regulations in Settings.</p></div>',blocked:false,allow:()=>true};
+    if(!data||!current(data))return {html:`<div class="species-rules"><strong>Check the official rules for this date.</strong><p>Catch limits, seasons and bait restrictions are unavailable for this date in the app’s data.</p><p>${officialGuide}</p></div>`,blocked:false,allow:()=>true};
     const zr=zones(l).flatMap(z=>records(data.zoneSeasons[z])).filter(r=>current(r)&&matches(r.species,fish));
     const local=records(l.regulationIds).filter(r=>current(r)&&matches(r.species,fish));
     const scoped=local.filter(r=>r.kind!=='nonCanadian'&&r.season&&!/refer to/i.test(r.season));
@@ -100,7 +165,7 @@ window.FishingRules = (() => {
       if(anyBaitRestriction&&(natural.test(s)||naturalWorm(lure.name)||fishbait.test(s)||/powerbait|scented bait|pack bait|stink bait|with bait|boilie/i.test(s)))return false;
       if(liveBan&&/\blive\b/i.test(s))return false;
       return true;};
-    return {blocked,allow,html:`<div class="species-rules"><strong class="rule-status ${blocked?'closed':open?'open':'check'}">${title}</strong><p>${esc(date)}${zones(l).map(zone => zoneLink(zone)).filter(Boolean).map((link, i) => (i ? ' / ' : ' · ') + link).join('')}</p>${open?'<p>Check limits, local notices and access before fishing.</p>':''}${blocked?'<p>Bait and tackle suggestions are hidden for this date. Choose another date to plan a trip.</p>':''}<details><summary>Seasons, limits &amp; restrictions</summary>${detailList(zr)}${detailList(local)}${detailList(base(l))}${detailList(baitRows.filter(r=>!local.includes(r)&&r.kind!=='zone'))}${notices(l).length?'<p class="rule-caution">See the sanctuary notices above for exact areas and closure dates.</p>':''}</details>${anyBaitRestriction?'<p class="rule-caution">Bait restrictions are listed. Natural bait suggestions are hidden conservatively, including where the rule covers only a section, season, species or method. Check the wording above before choosing your tackle.</p>':liveBan?'<p>Live baitfish suggestions are hidden for this mapped location.</p>':''}${baitRows.some(r=>r.gear)?'<p class="rule-caution">Gear restrictions apply. Check hook and method requirements above.</p>':''}</div>`};
+    return {blocked,allow,html:`<div class="species-rules"><strong class="rule-status ${blocked?'closed':open?'open':'check'}">${title}</strong><p>${esc(date)}${zones(l).map(zone => zoneLink(zone)).filter(Boolean).map((link, i) => (i ? ' / ' : ' · ') + link).join('')}</p>${catchLimits(zr,local,blocked,uncertain)}${blocked?'<p>Bait and tackle suggestions are hidden for this date. Choose another date to plan a trip.</p>':''}<details><summary>Seasons, limits &amp; restrictions</summary>${detailList(zr)}${detailList(local)}${detailList(base(l))}${detailList(baitRows.filter(r=>!local.includes(r)&&r.kind!=='zone'))}${notices(l).length?'<p class="rule-caution">See the sanctuary notices above for exact areas and closure dates.</p>':''}</details>${anyBaitRestriction?'<p class="rule-caution">Bait restrictions are listed. Natural bait suggestions are hidden conservatively, including where the rule covers only a section, season, species or method. Check the wording above before choosing your tackle.</p>':liveBan?'<p>Live baitfish suggestions are hidden for this mapped location.</p>':''}${baitRows.some(r=>r.gear)?'<p class="rule-caution">Gear restrictions apply. Check hook and method requirements above.</p>':''}</div>`};
   }
   function render(id,l){contexts.set(id,l);return `<section class="lake-section lake-rules" data-rules-context="${esc(id)}"><div class="rules-body">${overview(l)}</div></section>`;}
   document.addEventListener('change',e=>{if(!e.target.matches('.fishing-date'))return;if(!/^\d{4}-\d{2}-\d{2}$/.test(e.target.value))return;date=e.target.value;document.querySelectorAll('[data-rules-context]').forEach(root=>{const lake=contexts.get(root.dataset.rulesContext);const body=root.querySelector('.rules-body');const wasOpen=body.querySelector('details')?.open;body.innerHTML=overview(lake);body.querySelector('details').open=!!wasOpen;const flag=root.closest('.lake-card')?.querySelector('.fishing-badge');if(flag)flag.innerHTML=badge(lake);});window.LakeSetups?.refresh();});
