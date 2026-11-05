@@ -56,12 +56,51 @@ window.FishingRules = (() => {
     if(!/^(?:[1-9]|1[0-9]|20)$/.test(zone)) return '';
     return `<a href="https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-${zone}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
   }
-  function ruleHTML(r){
-    const fields=[['Species',r.species],['Season',r.season||r.sanctuary],['Limits',r.limit],['Licence / residency',r.limitType],['Size',r.sizeLimit],['Bait',r.bait],['Gear',r.gear],['Other rules',r.general],['Time',r.timeOfDay],['Impounding',r.impounding],['Tag',r.tag]];
-    const partial = /\b(?:portion of|part of|part that|part thereof|upstream (?:of|from|to)|downstream (?:of|from|to)|between .+ and .+|extending from .+ to .+|excluding)\b/i.test(r.description || '');
-    return `<div class="rule-record">${partial ? '<p class="rule-caution">Applies to the area described below. Check the exact boundaries.</p>' : ''}${r.description?`<p><strong>${esc(r.description)}</strong></p>`:''}${r.kind==='nonCanadian'?'<p><strong>Non-Canadian resident rules</strong></p>':''}${fields.filter(([,v])=>v).map(([k,v])=>`<p><b>${k}:</b> ${esc(v)}</p>`).join('')}${r.aggregate==='Yes'?'<p>Counts toward the aggregate trout and salmon limit. Check the official guide.</p>':''}${r.description && r.zone ? `<p>${zoneLink(r.zone, 'Official zone ' + r.zone + ' wording')}</p>` : ''}${r.description?.length>=250?'<p class="rule-caution">The source description may be shortened. Read the complete area description in the official guide.</p>':''}</div>`;
+  const licencePhrase=/\b(?:sport\s*fishing|sportfishing|sport|conservation(?:\s+fishing)?)\s+licen[cs]e\b/i;
+  function residencyText(type) {
+    const match=String(type||'').match(licencePhrase);
+    return match?type.slice(0,match.index).replace(/[\s-]+$/,'').trim():String(type||'');
   }
-  function detailList(rows){const seen=new Set();return rows.filter(r=>{const k=JSON.stringify(r);if(seen.has(k))return false;seen.add(k);return true;}).map(ruleHTML).join('');}
+  function rulePairKey(rule) {
+    // Only the licence name and numerical limit may differ in a merged pair.
+    return JSON.stringify(Object.keys(rule).filter(key=>key!=='limit').sort().map(key=>[
+      key,key==='limitType'?String(rule[key]).replace(licencePhrase,'licence'):rule[key]
+    ]));
+  }
+  function ruleHTML(r, pair=null){
+    const entries=pair||[r];
+    const limits=entries.map(rule=>limitEntry(rule)).filter(Boolean);
+    const labels={'Daily catch and possession':'Daily catch and possession limits','Daily catch':'Daily catch limits','Possession':'Possession limits','Limit':'Limits'};
+    const limitHTML=limits.length?`<dl class="rule-licence-limits">${['S','C'].flatMap(code=>limits.filter(entry=>entry.licence===code).map(entry=>`<div><dt>${code==='S'?'Sport licence':'Conservation licence'}</dt><dd>${esc(entry.wording)}</dd></div>`)).join('')}</dl><p class="rule-limit-kind">${esc(labels[limits[0].label])}</p>`:r.limit?`<p><b>Limits:</b> ${esc(r.limit).replace(/\bS\s*[-–]\s*/g,'Sport licence: ').replace(/\bC\s*[-–]\s*/g,'Conservation licence: ')}</p>`:'';
+    const before=[['Season',r.season||r.sanctuary]];
+    const after=[limits.length?['Residency',residencyText(r.limitType)]:['Licence / residency',r.limitType],['Size',r.sizeLimit],['Bait',r.bait],['Gear',r.gear],['Other rules',r.general],['Time',r.timeOfDay],['Impounding',r.impounding],['Tag',r.tag]];
+    const fields=rows=>rows.filter(([,v])=>v).map(([k,v])=>`<p><b>${k}:</b> ${esc(v)}</p>`).join('');
+    const partial = /\b(?:portion of|part of|part that|part thereof|upstream (?:of|from|to)|downstream (?:of|from|to)|between .+ and .+|extending from .+ to .+|excluding)\b/i.test(r.description || '');
+    return `<div class="rule-record">${r.species?`<h4 class="rule-species-title">${esc(r.species)}</h4>`:''}${partial ? '<p class="rule-caution">Applies to the area described below. Check the exact boundaries.</p>' : ''}${r.description?`<p><strong>${esc(r.description)}</strong></p>`:''}${r.kind==='nonCanadian'?'<p><strong>Non-Canadian resident rules</strong></p>':''}${fields(before)}${limitHTML}${fields(after)}${r.aggregate==='Yes'?'<p>Counts toward the aggregate trout and salmon limit. Check the official guide.</p>':''}${r.description && r.zone ? `<p>${zoneLink(r.zone, 'Official zone ' + r.zone + ' wording')}</p>` : ''}${r.description?.length>=250?'<p class="rule-caution">The source description may be shortened. Read the complete area description in the official guide.</p>':''}</div>`;
+  }
+  function detailList(rows){
+    const seen=new Set(), unique=rows.filter(rule=>{const key=JSON.stringify(rule);if(seen.has(key))return false;seen.add(key);return true;});
+    const groups=new Map();
+    for(const rule of unique){
+      if(!limitEntry(rule))continue;
+      const key=rulePairKey(rule);
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push(rule);
+    }
+    const rendered=new Set();
+    return unique.map(rule=>{
+      if(rendered.has(rule))return '';
+      const pair=limitEntry(rule)?groups.get(rulePairKey(rule)):null;
+      if(pair?.length===2){
+        const [first,second]=pair.map(limitEntry);
+        if(first.licence!==second.licence&&first.label===second.label){
+          pair.forEach(item=>rendered.add(item));
+          return ruleHTML(rule,pair);
+        }
+      }
+      return ruleHTML(rule);
+    }).join('');
+  }
   const officialGuide = '<a href="https://www.ontario.ca/document/ontario-fishing-regulations-summary" target="_blank" rel="noopener noreferrer">Official Ontario fishing regulations ↗</a>';
 
   function limitEntry(rule) {
@@ -167,7 +206,7 @@ window.FishingRules = (() => {
     rulesDialog.querySelector('.rules-dialog-date').innerHTML=`<label class="fishing-date-label">Change date<input type="date" class="fishing-date" value="${esc(date)}" aria-label="Change fishing date"></label>${date!==today()?'<button type="button" class="rules-text-button" data-rules-today>Use today</button>':''}`;
     rulesDialog.querySelectorAll('[data-rules-open]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rulesOpen===section)));
     rulesDialog.querySelector('.rules-species-filter').innerHTML=fish&&section==='fishing'?`<span>${all?'Showing all species':'Selected fish: '+esc(fishName)}</span><button type="button" class="rules-text-button" data-rules-scope>${all?'Show selected fish':'Show all species'}</button>`:'';
-    rulesDialog.querySelector('.rules-dialog-content').innerHTML=warning+content+`<p class="record-note">2026 regulations, source file dated ${esc(data?.sourceDate||'unavailable')}. S = Sport licence; C = Conservation licence. Limits and residency conditions still apply.</p><p>${officialGuide} · <a href="https://www.ontario.ca/page/fishing-notices-and-updates" target="_blank" rel="noopener noreferrer">Notices &amp; updates ↗</a></p>`;
+    rulesDialog.querySelector('.rules-dialog-content').innerHTML=warning+content+`<p class="record-note">2026 regulations, source file dated ${esc(data?.sourceDate||'unavailable')}. Limits and residency conditions still apply.</p><p>${officialGuide} · <a href="https://www.ontario.ca/page/fishing-notices-and-updates" target="_blank" rel="noopener noreferrer">Notices &amp; updates ↗</a></p>`;
     rulesDialog.scrollTop=0;
   }
   function focusBaitRules() {

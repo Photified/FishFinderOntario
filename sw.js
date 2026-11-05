@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v109-date-in-rules-popup';
+const CACHE_NAME = 'fish-finder-v110-clear-licence-limits';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
