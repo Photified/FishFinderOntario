@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v103-filtered-fish-preselection';
+const CACHE_NAME = 'fish-finder-v104-lake-card-actions';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

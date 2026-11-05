@@ -192,8 +192,6 @@
     .pass-to-advisor-btn:hover { background: #7dd3fc; }
     .maps-btn.regulations-btn { background-color: #1e3a8a; }
     .maps-btn.regulations-btn:hover { background-color: #1e40af; }
-    .maps-btn.google-maps-btn { background-color: #2563eb; }
-    .maps-btn.google-maps-btn:hover { background-color: #1d4ed8; }
     .maps-btn:focus-visible, .pass-to-advisor-btn:focus-visible { outline: 2px solid #bae6fd; outline-offset: 3px; }
 
     /* Buttons */
@@ -1635,7 +1633,6 @@
           let areaVal = lake.surfaceArea ? (appUnits.area === 'metric' ? parseFloat(lake.surfaceArea) : parseFloat(lake.surfaceArea) * 2.47105) : null;
           let areaStr = areaVal ? `${areaVal > 100 ? Math.round(areaVal) : areaVal.toFixed(1).replace(/\.0$/, '')} ${appUnits.area === 'metric' ? 'ha' : 'ac'}` : '';
 
-          const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lake.lat},${lake.lon}`;
           const townName = lake.town ? lake.town : 'Ontario';
 
           
@@ -1696,7 +1693,6 @@
                   ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
                   <div class="lake-card-actions">
                     <button type="button" class="maps-btn note-btn" data-lakeid="${LakeSetups.escape(uniqueId)}">${customNote ? 'Edit note' : 'Add note'}</button>
-                    <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="maps-btn google-maps-btn">View on Google Maps</a>
                   </div>
                   ${lake.dataSources?.length ? `<details class="lake-disclosure"><summary>Data sources</summary><ul class="lake-source-list">${lake.dataSources.map(source => `<li><a href="${LakeSetups.escape(source.url)}" target="_blank" rel="noopener noreferrer">${LakeSetups.escape(source.title)}${source.date ? ' (' + LakeSetups.escape(source.date) + ')' : ''}</a></li>`).join('')}</ul></details>` : ''}
                 </section>` : ''}
