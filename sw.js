@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v113-plain-water-clarity';
+const CACHE_NAME = 'fish-finder-v114-full-rule-descriptions';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -11,6 +11,7 @@ const ASSETS_TO_CACHE = [
   './fisheries-zones.js',
   './fishing-rules.js',
   './fishingRulesData.json',
+  './ruleDescriptionAudit.json',
   './light-theme.css',
   './dark-theme.css',
   './theme.js',

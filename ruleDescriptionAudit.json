@@ -1,0 +1,464 @@
+{
+  "checkedOn": "2026-11-05",
+  "scope": "All 3,588 rule records and all text fields checked for source-length cutoffs and unclosed parentheses; 30 distinct area descriptions required source review.",
+  "distinctDescriptionCounts": {
+    "restored": 26,
+    "verified_complete": 3,
+    "needs_review": 1
+  },
+  "recordCounts": {
+    "restored": 136,
+    "verified_complete": 5,
+    "needs_review": 1
+  },
+  "notes": [
+    "Season, sanctuary, limit, size, bait, gear and general fields had no 250–255-character or unclosed-parenthesis candidates.",
+    "The 31 distinct descriptions longer than 255 characters were not presumed truncated by their length alone.",
+    "Matched rule IDs, seasons, limits and numerical restrictions are unchanged.",
+    "Zone 20 retains a review flag because the original exclusion list differs from the current official summary."
+  ],
+  "descriptions": [
+    {
+      "zone": "2",
+      "status": "restored",
+      "recordIds": [
+        "exception-137"
+      ],
+      "originalDescription": "All waters located within the portion of Zone 2 from the Ontario / Manitoba interprovincial boundary east along the line of 52°35’N. latitude, to the intersection with 93°50’W. longitude, thence south to the intersection with 52°10’N. latitude, thence eas",
+      "completeDescription": "All waters located within the portion of Zone 2 from the Ontario/Manitoba interprovincial boundary east along the line of 52°35′N (North) latitude, to the intersection with 93°50′W (West) longitude, thence south to the intersection with 52°10′N (North) latitude, thence east to the intersection with 92°10′W (West) longitude, thence south to the Zone 2 boundary, including all of the waters within Woodland Caribou Provincial Park; thence in a westerly direction to the Ontario/Manitoba interprovincial boundary, thence northerly to the intersection with 52°35′N (North) latitude.",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-2",
+      "sourceLocation": "Species exceptions: Lake sturgeon"
+    },
+    {
+      "zone": "4",
+      "status": "restored",
+      "recordIds": [
+        "exception-71",
+        "exception-72",
+        "exception-73",
+        "exception-74"
+      ],
+      "originalDescription": "Lac Seul and all connecting waters including, but not limited to, Broad, Sunlight, Root River, Vaughan (Whitefish Lake) and Lost Lakes, and Wenasaga River from the first rapids upstream from Lac Seul approx. 3 km (1.86 mi.) downstream to the last group of",
+      "completeDescription": "Lac Seul and all connecting waters including, but not limited to Broad (50°26'32\" N (North), 92°37'50\" W (West)), Sunlight (50°29'14\" N (North), 92°34'17\" W (West)), Root River, Vaughan (Whitefish Lake) and Lost Lakes, and Wenasaga River, from the first rapids upstream from Lac Seul approximately three kilometres downstream to the last group of islands.",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-4",
+      "sourceLocation": "Waterbody exceptions: Lac Seul"
+    },
+    {
+      "zone": "4",
+      "status": "restored",
+      "recordIds": [
+        "exception-187",
+        "exception-188"
+      ],
+      "originalDescription": "Red Lake/Gullrock System - those waters upstream of Snowshoe Dam (50°54’22”N., 93°31’05”W.) on the Chukuni River, which includes Red Lake (51°03’N., 93°49’W.), Keg Lake (50°59’32”N., 93°41’01”W.), Gullrock Lake (50°58’28”N., 93°37’0”W.), Ranger Lake (51°0",
+      "completeDescription": "Red Lake and Gullrock System - those waters upstream of Snowshoe Dam (50°54′22″N (North), 93°31′05″W (West)) on the Chukuni River, including Red Lake (51°03′21″N (North), 93°57′12″W (West)), Gullrock Lake (50°58′28″N (North), 93°37′00″W (West)), Keg Lake (50°59′32″N (North), 93°41′01″W (West)), Ranger Lake (51°03′54″N (North), 93°34′33″W (West)), Two Island Lake (50º55′30″N (North), 93º34′53″W (West)) and all portions of the Chukuni River in between these lakes and any waters flowing into the Red Lake/Gullrock System",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-4",
+      "sourceLocation": "Waterbody exceptions: Red Lake and Gullrock"
+    },
+    {
+      "zone": "4",
+      "status": "restored",
+      "recordIds": [
+        "exception-191",
+        "exception-192",
+        "exception-193",
+        "exception-194",
+        "exception-195",
+        "exception-196",
+        "exception-197",
+        "exception-198",
+        "exception-199",
+        "exception-200",
+        "exception-201",
+        "exception-202",
+        "exception-203",
+        "exception-204",
+        "nonCanadian-14",
+        "nonCanadian-15",
+        "nonCanadian-16",
+        "nonCanadian-17",
+        "nonCanadian-18",
+        "nonCanadian-19",
+        "nonCanadian-20",
+        "nonCanadian-21",
+        "nonCanadian-22",
+        "nonCanadian-23",
+        "nonCanadian-24",
+        "nonCanadian-25",
+        "nonCanadian-26",
+        "nonCanadian-27"
+      ],
+      "originalDescription": "Sydney Lake Area - North Kenora Pilot Project area. Waters within boundaries of Manitoba/Ontario border to south shore of the English River System including Goshawk and Tourist lakes to Separation Rapids Bridge and South Pakwash Road to Leano Lake, south",
+      "completeDescription": "Sydney Lake Area - North Kenora Pilot Project area - Waters within boundaries of Manitoba/Ontario border to south shore of the English River System including Goshawk (50°13'07\" N (North), 94°48'48\" W (West)) and Tourist (50°16'05\" N (North), 94°41'58\" W (West)) lakes to Separation Rapids Bridge and South Pakwash Road to Leano Lake (50°47'10\" N (North), 94°26'39\" W (West)), south boundary of Woodland Caribou Provincial Park to Manitoba/Ontario border",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-4",
+      "sourceLocation": "Waterbody exceptions: Sydney Lake Area"
+    },
+    {
+      "zone": "5",
+      "status": "restored",
+      "recordIds": [
+        "exception-249",
+        "exception-250"
+      ],
+      "originalDescription": "Lake of the Woods - all portions of Lake of the Woods excluding waters of Clearwater Bay, Deception Bay, Woodchuck Bay, Kendal Inlet, Echo Bay, Cul de Sac Lake and Whitefish Bay consisting of Regina, Snake, Boot, Ghost, Brule, Devils, Atikaminike, Camp, C",
+      "completeDescription": "Lake of the Woods - all portions of Lake of the Woods excluding waters of Clearwater Bay (49°42'23\"N (North), 94°45'13\"W (West)), Deception Bay, Woodchuck Bay, Kendall Inlet, Echo Bay (49°39'00\"N (North), 94°53'58\"W (West)), Cul de Sac Lake (49°37'54\"N (North), 94°49'47\"W (West)) and Whitefish Bay (49°22'25\"N (North), 94°08'17\"W (West)), including Regina (49°24'32\"N (North), 94°02'13\"W (West)), Snake, Boot (48°43'13\"N (North), 93°23'05\"W (West)), Ghost (49°21'42\"N (North), 94°14'08\"W (West)), Brule (49°23'11\"N (North), 94°13'42\"W (West)), Devils (49°14'47\"N (North), 94°05'07\"W (West)), Atikaminike (49°14'29\"N (North), 94°02'36\"W (West)), Camp (49°15'11\"N (North), 94°02'26\"W (West)), Cloverleaf (49°25'12\"N (North), 94°07'58\"W (West)), Log (49°26'14\"N (North), 94°09'52\"W (West)), Reedy (49°25'15\"N (North), 94°05'27\"W (West)), Willow (48°36'33\"N (North), 92°47'13\"W (West)) and Sammons bays (49°23'45\"N (North), 93°59'28\"W (West)), and Knickerbocker (49°23'16\"N (North), 94°18'27\"W (West)), Louis (49°25'30\"N (North), 94°17'08\"W (West)), Cross (49°28'04\"N (North), 94°19'08\"W (West)), and Alfred inlets (49°13'34\"N (North), 94°07'25\"W (West))",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-5",
+      "sourceLocation": "Waterbody exceptions: Lake of the Woods"
+    },
+    {
+      "zone": "5",
+      "status": "restored",
+      "recordIds": [
+        "exception-357",
+        "exception-358",
+        "exception-359",
+        "exception-360",
+        "exception-361",
+        "exception-362",
+        "exception-363",
+        "exception-364",
+        "exception-365",
+        "exception-366",
+        "exception-367",
+        "exception-368",
+        "nonCanadian-61",
+        "nonCanadian-62",
+        "nonCanadian-63"
+      ],
+      "originalDescription": "Wabigoon Lake (49°44'09\"N, 92°43'52\"W) - including Butler Lake (49°40'24\"N, 92°39'02\"W), Larson Lake (49°38'23\"N, 92°37'06\"W), Mile Lake (49°40'53\"N, 92°46'43\"W), Olsen Lake (49°39'06\"N, 92°37'47\"W), Paulson Lake (49°37'26\"N, 92°36'54\"W) and Trap Lake (49",
+      "completeDescription": "Wabigoon Lake (49°44′09″N (North), 92°43′52″W (West)) - including Butler Lake (49°40′24″N (North), 92°39′02″W (West)), Larson Lake (49°38′23″N (North), 92°37′06″W (West)), Mile Lake (49°40′53″N (North), 92°46′43″W (West)), Olsen Lake (49°39′06″N (North), 92°37′47″W (West)), Paulson Lake (49°37′26″N (North), 92°36′54″W (West)) and Trap Lake (49°39′34″N (North), 92°47′19″W (West))",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-5",
+      "sourceLocation": "Waterbody exceptions: Wabigoon Lake"
+    },
+    {
+      "zone": "5",
+      "status": "restored",
+      "recordIds": [
+        "exception-823",
+        "exception-824",
+        "exception-825",
+        "exception-826",
+        "exception-827",
+        "exception-828",
+        "exception-829",
+        "exception-830",
+        "exception-831",
+        "exception-832",
+        "nonCanadian-34",
+        "nonCanadian-35",
+        "nonCanadian-36"
+      ],
+      "originalDescription": "Winnipeg River System - from outflow of Lake of the Woods to the Manitoba Border, including Big Sand Lake (50°08’N., 94°38’W.), Eaglenest Lake (50°12’43“N., 95°08’40“W.), English River, from the Winnipeg and English Rivers upstream to the Caribou Falls da",
+      "completeDescription": "Winnipeg River System - from outflow of Lake of the Woods to the Manitoba Border including the waters of Big Sand Lake (50°06'45\"N (North), 94°37'54\"W (West)), Eaglenest Lake (50°12'35\"N (North), 95°08'27\"W (West)), English River, from the Winnipeg and English Rivers upstream to the Caribou Falls dam, Gun Lake (49°56'41\"N (North), 94°40'12\"W (West)), Hidden Lake (50°04’56“N., 94°35’58“W.), Little Sand Lake (50°02'11\"N (North), 94°41'05\"W (West)), Lost Lake (50°01’16”N., 94°39’39”W.), MacFarlane River to Ena Lake Dam (49°58'35\"N (North), 94°32'03\"W (West)), Middle Lake (49°46'54\"N (North), 94°36'21\"W (West)), Muriel Lake (49°48'40\"N (North), 94°40'51\"W (West)), Pistol Lake (49°59'49\"N (North), 94°42'38\"W (West)) and Roughrock Lake (50°06'41\"N (North), 94°45'56\"W (West)), Swan Lake (50°03'57\"N (North), 94°54'43\"W (West)) and Tetu Lake (50°10'54\"N (North), 95°02'18\"W (West))",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-5",
+      "sourceLocation": "Waterbody exceptions: Winnipeg River System"
+    },
+    {
+      "zone": "6",
+      "status": "restored",
+      "recordIds": [
+        "exception-370",
+        "exception-371"
+      ],
+      "originalDescription": "All tributaries to Lake Superior in Zone 6 described as follows: 1.Current River downstream from the Boulevard Lake Dam (48°27’N., 89°11’W.); 2.Coldwater Creek downstream from Ouimet Canyon Road (48°45’N., 88°36’W.); 3.Spring Creek downstream from Dorion",
+      "completeDescription": "All tributaries to Lake Superior in Zone 6 described as follows: Current River downstream from the Boulevard Lake Dam (48°27'N, 89°11'W) Coldwater Creek downstream from Quimet Canyon Road (48°45'N, 88°36'W) Spring Creek downstream from Dorion Fish Culture Station (48°50'N, 88°36'W) Wolf River downstream from the lower falls (48°50'58\"N, 88°34'87\"W) Black Sturgeon River downstream from the dam (48°55'N, 88°23'W) Nipigon River, entire length including Jessie Lake, Polly Lake and Lake Helen (49°04'20\"N, 88°16'17\"W)",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 6, species exceptions: Brook Trout, six named tributaries"
+    },
+    {
+      "zone": "6",
+      "status": "verified_complete",
+      "recordIds": [
+        "exception-858",
+        "exception-859",
+        "exception-860"
+      ],
+      "originalDescription": "Lac des Mille Lacs (48°52'36\"N, 90°30'46\"W), including Casino Lake (48°56'02\"N, 90°42'57\"W), Cushing Lake (48°56'10\"N, 90°30'11\"W), Panache Lake (48°54'39\"N, 90°26'34\"W), Pike Lake (48°53'34\"N, 90°30'36\"W) and all connecting waters between these lakes",
+      "completeDescription": "Lac des Mille Lacs (48°52'36\"N, 90°30'46\"W), including Casino Lake (48°56'02\"N, 90°42'57\"W), Cushing Lake (48°56'10\"N, 90°30'11\"W), Panache Lake (48°54'39\"N, 90°26'34\"W), Pike Lake (48°53'34\"N, 90°30'36\"W) and all connecting waters between these lakes",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 6, waterbody exceptions: Lac des Mille Lacs"
+    },
+    {
+      "zone": "6",
+      "status": "restored",
+      "recordIds": [
+        "exception-387",
+        "exception-388"
+      ],
+      "originalDescription": "Lake Nipigon - Ombabika Bay (50°15’N., 88°15’W.) and Wabinosh Bay (50°02’N., 88°50’W.) and the tributaries of the bays up to the first barrier including the Little Jackfish River downstream from the centre line of the CN railway bridge and Wabinosh River",
+      "completeDescription": "Lake Nipigon - Ombabika Bay (50°15'N, 88°15'W) and Wabinosh Bay (50°02'N, 88°50'W) and the tributaries of the bays up to the first barrier including the Little Jackfish River downstream from the centre line of the CN railway bridge and Wabinosh River downstream of Wabinosh Lake",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 6, Lake Nipigon: Ombabika Bay and Wabinosh Bay"
+    },
+    {
+      "zone": "6",
+      "status": "restored",
+      "recordIds": [
+        "exception-389",
+        "exception-390",
+        "exception-391",
+        "exception-392",
+        "exception-393",
+        "exception-394",
+        "exception-395"
+      ],
+      "originalDescription": "Lake Nipigon and all tributaries downstream from the first falls, rapids, dams or lakes identified on a Provincial Series Map or the entire stream if there are no falls, rapids, dams or lakes identified on a Provincial Series Map or if the tributary does",
+      "completeDescription": "Lake Nipigon and its tributaries downstream from the first falls, rapids, dams or lakes or the entire stream if there are no falls, rapids, dams or lakes, also including: Waters on the islands of Lake Nipigon - including Forgan Lake, Bonner Lake, Little Bonner Lake and Jackpot Lake (Madeline Lake) Gull River - downstream from the Highway 527 bridge Kabitotikwia River - downstream from the Highway 527 bridge Poshkokagan River - downstream from and including the rapids (49°25'45\"N, 89°04'55\"W) located 13 km upstream from the Black Sturgeon Road bridge Wabinosh River - downstream from Wabinosh Lake Little Jackfish River - downstream from the centre line of the CN railway bridge",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 6, waterbody exceptions: Lake Nipigon, heading and six included waters"
+    },
+    {
+      "zone": "6",
+      "status": "restored",
+      "recordIds": [
+        "exception-401"
+      ],
+      "originalDescription": "Nipigon River and Nipigon Bay - The Nipigon River from the Alexander Falls Dam in Zone 6 to Nipigon Bay in Zone 9, and the waters of Nipigon Bay in Zone 9 north of a line drawn from Simpson Island (48°49'48\"N., 87°40'40\"W.) across the bay to the mainland",
+      "completeDescription": "Nipigon River and Nipigon Bay - The Nipigon River from the Alexander Falls Dam in Zone 6 to Nipigon Bay in Zone 9, and the waters of Nipigon Bay in Zone 9 north of a line drawn from Simpson Island (48°49'48\"N, 87°40'40\"W) across the bay to the mainland at 48°51'21\"N, 87°38'47\"W",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 6, Nipigon River and Nipigon Bay"
+    },
+    {
+      "zone": "7",
+      "status": "restored",
+      "recordIds": [
+        "exception-416",
+        "exception-417"
+      ],
+      "originalDescription": "All tributaries to Lake Superior in Zone 7 described as follows: 1. Jackfish River downstream from the falls (49°03’N., 88°06’W.); 2. Jackpine River downstream from Wilson’s Falls (49°07’N., 87°53’W.); 3. Cypress River downstream from falls (48°57’N., 87°",
+      "completeDescription": "All tributaries to Lake Superior in Zone 7 described as follows: Jackfish River - downstream from the falls (49°03'N, 88°06'W) Jackpine River - downstream from Wilson’s Falls (49°07'N, 87°53'W) Cypress River - downstream from falls (48°57'N, 87°50'W) Cypress River - west tributary downstream from the falls (48°57'N, 87°51'W) Gravel River - downstream from the falls (48°55'26\"N, 87°41'46\"W) Little Gravel River - downstream from the falls (48°56'01\"N, 87°46'36\"W) Steel River - downstream from the Golden Staircase (outflow of Santoy Lake) McKellar River - downstream from the falls 150 m north of Highway 17 Prairie River - downstream from the first hydro line north of Lake Superior From the east shore of the Nipigon River to Camp 81 Road, all tributaries lying downstream from Highway 17, excluding those listed in the first 9 sub-bullets above From Camp 81 Road east to the Whitesand River (48°50'N, 87°24'W), all tributaries lying downstream from the first hydro line north of Lake Superior, excluding those listed in the first 9 sub-bullets above From and including the Whitesand River to the west shore of the Pic River all tributaries lying downstream from Highway 17, excluding those listed in the first 9 sub-bullets above All tributaries to Lake Superior in Zone 7 from the Pic River to the Michipicoten River, inclusive, downstream from the first falls, rapids, dam or lake or the entire tributary if there are no falls, rapids, dams or lakes",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 7, species exceptions: Brook Trout, listed Lake Superior tributaries"
+    },
+    {
+      "zone": "7",
+      "status": "restored",
+      "recordIds": [
+        "exception-447"
+      ],
+      "originalDescription": "Pukaskwa National Park and the surrounding waters south of a line running west from the south boundary of Knowles Twp. and east of the Thunder Bay-Algoma District Boundary, and including the waters of Pokei Creek, Gibson Lake, Jarvey Lake, Coronation Cree",
+      "completeDescription": "Pukaskwa National Park and the surrounding waters south of a line running west from the south boundary of Knowles Township and east of the Thunder Bay-Algoma District Boundary, and including the waters of Pokei Creek, Gibson Lake (48°20'41\"N, 85°19'53\"W), Jarvey Lake (48°18'45\"N, 85°19'47\"W), Coronation Creek and Lake (48°15'57\"N, 85°18'51\"W), Warbedeelius Lake (48°10'03\"N, 85°19'53\"W), Soulier Lake (48°22'01\"N, 85°19'29\"W) and all waters tributary to the Pukaskwa River in the Algoma District",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 7, bait restrictions: Pukaskwa National Park"
+    },
+    {
+      "zone": "7",
+      "status": "restored",
+      "recordIds": [
+        "exception-453",
+        "exception-454"
+      ],
+      "originalDescription": "Waters east of Pukaskwa National Park - within the following boundary: Beginning at the southwest corner of Legarde Twp., then west along the projection of the southeast boundary of Legarde Twp., to the east boundary of Pukaskwa National Park, and includi",
+      "completeDescription": "Waters east of Pukaskwa National Park - within the following boundary: beginning at the southwest corner of Legarde Township, then west along the projection of the southeast boundary of Legarde Township, to the east boundary of Pukaskwa National Park, then northerly along the Park Boundary to the northeast corner of Pukaskwa National Park, then in a straight line easterly to the northwest corner of Memaskwash Township, then east along the north boundary of Memaskwash Township, then south along the east boundary of Memaskwash Township and Charbonneau Township, then west along the south boundary of Charbonneau Township, then south along the east boundary of Keating Additional and Legarde Additional to the beginning; and including the waters of Little Beaver Lake (48°14'13\"N, 85°19'19\"W), Coronation Creek, Coronation Lake (48°15'57\"N, 85°18'51\"W) and their tributaries in Keating Township; and the tributaries of Farewell Creek in Legarde Township; but not including the waters of East Pukaskwa Lake (48°06'12\"N, 85°37'00\"W)",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 7, species exceptions: Waters east of Pukaskwa National Park"
+    },
+    {
+      "zone": "10",
+      "status": "restored",
+      "recordIds": [
+        "exception-471",
+        "exception-472"
+      ],
+      "originalDescription": "All tributaries to Lake Superior in Zone 10 described as follows: 1. That portion of the Montreal River (in Zone 9) downstream from the falls (47°14’16.73”N., 84°38’41.52”W.); 2. Batchewana River downstream from the falls (46°59’13.15”N., 84°31’26.86”W.);",
+      "completeDescription": "All tributaries to Lake Superior in Zone 10 described as follows: That portion of the Montreal River (in Zone 9) downstream from the falls (47°14'16.73\"N, 84°38'41.52\"W) Batchewana River - downstream from the falls (46°59'13.15\"N, 84°31'26.86\"W) Chippewa River - downstream from the falls (46°55'47.57\"N, 84°25'31.42\"W) Carp River - downstream from the road crossing (46°57'43.09\"N, 84°35'2.16\"W) where the Carp River Weir Road (east bank of the river) fords the river and joins the Carp Road (west bank of the river) Harmony River - downstream from the hydro line crossing the river (46°51'2.82\"N, 84°20'54.01\"W)",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 10, species exceptions: Brook Trout, five named tributaries"
+    },
+    {
+      "zone": "10",
+      "status": "verified_complete",
+      "recordIds": [
+        "exception-512"
+      ],
+      "originalDescription": "Lake Superior Provincial Park and the surrounding Twps. of Redsky and Restoule (except Anjigami Lake), Roy, Stoney, Sugananaqueb, Barnes, Beaudin, Bullock, Cannard, Greenwood, Grootenboer, Labonte, and Larson, Home and Peever north of the Montreal River.",
+      "completeDescription": "Lake Superior Provincial Park and the surrounding Twps. of Redsky and Restoule (except Anjigami Lake), Roy, Stoney, Sugananaqueb, Barnes, Beaudin, Bullock, Cannard, Greenwood, Grootenboer, Labonte, and Larson, Home and Peever north of the Montreal River.",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 10, bait restrictions: Lake Superior Provincial Park"
+    },
+    {
+      "zone": "11",
+      "status": "restored",
+      "recordIds": [
+        "exception-542",
+        "exception-543",
+        "exception-544",
+        "exception-545",
+        "exception-546",
+        "exception-547"
+      ],
+      "originalDescription": "French River - waters lying south of the Five Finger Rapids, and west of the Chaudière Dam downstream to the Highway 69 bridge including Wolseley Bay, the North Channel of the French River, 18 Mile Bay, Ranger Bay and Dry Pine Bay to the Highway 607 Bridg",
+      "completeDescription": "French River - waters lying south of the Five Finger Rapids, and west of the Chaudière Dam downstream to the Highway 69 bridge including Wolseley Bay, the North Channel of the French River, 18 Mile Bay, Ranger Bay and Dry Pine Bay to the Highway 607 Bridge",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-11",
+      "sourceLocation": "Waterbody exceptions: French River"
+    },
+    {
+      "zone": "11",
+      "status": "restored",
+      "recordIds": [
+        "exception-551",
+        "exception-552",
+        "exception-553",
+        "exception-554",
+        "exception-555",
+        "exception-556",
+        "exception-557",
+        "exception-558",
+        "exception-559"
+      ],
+      "originalDescription": "Lake Nipissing - including the waters of the French River from the Chaudière and the Little Chaudière dams to Lake Nipissing; the west bay of Lake Nipissing in Haddo Township; the northwest bay of Lake Nipissing to the falls of MacPherson Creek; the Sturg",
+      "completeDescription": "Lake Nipissing - including the waters of the French River from the Chaudière and the Little Chaudière dams to Lake Nipissing; the west bay of Lake Nipissing in Haddo Township; the northwest bay of Lake Nipissing to the falls of MacPherson Creek; the Sturgeon River from Lake Nipissing to the dam at Sturgeon Falls; the Veuve River from Lake Nipissing to the chutes located in Lot 5 in Conc. 1 in Caldwell Township; the Lavase River from Lake Nipissing to the Champlain Park Boat Ramp (46°14'31\"N, 79°25'11\"W) in the city of North Bay, the South River from Lake Nipissing to Highway 654; and the entire West Arm of Lake Nipissing including Cross Lake",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 11, waterbody exceptions: Lake Nipissing"
+    },
+    {
+      "zone": "14",
+      "status": "restored",
+      "recordIds": [
+        "exception-595"
+      ],
+      "originalDescription": "Big Sound of Parry Sound (Killbear Channel) - The waters of the Killbear Channel in Georgian Bay, in the District of Parry Sound. Eastern boundary line from Cadotte Point on Parry Island across the channel to the easternmost point of Killbear Provincial P",
+      "completeDescription": "Big Sound of Parry Sound (Killbear Channel) - The waters of the Killbear Channel in Georgian Bay, in the District of Parry Sound. Eastern boundary line from Cadotte Point on Parry Island across the channel to the easternmost point of Killbear Provincial Park. Western boundary line from Cyril Point to the southernmost point of Spruce Island to the lighthouse located immediately north of the Nias Islands to the southernmost point of Rose Island to Liddon Point on Parry Island.",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 14, waterbody exceptions: Big Sound, Killbear Channel"
+    },
+    {
+      "zone": "14",
+      "status": "restored",
+      "recordIds": [
+        "exception-590",
+        "exception-591",
+        "exception-592",
+        "exception-593",
+        "exception-594"
+      ],
+      "originalDescription": "Big Sound of Parry Sound - The waters of the Big Sound in Georgian Bay, in the District of Parry Sound. Western boundary line from Cadotte Point on Parry Island to the easternmost point of Killbear Provincial Park. Southern boundary is the swing bridge co",
+      "completeDescription": "Big Sound of Parry Sound - The waters of the Big Sound in Georgian Bay, in the District of Parry Sound. Western boundary line from Caddotte Point on Parry Island to the easternmost point of Killbear Provincial Park. Southern boundary is the swing bridge connecting Rose Point to Parry Island, including Parry Sound Harbour, Hay Bay, Deep Bay and Depot Harbour.",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 14, waterbody exceptions: Big Sound eastern waters"
+    },
+    {
+      "zone": "14",
+      "status": "restored",
+      "recordIds": [
+        "exception-841",
+        "exception-842",
+        "exception-843",
+        "exception-844",
+        "exception-845"
+      ],
+      "originalDescription": "Big Sound of Parry Sound - The waters west of the Killbear Channel in Georgian Bay, in the District of Parry Sound. Eastern boundary from Cyril Point to the southwestern most point of Spruce Island to the light house located immediately north of the Nias",
+      "completeDescription": "Big Sound of Parry Sound - The waters west of the Killbear Channel in Georgian Bay, in the District of Parry Sound. Eastern boundary from Cyril Point to the southwestern most point of Spruce Island to the lighthouse located immediately north of the Nias Islands to Liddon Point of Parry Island. Western boundary from Oak Point to the lighthouse on Jones Islands to the lighthouse on Gordon Rocks to the most northerly point of Snake Island to the lighthouse on Snug Island due east to the mainland.",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 14, waterbody exceptions: Big Sound west of Killbear Channel"
+    },
+    {
+      "zone": "14",
+      "status": "restored",
+      "recordIds": [
+        "exception-596",
+        "exception-597"
+      ],
+      "originalDescription": "Georgian Bay – waters west and south of the Killbear Channel in Georgian Bay, in the District of Parry Sound. Western boundary from Green Point to the most northerly point of Hertzberg Island to Colin Rock to the most westerly point of North Limestone Isl",
+      "completeDescription": "Georgian Bay - waters west and south of the Killbear Channel in Georgian Bay, in the District of Parry Sound. Western boundary from Green Point to the most northerly point of Hertzberg Island to Colin Rock to the most westerly point of North Limestone Island to the southwestern point of Sandy Island to the most northern point of the largest of the Umbrella Islands to the most northern point of Frying Pan Island to the most southern point of Sans Souci Island to Mainland Point. Eastern boundary from Oak Point to the lighthouse on Jones Islands to the lighthouse on Gordon Rocks to the most northerly point of Snake Island to the lighthouse on Snug Island due east to the mainland and the swing bridge connecting Rose Point to Parry Island. Includes Five Mile Bay and waters around McLaren and Isabella Island.",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-14",
+      "sourceLocation": "Species exceptions: Lake Trout, Georgian Bay west and south of Killbear Channel"
+    },
+    {
+      "zone": "14",
+      "status": "restored",
+      "recordIds": [
+        "exception-604",
+        "exception-605"
+      ],
+      "originalDescription": "North Channel of Lake Huron - waters lying west of a straight line from the most northerly point (45°48’28”N., 81°35’44”W.) on the water’s edge of Cape Smith (on Manitoulin Island) to the most southerly point (45°58’05”N., 81°29’20”W.) on the water’s edge",
+      "completeDescription": "North Channel (Lake Huron) - waters lying west of a straight line from the most northerly point (45°48′28″N (North), 81°35′44″W (West)) on the water’s edge of Cape Smith (on Manitoulin Island) to the most southerly point (45°58′05″N (North), 81°29′20″W (West)) on the water’s edge of Red Rock Point (east of the Town of Killarney), and east of a straight line from the most southerly point (46°10′31″N (North), 82°53′06″W (West)) on the water’s edge along the shore of Mary Point (east of Blind River) to the most northerly point (45°59′52″N (North), 82°48′40″W (West)) on the water’s edge of Cape Roberts (on the west side of Bayfield Sound on Manitoulin Island)",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-14",
+      "sourceLocation": "Species exceptions: Rainbow Trout, North Channel"
+    },
+    {
+      "zone": "15",
+      "status": "verified_complete",
+      "recordIds": [
+        "exception-669"
+      ],
+      "originalDescription": "Pickerel River - from the first set of rapids downstream of the lake at (45°59’45”N., 80°21’W.) downstream to Georgian Bay and including those parts of the Pickerel River known as Cantin Lake, Trestle Gully Lake, Deep Bay, Muskrat Bay and David’s Bay.",
+      "completeDescription": "Pickerel River - from the first set of rapids downstream of the lake at (45°59’45”N., 80°21’W.) downstream to Georgian Bay and including those parts of the Pickerel River known as Cantin Lake, Trestle Gully Lake, Deep Bay, Muskrat Bay and David’s Bay.",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 15, species exceptions: Pickerel River"
+    },
+    {
+      "zone": "16",
+      "status": "restored",
+      "recordIds": [
+        "exception-761",
+        "exception-762",
+        "exception-763",
+        "exception-764",
+        "exception-765",
+        "exception-766"
+      ],
+      "originalDescription": "Grand River:  - between the West Garafraxa 2nd Line and Scotland Street in the Town of Fergus; - between Tower Street in the Town of Fergus and the Bissell Dam in Nichol Twp.; - between 100 m (328 ft.) downstream of a bridge located at the southern bounda",
+      "completeDescription": "Grand River - between the West Garafraxa second Line and Scotland Street in the Town of Fergus; between Tower Street in the Town of Fergus and the Bissell Dam in Nichol Township; between 100 metres downstream of a bridge located at the southern boundary of the Elora Gorge Conservation Area and a point 100 metres upstream of Pilkington 8th Line in Pilkington Township; between 100 metres downstream of Pilkington 8th Line bridge and 100 metres upstream of Pilkington Township and Woolwich Township boundary line; and between 100 metres downstream of Pilkington Township and Woolwich Township boundary line and 100 metres upstream of Highway 86 bridge",
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-16",
+      "sourceLocation": "Waterbody exceptions: Grand River, five specified stretches"
+    },
+    {
+      "zone": "16",
+      "status": "restored",
+      "recordIds": [
+        "exception-773",
+        "exception-774",
+        "exception-775",
+        "exception-776",
+        "exception-777",
+        "exception-778",
+        "exception-779",
+        "exception-780",
+        "exception-781",
+        "exception-782"
+      ],
+      "originalDescription": "Lakes Simcoe, Couchiching, Green River, and their tributaries, the Trent Canal System and its tributaries - downstream from Lake Couchiching to Lock 42, the Trent Canal System in Brock and Ramara Twps., and the Severn River and its tributaries (excluding",
+      "completeDescription": "Lake Simcoe, Lake Couchiching (44°39'51\"N, 79°22'34\"W), Green River, Trent Canal System and their tributaries - downstream from Lake Couchiching to Lock 42, the Trent Canal System in Brock and Ramara Townships, and the Severn River and its tributaries (excluding the Black River) downstream from Lake Couchiching to Wasdell Falls, all within the Regional Municipalities of York, Durham and Simcoe County and the District of Muskoka",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 16, waterbody exceptions: Lake Simcoe and connected waters"
+    },
+    {
+      "zone": "16",
+      "status": "restored",
+      "recordIds": [
+        "opportunity-1182",
+        "opportunity-1228",
+        "opportunity-1270",
+        "opportunity-1315"
+      ],
+      "originalDescription": "Saugeen River - Arran, Amabel, Brant, Carrick, Elderslie and Saugeen Townships and in the Town of Walkerton and the Village of Paisley, between the southerly edge of the Municipality of Brockton Concession 2 SDR. bridge and the westerly edge of the concre",
+      "completeDescription": "Saugeen River - Arran, Amabel, Brant, Carrick, Elderslie, and Saugeen Townships and in the Town of Walkerton and the Village of Paisley, between the southerly edge of the Municipality of Brockton Concession 2 SDR (sideroad) road bridge and the westerly edge of the concrete abutments downstream of Denny’s Dam",
+      "source": "https://www.ontario.ca/page/sport-fishing-variation-order-fisheries-management-zone-16",
+      "sourceLocation": "Official sport fishing variation order, Zone 16: Saugeen River extended fishing opportunity"
+    },
+    {
+      "zone": "17",
+      "status": "restored",
+      "recordIds": [
+        "exception-789",
+        "exception-790"
+      ],
+      "originalDescription": "Balsam Lake (44°34’54”N., 78°51’10”W.) - Bexley Township, including the waters of the Gull River upstream to the dam at Coboconk, the waters of the Rosedale River between the Trent dam at Rosedale upstream to Balsam Lake, the waters of the Trent Canal bet",
+      "completeDescription": "Balsam Lake (44°34'54\"N, 78°51'10\"W) - Bexley Township, including the waters of the Gull River upstream to the dam at Coboconk, the waters of the Rosedale River between the Trent dam at Rosedale upstream to Balsam Lake, the waters of the Trent Canal between the upstream lock at Rosedale upstream to its junction with the Rosedale River and the waters of the Trent Canal between Balsam Lake and Mitchell Lake",
+      "source": "https://www.ontario.ca/files/2025-12/mnr-2026-fishing-regulations-summary-en-2025-12-08.pdf",
+      "sourceLocation": "Zone 17, species exceptions: Muskellunge, Balsam Lake"
+    },
+    {
+      "zone": "20",
+      "status": "needs_review",
+      "recordIds": [
+        "exception-799"
+      ],
+      "originalDescription": "All waters of Lake Ontario, including the Niagara River (downstream of Niagara Falls). The following waters are excluded: Jordan Harbour, Hamilton Harbour, Toronto Harbour, Frenchman's Bay, Murray Canal, Presqu'ile Bay, Weller's Bay, East Lake, West Lake,",
+      "completeDescription": null,
+      "source": "https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-20",
+      "sourceLocation": "Zone 20 two-line angling rule: original exclusions differ from the 2026 summary; do not reconstruct from a different scope."
+    }
+  ]
+}
