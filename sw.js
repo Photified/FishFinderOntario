@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v97-separate-help-settings';
+const CACHE_NAME = 'fish-finder-v98-system-bar-appearance';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -47,7 +47,7 @@ self.addEventListener('fetch', event => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
-    if (dataRequest || navigation) {
+    if (dataRequest || navigation || url.pathname.endsWith('/manifest.json')) {
       try {
         const response = await fetch(event.request);
         if (!response.ok) throw new Error('Request failed: ' + response.status);
