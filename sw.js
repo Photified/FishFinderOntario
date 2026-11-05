@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v110-clear-licence-limits';
+const CACHE_NAME = 'fish-finder-v111-zone-details-in-rules';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

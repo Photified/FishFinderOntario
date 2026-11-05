@@ -168,11 +168,10 @@ window.FishingRules = (() => {
 
   const ruleButtons = '<button type="button" data-rules-open="local">Lake-specific rules</button><button type="button" data-rules-open="fishing">Fishing rules</button>';
   function overview(l) {
-    const available=data&&current(data), sanct=notices(l), bmz=l.bmz||[], z=zones(l);
+    const available=data&&current(data), sanct=notices(l), bmz=l.bmz||[];
     const warning=!available?'Rules need checking':closedWater(l)?'No fishing on this date':sanct.length?'Sanctuary notices to check':'';
     return `${warning?`<p><strong class="rule-status ${available&&closedWater(l)?'closed':'check'}">${warning}</strong></p>`:''}
       <div class="rules-actions" role="group" aria-label="Waterbody rules">${ruleButtons.replaceAll('data-rules-open', 'aria-haspopup="dialog" data-rules-open')}</div>
-      <div class="rules-summary"><p class="rules-zones">${z.length?z.map(zone=>zoneLink(zone)||esc('Fisheries zone '+zone)).join(' / '):'Fisheries zone not confirmed'} · ${bmz.length?esc(bmz.join(' / ')):'Bait zone not confirmed'}</p></div>
       ${!available?'<p class="rule-caution">'+(data?'Included rules cover 2026. Check the current official guide for this date.':'Rules could not be loaded. Check the official guide before fishing.')+'</p>':''}
       ${bmz.some(s=>/no use/i.test(s))?'<p class="rule-caution">No use or possession of live baitfish at the mapped point. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button>.</p>':''}`;
   }
