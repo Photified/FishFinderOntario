@@ -341,9 +341,11 @@
     .map-start-hint {margin:0 20px;padding:0 0 10px;color:#cbd5e1;font-size:.8rem;line-height:1.45;}
     #view-map.spot-selected .map-start-hint {display:none;}
     button:focus-visible,input:focus-visible {outline:3px solid #7dd3fc;outline-offset:3px;}
-    #guidedTour {position:fixed;inset:0;z-index:10000;pointer-events:none;}
-    .tour-shade {position:absolute;background:rgba(0,0,0,.76);pointer-events:auto;touch-action:none;}
-    .tour-ring {position:absolute;border:2px solid #7dd3fc;border-radius:12px;box-sizing:border-box;box-shadow:0 0 16px #38bdf855;pointer-events:none;}
+    #guidedTour {position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;overflow:hidden;}
+    #guidedTour::backdrop {background:transparent;}
+    #guidedTour:has(.tour-ring[hidden]) {background:#000b;}
+    .tour-ring {position:absolute;border:2px solid #7dd3fc;border-radius:12px;box-sizing:border-box;box-shadow:0 0 0 200vmax #000b;pointer-events:none;}
+    .tour-target {position:absolute;background:transparent;border:0;padding:0;cursor:pointer;}
     .tour-card {position:absolute;box-sizing:border-box;pointer-events:auto;overflow:auto;background:#172635;color:#f1f5f9;border:1px solid #47647d;border-radius:14px;padding:12px 16px 14px;box-shadow:0 8px 30px #0008;font-family:inherit;}
     .tour-heading {display:flex;justify-content:space-between;align-items:center;gap:12px;}
     #tourProgress {font-size:.73rem;font-weight:600;color:#7dd3fc;}
@@ -951,7 +953,7 @@
       let lakeMarkers = {};
       let areaCenter = null, selectedLakeId = null, favoritesOnly = false;
       let matchingWaters = [], visibleWaters = [], listLimit = 30, refreshingMap = false;
-      let preserveViewport = false, resultsScroll = 0;
+      let preserveViewport = false, resultsScroll = 0, tourDemo = false;
       window.addEventListener('map-return', () => map.invalidateSize({pan:false}));
       window.addEventListener('resize', () => map.invalidateSize({pan:false}));
       new ResizeObserver(() => map.invalidateSize({pan:false})).observe(document.getElementById('map'));
@@ -990,7 +992,6 @@
           marker.setIcon(L.divIcon({className:'',html:`<div class="custom-pin ${marker.defaultPinClass} ${key === id ? 'pin-active' : ''}"></div>`,iconSize:[24,24],iconAnchor:[12,24]}));
         });
         if(scroll) document.getElementById('backResultsBtn').scrollIntoView({behavior:'smooth',block:'start'});
-        if(id) window.FFGuide?.action('spot');
       }
       document.getElementById('backResultsBtn').addEventListener('click', () => {
         updateSelection(null); map.closePopup(); window.scrollTo({top:resultsScroll,behavior:'smooth'});
@@ -1081,12 +1082,10 @@
 
       document.getElementById('locateMeBtn').addEventListener('click', () => {
         if (!navigator.geolocation) {
-          window.FFGuide?.feedback('area','This browser cannot find your location. You can skip this step and search for a city later.');
           AppPopups.notice("Location unavailable", "This browser does not support geolocation."); return;
         }
         ++searchRequest;
         setLocationButtonState(true);
-        window.FFGuide?.feedback('area','Finding your location… This can take a few seconds. Allow location access if your browser asks.');
         navigator.geolocation.getCurrentPosition(
           (position) => {
             areaCenter = null;
@@ -1102,12 +1101,10 @@
             if (accessUI?.isAccess()) accessUI.exploreArea(cachedUserLocation);
             else frameNearbyWaterbodies();
             setLocationButtonState(false);
-            window.FFGuide?.action('area');
           },
           (error) => {
             setLocationButtonState(false);
             AppPopups.notice("Location unavailable", "The app could not retrieve your location.");
-            window.FFGuide?.feedback('area','Could not get your location. Try the pin again, or skip this step and search for a city later.');
           },
           { timeout: 20000 }
         );
@@ -1248,7 +1245,6 @@
           areaCenter=null;
           findClosestLakes(currentActiveSpecies || 'all');
           document.getElementById('searchContext').textContent=`Could not find “${term}” in Ontario. Try another city or waterbody name.`;
-          window.FFGuide?.feedback('area','Could not find that place. Try another name or tap the location pin.');
           return;
         }
         areaCenter={...found,term:lower};
@@ -1256,7 +1252,6 @@
         findClosestLakes(currentActiveSpecies || 'all');
         if (accessUI?.isAccess()) accessUI.exploreArea(found);
         else frameSearchedPlace();
-        window.FFGuide?.action('area');
       }
       lakeSearchInput.addEventListener('input', () => {
         ++searchRequest;
@@ -1313,7 +1308,6 @@
           buildMapSlider();
           findClosestLakes('all');
           if(fitLocationWhenLoaded) frameNearbyWaterbodies();
-          if(document.getElementById('view-map').classList.contains('active-view')) window.FFGuide?.start('map');
         } catch (error) { 
           console.warn("Local JSON fetch failed. Make sure you are on a live server or GitHub pages."); 
           buildMapSlider();
@@ -1326,6 +1320,7 @@
         fishSpeciesList.forEach(fish => {
           const btn = document.createElement('button');
           btn.type = 'button';
+          btn.dataset.species = fish.id;
           btn.className = 'fish-btn' + (fish.id === currentActiveSpecies ? ' active' : '');
           const imgSrc = fish.id === 'all' ? 'images/iconblue.png' : `images/${fish.id}.png`;
           btn.innerHTML = `<img src="${imgSrc}" alt="${fish.name}"><span>${fish.name}</span>`;
@@ -1653,7 +1648,7 @@
                 ${isSelected ? `${statsTextHTML}
                 ${FishingRules.render(uniqueId, lake)}
                 <section class="lake-section lake-fish-section">
-                  ${LakeSetups.render(uniqueId, getAdvisorFishTypes(lake), lake)}
+                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake)}
                   <details class="lake-disclosure"><summary>View recorded fish</summary>${recordedFishHTML}</details>
                 </section>
                 <section class="lake-section"><h4>Stocking records</h4>${stockingContentHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'}</section>
@@ -1698,7 +1693,6 @@
           }
           localStorage.setItem('savedLakesData', JSON.stringify(savedLakes));
           refreshSavedState();
-          if(savedLakes[lakeId]) window.FFGuide?.action('save');
         }
       });
 
@@ -1713,7 +1707,71 @@
           if (!visible && map.hasLayer(searchMarker)) map.removeLayer(searchMarker);
         },
       });
-      loadLakeData();
+      FFGuide.connect(loadLakeData(), prepareGuideDemo);
+
+      function prepareGuideDemo() {
+        const lake = lakesData.find(water => water.waterbodyId === '17-6327-49193');
+        if (!lake) return null;
+        const id = getLakeId(lake);
+        const previous = {
+          center: map.getCenter(), zoom: map.getZoom(), scroll: window.scrollY,
+          species: currentActiveSpecies, selectedLakeId, resultsScroll, listLimit,
+          areaCenter, favoritesOnly, search: lakeSearchInput.value, fishScroll: fishSlider.scrollLeft,
+          restoreAccess: accessUI?.captureView()
+        };
+        const savedButton = document.getElementById('viewFavoritesBtn');
+        function setFavorites(value) {
+          favoritesOnly = value;
+          savedButton.classList.toggle('active', value);
+          savedButton.setAttribute('aria-pressed', value);
+          savedButton.title = value ? 'Show all spots' : 'Show saved spots';
+        }
+        function setSpecies(species) {
+          fishSlider.querySelectorAll('[data-species]').forEach(button => button.classList.toggle('active', button.dataset.species === species));
+          findClosestLakes(species);
+        }
+        clearTimeout(searchTimer);
+        searchRequest++;
+        closeSuggestions();
+        lakeSearchInput.value = '';
+        areaCenter = null;
+        setFavorites(false);
+        accessUI?.showWaters();
+        tourDemo = true;
+        setSpecies('all');
+        map.setView([lake.lat, lake.lon], 13, {animate:false});
+
+        return {
+          show(step) {
+            if (step === 0) return fishSlider.querySelector('[data-species="perch"]');
+            if (step === 1) {
+              setSpecies('perch');
+              return lakeMarkers[id]?.getElement() || document.getElementById('map');
+            }
+            if (step === 2) {
+              updateSelection(id);
+              return ffResultsContainer.querySelector('[data-setup-fish="perch"]');
+            }
+            ffResultsContainer.querySelector('[data-setup-fish="perch"]')?.click();
+            return ffResultsContainer.querySelector('.setup-heading');
+          },
+          restore() {
+            ffResultsContainer.querySelector('[data-setup-action="close"]')?.click();
+            tourDemo = false;
+            lakeSearchInput.value = previous.search;
+            areaCenter = previous.areaCenter;
+            setFavorites(previous.favoritesOnly);
+            setSpecies(previous.species);
+            map.setView(previous.center, previous.zoom, {animate:false});
+            previous.restoreAccess?.();
+            listLimit = previous.listLimit;
+            updateSelection(previous.selectedLakeId);
+            resultsScroll = previous.resultsScroll;
+            fishSlider.scrollLeft = previous.fishScroll;
+            window.scrollTo({top:previous.scroll,behavior:'instant'});
+          }
+        };
+      }
 
     });
   </script>

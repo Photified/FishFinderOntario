@@ -5,14 +5,7 @@
   help.className = 'simple-dialog';
   help.setAttribute('aria-labelledby', 'helpTitle');
   help.innerHTML = `<div class="dialog-heading"><h2 id="helpTitle">Explore, choose a fish, go fishing</h2><button type="button" aria-label="Close help">✕</button></div>
-    <details id="quickGuide">
-      <summary>Quick guide</summary>
-      <ol class="help-steps"><li><strong>Explore the map.</strong> Move or zoom to an area, use My location, or search for a town or lake. Choose Waterbodies, Boat launches or Shore access. The fish strip appears while browsing waterbodies.</li>
-      <li><strong>Open a waterbody.</strong> Tap a map pin or a name in the list. The pills under the name show key facts like the zone and last stocked year, when available. Open <strong>View recorded fish</strong> for the full list and <strong>Fishing information</strong> for rules. When available, <strong>View earlier years</strong> shows older records from the same Ontario stocking dataset.</li>
-      <li><strong>Tap a fish inside its card.</strong> The main fish filter hides when a waterbody is open. Pictured fish inside its card open bait and tackle recommendations right there. Adjust conditions if you know them, or use the general suggestions.</li>
-      <li><strong>Find access and save spots.</strong> Use Boat launches or Shore access above the results. The three browsing choices show one type of location at a time. Use Map layers to turn overlays on or off. Stars save spots on this device.</li></ol>
-      <p class="record-note">Recorded fish and access information do not guarantee current conditions. Check the official fishing regulations before your trip.</p>
-    </details>
+    <button class="btn-primary" id="startGuidedTour" type="button">Start guided tour</button>
     <details>
       <summary>Map symbols</summary>
       <dl class="map-key-list">
@@ -63,19 +56,134 @@
     </form>`;
   document.body.append(welcome);
 
+  const tour = document.createElement('dialog');
+  tour.id = 'guidedTour';
+  tour.setAttribute('aria-labelledby', 'tourTitle');
+  tour.innerHTML = `<div class="tour-ring" aria-hidden="true" hidden></div>
+    <button class="tour-target" type="button" tabindex="-1" aria-hidden="true" hidden></button>
+    <section class="tour-card">
+      <div class="tour-heading"><span id="tourProgress"></span><button id="tourExit" type="button">Skip</button></div>
+      <div aria-live="polite"><h2 id="tourTitle"></h2><p id="tourDescription"></p></div>
+      <div class="tour-actions"><button id="tourStep" type="button">Next</button></div>
+    </section>`;
+  document.body.append(tour);
+
+  const steps = [
+    ['Filter by fish species', 'Tap Perch to show waterbodies with recorded perch.'],
+    ['Open a waterbody', 'Tap the Lake Simcoe pin to open its card.'],
+    ['Choose a fish in the card', 'Tap Perch again to see bait and tackle recommendations for that fish.'],
+    ['Explore the recommendations', 'Start with the suggested baits and tackle. Adjust the conditions if you want more specific ideas.']
+  ];
+  const ring = tour.querySelector('.tour-ring');
+  const hitArea = tour.querySelector('.tour-target');
+  const card = tour.querySelector('.tour-card');
+  const next = tour.querySelector('#tourStep');
+  const skip = tour.querySelector('#tourExit');
+  const title = tour.querySelector('#tourTitle');
+  const description = tour.querySelector('#tourDescription');
+  const progress = tour.querySelector('#tourProgress');
+  let connection, demo, target, step, run = 0;
+  window.FFGuide = {connect(ready, prepare) { connection = {ready, prepare}; }};
+
+  function position() {
+    if (!tour.open) return;
+    const margin = 12;
+    const width = tour.clientWidth;
+    const height = tour.clientHeight - (parseFloat(getComputedStyle(document.body).paddingBottom) || 0);
+    const bounds = target?.getBoundingClientRect();
+    const left = bounds ? Math.max(0, bounds.left - 5) : 0;
+    const top = bounds ? Math.max(0, bounds.top - 5) : 0;
+    const right = bounds ? Math.min(width, bounds.right + 5) : 0;
+    const bottom = bounds ? Math.min(height, bounds.bottom + 5) : 0;
+    const visible = !!bounds && bounds.width > 0 && bounds.height > 0 && right > left && bottom > top;
+    ring.hidden = !visible;
+    hitArea.hidden = !visible || step === steps.length - 1;
+    for (const element of [ring, hitArea]) {
+      Object.assign(element.style, {left:`${left}px`, top:`${top}px`, width:`${right-left}px`, height:`${bottom-top}px`});
+    }
+
+    const cardWidth = Math.min(320, width - margin * 2);
+    const above = top - margin * 2;
+    const below = height - bottom - margin * 2;
+    card.style.width = `${cardWidth}px`;
+    card.style.maxHeight = `${Math.max(105, visible ? Math.max(above, below) : height - margin * 2)}px`;
+    const cardHeight = card.offsetHeight;
+    const cardLeft = visible ? (left + right - cardWidth) / 2 : (width - cardWidth) / 2;
+    const cardTop = !visible ? (height - cardHeight) / 2 : below >= cardHeight || below >= above
+      ? bottom + margin : top - cardHeight - margin;
+    card.style.left = `${Math.max(margin, Math.min(cardLeft, width - cardWidth - margin))}px`;
+    card.style.top = `${Math.max(margin, Math.min(cardTop, height - cardHeight - margin))}px`;
+  }
+
+  function showStep(index) {
+    step = index;
+    const [heading, instruction] = steps[index];
+    title.textContent = heading;
+    description.textContent = instruction;
+    progress.textContent = `Step ${index + 1} of ${steps.length}`;
+    next.textContent = index === steps.length - 1 ? 'Finish' : 'Next';
+    next.disabled = false;
+    target = demo.show(index);
+    const scrollTarget = target?.closest('#map') || target;
+    scrollTarget?.scrollIntoView({behavior:'instant', block:'center', inline:'center'});
+    position();
+    requestAnimationFrame(position);
+    next.focus({preventScroll:true});
+  }
+
+  async function start() {
+    if (tour.open) return;
+    const currentRun = ++run;
+    step = 0;
+    title.textContent = 'Loading the guided tour';
+    description.textContent = 'Getting the example waterbody ready…';
+    progress.textContent = '';
+    next.textContent = 'Next';
+    next.disabled = true;
+    tour.showModal();
+    position();
+    await connection?.ready;
+    if (!tour.open || currentRun !== run) return;
+    demo = connection?.prepare();
+    if (demo) showStep(0);
+    else {
+      title.textContent = 'Guided tour unavailable';
+      description.textContent = 'Reload the app to load the waterbody data, then try again from Help.';
+      position();
+    }
+  }
+
+  function advance() {
+    if (step + 1 === steps.length) tour.close();
+    else showStep(step + 1);
+  }
+  next.addEventListener('click', advance);
+  hitArea.addEventListener('click', advance);
+  skip.addEventListener('click', () => tour.close());
+  window.addEventListener('resize', position);
+  window.addEventListener('scroll', position, {passive:true});
+  tour.addEventListener('close', () => {
+    run++;
+    demo?.restore();
+    demo = target = null;
+    document.getElementById('openHelpBtn').focus({preventScroll:true});
+  });
+
   document.addEventListener('DOMContentLoaded', () => {
     const headerHelp = document.getElementById('openHelpBtn');
     const welcomeKey = 'ffo-welcome-seen';
-    const quickGuide = help.querySelector('#quickGuide');
     headerHelp.addEventListener('click', () => help.showModal());
-    help.addEventListener('close', () => headerHelp.focus());
+    help.addEventListener('close', () => {
+      if (!tour.open) headerHelp.focus();
+    });
+    help.querySelector('#startGuidedTour').addEventListener('click', () => {
+      help.close();
+      start();
+    });
 
     welcome.addEventListener('close', () => {
       try { localStorage.setItem(welcomeKey, '1'); } catch {}
-      if (welcome.returnValue === 'guide') {
-        quickGuide.open = true;
-        help.showModal();
-      }
+      if (welcome.returnValue === 'guide') start();
     });
     let seen = false;
     try { seen = localStorage.getItem(welcomeKey) === '1'; } catch {}

@@ -92,7 +92,7 @@ window.LakeSetups = (() => {
       state.fish = fishButton.dataset.setupFish;
       root.querySelectorAll('[data-setup-fish]').forEach(button => button.setAttribute('aria-pressed', button.dataset.setupFish === state.fish));
       root.querySelector('.setup-output').innerHTML = content(state);
-      root.querySelector('.setup-content').scrollIntoView({behavior:'smooth',block:'nearest'});
+      if (root.dataset.setupContext !== 'tour-example') root.querySelector('.setup-content').scrollIntoView({behavior:'smooth',block:'nearest'});
     }
     if (event.target.closest('[data-setup-action="close"]')) {
       const previousFish = state.fish;

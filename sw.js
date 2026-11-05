@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v98-system-bar-appearance';
+const CACHE_NAME = 'fish-finder-v99-interactive-guide';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

@@ -186,6 +186,23 @@ window.FishingAccess = {
     load();
     return {
       refresh,
+      captureView() {
+        if (mode !== 'access') return;
+        const kind = accessKind;
+        const selectedPoint = selected;
+        const limit = listLimit;
+        const pending = pendingNearby;
+        const draft = host.querySelector('textarea')?.value;
+        return () => {
+          setMode(kind, false);
+          selected = selectedPoint;
+          listLimit = limit;
+          pendingNearby = pending;
+          render();
+          const field = host.querySelector('textarea');
+          if (field && draft !== undefined) field.value = draft;
+        };
+      },
       showWaters() {setMode('waters',false);},
       isAccess() {return mode === 'access';},
       exploreArea(origin) {
