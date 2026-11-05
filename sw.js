@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v112-recorded-water-clarity';
+const CACHE_NAME = 'fish-finder-v113-plain-water-clarity';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
