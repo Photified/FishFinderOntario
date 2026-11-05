@@ -130,6 +130,23 @@
     .fav-toggle-btn.active { background: #fbbf24; color: #121212; }
     
     .map-wrapper { position: relative; margin: 0 20px 15px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+
+    .map-legend-toggle,.map-legend-close {background:var(--card-bg);color:var(--text-main);border:1px solid var(--popup-border,#64748b);border-radius:5px;min-height:44px;cursor:pointer;}
+    .map-legend-toggle {position:absolute;top:10px;right:10px;z-index:3;padding:8px 12px;font-size:.85rem;font-weight:600;box-shadow:0 1px 5px #0003;}
+    .map-legend-toggle[aria-expanded="true"] {border-color:var(--accent);color:var(--accent);}
+    .map-legend-panel {position:absolute;left:6px;right:6px;bottom:24px;z-index:3;box-sizing:border-box;height:clamp(80px,10%,112px);display:flex;align-items:center;gap:12px;padding:8px;background:var(--card-bg);color:var(--text-main);border:1px solid var(--popup-border,#64748b);border-radius:5px;box-shadow:0 -2px 12px #0002;}
+    .map-legend-panel[hidden] {display:none;}
+    .map-legend-title {flex:none;font-size:.8rem;font-weight:700;}
+    .map-legend-title small {display:block;margin-top:4px;font-size:.65rem;font-weight:400;color:var(--text-muted);}
+    .map-legend-items {display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,minmax(0,1fr));gap:4px 18px;flex:1;min-width:0;height:100%;margin:0;padding:2px 3px 5px;overflow-x:auto;list-style:none;scrollbar-width:thin;}
+    .map-legend-items li {display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:.75rem;}
+    .map-legend-items .legend-dot {margin:0;flex:none;}
+    .map-legend-close {flex:none;width:44px;padding:0;font-size:1rem;}
+    .map-legend-panel :focus-visible,.map-legend-toggle:focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
+    .data-update-list {margin:8px 0;font-size:.82rem;line-height:1.5;}
+    .data-update-list dt {margin-top:10px;font-weight:600;}
+    .data-update-list dd {margin:0;color:var(--text-muted);}
+    @media(max-width:480px) {.map-legend-panel {gap:6px;padding:6px;}.map-legend-items {gap:4px 12px;}.map-legend-title {font-size:.75rem;}}
     #map { height: 250px; width: 100%; z-index: 1; }
     .locate-btn { position: absolute; top: 10px; right: 10px; z-index: 1000; background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 5px; }
     
@@ -582,6 +599,12 @@
       <div class="desktop-map-canvas">
     <div class="map-wrapper">
       <div id="map"></div>
+      <button id="mapLegendToggle" class="map-legend-toggle" type="button" aria-expanded="false" aria-controls="mapLegend">Legend</button>
+      <section id="mapLegend" class="map-legend-panel" aria-labelledby="mapLegendTitle" hidden>
+        <div class="map-legend-title" id="mapLegendTitle">Legend<small>Scroll for more →</small></div>
+        <ul id="mapLegendItems" class="map-legend-items" tabindex="0" aria-label="Map symbols, scroll horizontally for more"></ul>
+        <button class="map-legend-close" type="button" aria-label="Close legend">✕</button>
+      </section>
       <div id="locationLoading" class="location-loading" role="status" aria-live="polite" hidden>
         <span>Finding your location…</span>
         <div class="location-loading-track" aria-hidden="true"></div>
@@ -696,12 +719,22 @@
 
   <dialog class="data-info-dialog" id="dataInfoModal" aria-labelledby="dataInfoTitle">
     <h2 id="dataInfoTitle" tabindex="-1">About the data</h2>
+    <h3>Dataset updates</h3>
+    <p>These are the app's data import dates, not dates of a new survey. Datasets are updated separately.</p>
+    <dl class="data-update-list">
+      <dt>Waterbody locations</dt><dd>Imported November 4, 2026. Includes the Ontario Waterbody Location Identifier and earlier 2026 regulations location records.</dd>
+      <dt>Fish stocking</dt><dd>Retrieved November 4, 2026. Individual stocking years appear in the lake cards.</dd>
+      <dt>Fishing regulations</dt><dd>Imported November 4, 2026 from Ontario's November 3, 2026 source file. Covers 2026; not automatically refreshed.</dd>
+      <dt>Boat launches and shore access</dt><dd>Imported September 28, 2026. Individual site verification dates are separate.</dd>
+      <dt>Recorded fish and waterbody measurements</dt><dd>Historical source records. Survey and source dates are not available for every record.</dd>
+      <dt>Crown land</dt><dd>Loaded from live Ontario map services when enabled. Service availability does not guarantee the underlying records are current.</dd>
+    </dl>
     <h3>Map locations</h3>
     <p>Blue and green pins identify waterbodies. Gold icons identify boat launches; purple icons identify shoreline access, including docks and piers. Waterbody pins are reference locations, not confirmed access points. Ambiguous legacy locations are hidden pending review. Distances are straight-line distances.</p>
     <p>City searches use <a href="https://natural-resources.canada.ca/maps-tools-publications/satellite-elevation-air-photos/geolocation-service" target="_blank" rel="noopener noreferrer">Natural Resources Canada's Geolocator service</a> to place the red search pin. This search requires an internet connection.</p>
     <h3>Boat launches and shore access</h3>
     <p>Access points come from Ontario's Fishing Access Point dataset. Only records marked for public map display are included. Ownership, parking, fees and accessibility are shown as recorded, including unknown values. Check current access and posted signs. A listed site is not a guarantee of free access or permission to fish.</p>
-    <p>Access data imported September 28, 2026. Site verification dates are shown separately when provided. Access points are not assigned fish species or linked to a waterbody solely by proximity.</p>
+    <p>Site verification dates are shown separately when provided. Access points are not assigned fish species or linked to a waterbody solely by proximity.</p>
     <h3>Species and stocking</h3>
     <p>Species lists reflect available records. Stocking dates show the latest event included in the app, not a recent survey or a guarantee of fish currently present. Source dates are not available for every record.</p>
     <h3>Fishing regulations</h3>
@@ -711,6 +744,8 @@
       <p>Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>, available under the Open Database Licence.</p>
       <h4>Crown land overlay sources</h4>
       <p>Live Ontario mapping. Green shading combines <a href="https://data.ontario.ca/dataset/crown-land-ministry-unpatented-land" target="_blank" rel="noopener noreferrer">ministry unpatented land</a> and <a href="https://data.ontario.ca/dataset/crown-land-ministry-acquisitions" target="_blank" rel="noopener noreferrer">ministry acquisitions</a>. Dashed boundaries use <a href="https://data.ontario.ca/dataset/b2232809-7974-4dcf-b9b4-01721aa324f3" target="_blank" rel="noopener noreferrer">CLUPA Provincial policy areas</a>. Open Crown land sources and access cautions in Help for access cautions and official policy guidance.</p>
+      <h4>Other location reference</h4>
+      <p><a href="https://geonames.nrcan.gc.ca/search-place-names/unique?id=FCDLV" target="_blank" rel="noopener noreferrer">Natural Resources Canada: Marshall Lake</a> was used to verify the named location.</p>
       <h4>Government sources</h4>
       <p>Data source: Government of Ontario. Contains information licensed under the <a href="https://www.ontario.ca/page/open-government-licence-ontario" target="_blank" rel="noopener noreferrer">Open Government Licence &ndash; Ontario</a>.</p>
       <ul>
@@ -1694,7 +1729,7 @@
                   <div class="lake-card-actions">
                     <button type="button" class="maps-btn note-btn" data-lakeid="${LakeSetups.escape(uniqueId)}">${customNote ? 'Edit note' : 'Add note'}</button>
                   </div>
-                  ${lake.dataSources?.length ? `<details class="lake-disclosure"><summary>Data sources</summary><ul class="lake-source-list">${lake.dataSources.map(source => `<li><a href="${LakeSetups.escape(source.url)}" target="_blank" rel="noopener noreferrer">${LakeSetups.escape(source.title)}${source.date ? ' (' + LakeSetups.escape(source.date) + ')' : ''}</a></li>`).join('')}</ul></details>` : ''}
+        
                 </section>` : ''}
               </div>
             </div>`;
@@ -1809,5 +1844,6 @@
 
     });
   </script>
+  <script src="map-legend.js"></script>
 </body>
 </html>

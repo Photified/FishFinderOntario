@@ -1,10 +1,11 @@
-const CACHE_NAME = 'fish-finder-v104-lake-card-actions';
+const CACHE_NAME = 'fish-finder-v105-map-legend-and-data-info';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
   './app-data.js',
   './access-points.js',
   './guided-tour.js',
+  './map-legend.js',
   './lake-setups.js',
   './crown-land.js',
   './fisheries-zones.js',
