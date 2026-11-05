@@ -71,12 +71,13 @@ window.LakeSetups = (() => {
       <p class="record-note">Suggestions depend on the species and conditions you choose. Check rules for your waterbody before fishing.</p></div>`;
   }
 
-  function render(id, allowed, lake = null) {
+  function render(id, allowed, lake = null, preferredFish = null) {
     if (!Object.keys(allowed).length) return '<p class="record-note">Bait and tackle recommendations are not available for these species records.</p>';
     let state = contexts.get(id);
     if (!state) {state={fish:null, conditions:{weather:'',clarity:'',temp:''}, allowed};contexts.set(id,state);}
     state.allowed = allowed;
     state.lake = lake;
+    if (preferredFish && Object.hasOwn(allowed, preferredFish)) state.fish = preferredFish;
     if (!allowed[state.fish]) state.fish = null;
     return `<div class="lake-setups" data-setup-context="${escape(id)}"><h5 class="setup-choice-heading">Choose a fish for bait and tackle recommendations</h5>
       <div class="setup-fish-grid">${Object.entries(allowed).map(([key,fish]) => `<button type="button" class="setup-fish" data-setup-fish="${escape(key)}" aria-pressed="${state.fish === key}"><img src="${escape(fish.imageSrc)}" alt="" loading="lazy"><span>${escape(fish.name)}</span></button>`).join('')}</div>

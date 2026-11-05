@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v102-waterbody-label-width';
+const CACHE_NAME = 'fish-finder-v103-filtered-fish-preselection';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

@@ -982,6 +982,8 @@
         if (id) accessUI?.showWaters();
         if(id && !selectedLakeId) resultsScroll = window.scrollY;
         const lake = id ? lakesData.find(l => getLakeId(l) === id) : null;
+        const preferredFish = lake && reveal && id !== selectedLakeId && !tourDemo
+          ? advisorSpeciesId(currentActiveSpecies) : null;
         selectedLakeId = id;
         document.getElementById('view-map').classList.toggle('spot-selected', !!id);
         refreshingMap = true;
@@ -995,7 +997,7 @@
         refreshingMap = false;
         refreshMapResults();
         document.getElementById('backResultsBtn').hidden = !id;
-        if (lake) renderLakeList([lake], selectedFishName(), currentActiveSpecies);
+        if (lake) renderLakeList([lake], selectedFishName(), currentActiveSpecies, preferredFish);
         ffResultsContainer.querySelectorAll('.lake-card').forEach(card => {
           const active = card.dataset.lakeid === id;
           card.hidden = !!id && !active;
@@ -1606,7 +1608,7 @@
         </ul></div>`;
       }
 
-      function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId) {
+      function renderLakeList(lakesArray, searchedFishName, filteredSpeciesId, preferredFish = null) {
         ffResultsContainer.innerHTML = '';
         lakesArray.forEach(lake => {
           const uniqueId = getLakeId(lake);
@@ -1684,7 +1686,7 @@
                 ${isSelected ? `${statsTextHTML}
                 ${FishingRules.render(uniqueId, lake)}
                 <section class="lake-section lake-fish-section">
-                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake)}
+                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake, preferredFish)}
                   <details class="lake-disclosure"><summary>View recorded fish</summary>${recordedFishHTML}</details>
                 </section>
                 <section class="lake-section"><h4>Stocking records</h4>${stockingContentHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'}</section>
