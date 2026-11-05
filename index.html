@@ -533,6 +533,27 @@
     #mapLayerCount {font-size:.7rem;font-weight:700;}
     #crownLandDetails summary {color:var(--accent);cursor:pointer;padding:10px 0;}
     .lake-section .rules-zones a,.rule-record a {color:var(--accent);text-decoration:underline;}
+    :root {--rules-button-bg:#edf3fb;--rules-button-text:#315f9b;--rules-button-border:#b7c9df;}
+    :root[data-theme="dark"] {--rules-button-bg:#23364b;--rules-button-text:#bfdbfe;--rules-button-border:#536e8e;}
+    .rules-actions {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px;}
+    .rules-actions button {min-width:0;min-height:44px;padding:8px 10px;background:var(--rules-button-bg);color:var(--rules-button-text);border:1px solid var(--rules-button-border);border-radius:5px;font:inherit;font-size:.8rem;font-weight:600;line-height:1.35;cursor:pointer;}
+    .rules-actions button:hover,.rules-actions button[aria-pressed="true"] {border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);}
+    .rules-text-button {padding:0;border:0;background:transparent;color:var(--accent);text-decoration:underline;font:inherit;cursor:pointer;}
+    .rules-actions button:focus-visible,.rules-text-button:focus-visible {outline:2px solid var(--accent);outline-offset:3px;}
+    .lake-rules .rules-summary {gap:8px;}
+    .lake-rules .rules-zones {margin:0;}
+    .lake-rules-dialog {width:min(700px,calc(100% - 24px));padding:0;background:var(--card-bg);color:var(--text-main);}
+    .rules-dialog-header {position:sticky;top:0;z-index:1;padding:18px 20px 12px;background:var(--card-bg);border-bottom:1px solid var(--popup-border);}
+    .rules-dialog-header .dialog-heading {margin-bottom:8px;}
+    .rules-dialog-meta {font-size:.8rem;color:var(--text-muted);margin:0 0 12px;}
+    .rules-species-filter {display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.8rem;}
+    .rules-dialog-content {padding:0 20px 20px;font-size:.85rem;line-height:1.5;overflow-wrap:anywhere;}
+    .rules-dialog-content h3 {margin:18px 0 8px;}
+    .rules-dialog-content p {margin:6px 0;}
+    .rules-dialog-content .rule-record {margin:10px 0;padding:12px;border:1px solid var(--popup-border);border-radius:5px;}
+    .rules-dialog-content a {color:var(--accent);text-decoration:underline;}
+    .rules-dialog-content .rule-caution {color:var(--text-main);font-weight:500;}
+    @media(max-width:480px) {.rules-actions {gap:6px;}.rules-actions button {padding:8px 5px;font-size:.75rem;}.rules-dialog-header {padding:12px;}.rules-dialog-content {padding:0 12px 12px;}.rules-species-filter {flex-wrap:wrap;}}
     .catch-limits {padding-block:10px;border-top:1px solid var(--popup-border);font-size:.82rem;}
     .catch-limits h5 {margin:0;font-weight:700;}
     .catch-limit-licences {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px;}

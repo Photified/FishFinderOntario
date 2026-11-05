@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v105-map-legend-and-data-info';
+const CACHE_NAME = 'fish-finder-v106-compact-rules';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

@@ -103,7 +103,7 @@ window.FishingRules = (() => {
         return `<div><dt>${name}</dt><dd>${Array.from(rows).join('') || 'See official rules'}</dd></div>`;
       }).join('');
       return `<div class="catch-limit-group"><p><strong>${esc(rule.species || 'All species')}</strong> · FMZ ${esc(rule.zone)}${rule.kind === 'nonCanadian' ? ' · Non-Canadian residents' : ''}</p>
-        ${local && rule.description ? `<p>${esc(rule.description)}${rule.description.length >= 250 ? '… ' + zoneLink(rule.zone, 'Full area description') : ''}</p>` : ''}
+        ${local && rule.description ? '<p class="rule-caution">Applies only to the listed area. <button type="button" class="rules-text-button" data-rules-open="local">View exact area</button></p>' : ''}
         <dl class="catch-limit-licences">${columns}</dl>${commonSize ? `<p>${esc(commonSize)}</p>` : ''}</div>`;
     }).join('');
   }
@@ -122,23 +122,72 @@ window.FishingRules = (() => {
       ${!localChanges && uncertain ? '<p>Check the exact zone and any local closures for where you plan to fish.</p>' : ''}
       ${exceptions}${baseline}
       ${zoneRules.some(r => r.aggregate === 'Yes') ? '<p>Also counts toward the combined trout and salmon limit.</p>' : ''}
-      <p>${officialGuide}</p></section>`;
+      </section>`;
   }
 
+  const ruleButtons = '<button type="button" data-rules-open="local">Lake-specific rules</button><button type="button" data-rules-open="fishing">Fishing rules</button><button type="button" data-rules-open="bait">Bait rules</button>';
   function overview(l) {
-    const available=data&&current(data), local=records(l.regulationIds), sanct=notices(l), bmz=l.bmz||[], z=zones(l);
-    const label=!available?'Rules need checking':closedWater(l)?'No fishing on this date':sanct.length?'Sanctuary notices to check':local.length?'Waterbody exceptions listed':'Choose a fish to check its season';
-    return `<strong class="rule-status ${available&&closedWater(l)?'closed':'check'}">${label}</strong><details class="lake-disclosure"><summary>Fishing information</summary><div class="rules-summary"><label class="fishing-date-label">Fishing date<input type="date" class="fishing-date" value="${esc(date)}" aria-label="Fishing date"></label></div>
-    <p class="rules-zones">${z.length?z.map(zone => zoneLink(zone) || esc('Fisheries zone '+zone)).join(' / '):'Fisheries zone not confirmed'} · ${bmz.length?esc(bmz.join(' / ')):'Bait zone not confirmed at this point'}</p>
-    ${!available?'<p class="rule-caution">'+(data?'Included rules cover 2026. Check the current official guide for this date.':'Rules could not be loaded. Check the official guide before fishing.')+'</p>':''}
-    <details class="rules-details"><summary>Fishing rules &amp; bait information${sanct.length?' · sanctuary notices':''}</summary>
-    <p>Zones refer to the mapped waterbody location. Large waters can cross boundaries. A season being open does not confirm public access.</p>
-    <p>Bait zones control movement and use of baitfish and leeches. Live or dead baitfish and leeches generally cannot cross bait zone boundaries, with limited exceptions. Receipt and personal harvest rules also apply. <a href="https://www.ontario.ca/document/ontario-fishing-regulations-summary/bait" target="_blank" rel="noopener noreferrer">Bait rules ↗</a></p>
-    ${bmz.some(s=>/no use/i.test(s))?'<p class="rule-caution">No use or possession of live baitfish at the mapped point.</p>':''}
-    ${sanct.length?'<h5>Sanctuary notices</h5><p>Matched by waterbody name and nearby official location. Read the exact area and dates below. A notice can apply to only part of a waterbody or to a neighbouring water.</p>'+detailList(sanct):'<p>No sanctuary notice was matched. This is not confirmation that fishing is permitted everywhere.</p>'}
-    ${local.length?'<h5>Waterbody exceptions</h5>'+detailList(local):''}${base(l).length?'<h5>Zone rules</h5>'+detailList(base(l)):''}
-    <p>2026 regulations, source file dated ${esc(data?.sourceDate||'unavailable')}. S = Sport licence; C = Conservation licence. Limits and residency conditions still apply.</p><a href="https://www.ontario.ca/page/fishing-notices-and-updates" target="_blank" rel="noopener noreferrer">Notices &amp; updates ↗</a></details></details>`;
+    const available=data&&current(data), sanct=notices(l), bmz=l.bmz||[], z=zones(l);
+    const warning=!available?'Rules need checking':closedWater(l)?'No fishing on this date':sanct.length?'Sanctuary notices to check':'';
+    return `${warning?`<p><strong class="rule-status ${available&&closedWater(l)?'closed':'check'}">${warning}</strong></p>`:''}
+      <div class="rules-actions" role="group" aria-label="Waterbody rules">${ruleButtons.replaceAll('data-rules-open', 'aria-haspopup="dialog" data-rules-open')}</div>
+      <div class="rules-summary"><label class="fishing-date-label">Fishing date<input type="date" class="fishing-date" value="${esc(date)}" aria-label="Fishing date"></label>
+      <p class="rules-zones">${z.length?z.map(zone=>zoneLink(zone)||esc('Fisheries zone '+zone)).join(' / '):'Fisheries zone not confirmed'} · ${bmz.length?esc(bmz.join(' / ')):'Bait zone not confirmed'}</p></div>
+      ${!available?'<p class="rule-caution">'+(data?'Included rules cover 2026. Check the current official guide for this date.':'Rules could not be loaded. Check the official guide before fishing.')+'</p>':''}
+      ${bmz.some(s=>/no use/i.test(s))?'<p class="rule-caution">No use or possession of live baitfish at the mapped point.</p>':''}`;
   }
+
+  let rulesDialog, activeRules, rulesTrigger;
+  function renderDialog() {
+    const {lake:l, fish, fishName, section, all}=activeRules;
+    const filter=rows=>fish&&!all?rows.filter(r=>matches(r.species,fish)):rows;
+    const local=filter(records(l.regulationIds)), sanct=notices(l), z=zones(l);
+    const seasons=filter(z.flatMap(zone=>records(data?.zoneSeasons[zone])));
+    const general=base(l);
+    const bait=[...base(l),...records(l.regulationIds)].filter(r=>r.bait||r.gear);
+    const warning=!data||!current(data)?'<p class="rule-caution">The included rules are unavailable for the chosen date. Check the current official regulations.</p>':'';
+    let content='';
+    if(section==='local') content=`${sanct.length?'<h3>Sanctuary notices</h3><p class="rule-caution">Read the exact areas and dates. A notice may cover only part of a waterbody or a neighbouring water.</p>'+detailList(sanct):''}<h3>Lake-specific rules${fish&&!all?' for '+esc(fishName):''}</h3>${local.length?detailList(local):'<p>No lake-specific record is matched for this selection. This does not confirm that fishing is permitted everywhere.</p>'}`;
+    if(section==='fishing') content=`${fish&&!all?'<h3>'+esc(fishName)+'</h3>':'<h3>Species seasons and limits</h3>'}${detailList(seasons)||'<p>No species season or limit is available for this selection in the app’s data.</p>'}${local.length?'<h3>Lake-specific rules</h3>'+detailList(local):''}${general.length?'<h3>Other zone rules</h3>'+detailList(general):''}${sanct.length?'<h3>Sanctuary notices</h3><p class="rule-caution">Check the exact areas and closure dates.</p>'+detailList(sanct):''}`;
+    if(section==='bait') content=`<h3>Bait and gear</h3><p>${esc((l.bmz||[]).join(' / ')||'Bait zone not confirmed at this point')}</p>${(l.bmz||[]).some(s=>/no use/i.test(s))?'<p class="rule-caution">No use or possession of live baitfish at the mapped point.</p>':''}<p>Listed restrictions may depend on the area, season, species or method. Check each record’s scope.</p>${detailList(bait)||'<p>No additional bait or gear record was matched. General Ontario bait rules still apply.</p>'}<p><a href="https://www.ontario.ca/document/ontario-fishing-regulations-summary/bait" target="_blank" rel="noopener noreferrer">Official Ontario bait rules ↗</a></p>`;
+    rulesDialog.querySelector('#lakeRulesTitle').textContent=l.name+' rules';
+    rulesDialog.querySelector('.rules-dialog-meta').innerHTML=`${esc(date)} · ${z.length?z.map(zone=>zoneLink(zone)).join(' / '):'Zone not confirmed'}`;
+    rulesDialog.querySelectorAll('[data-rules-open]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rulesOpen===section)));
+    rulesDialog.querySelector('.rules-species-filter').innerHTML=fish&&section!=='bait'?`<span>${all?'Showing all species':'Selected fish: '+esc(fishName)}</span><button type="button" class="rules-text-button" data-rules-scope>${all?'Show selected fish':'Show all species'}</button>`:'';
+    rulesDialog.querySelector('.rules-dialog-content').innerHTML=warning+content+`<p class="record-note">2026 regulations, source file dated ${esc(data?.sourceDate||'unavailable')}. S = Sport licence; C = Conservation licence. Limits and residency conditions still apply.</p><p>${officialGuide} · <a href="https://www.ontario.ca/page/fishing-notices-and-updates" target="_blank" rel="noopener noreferrer">Notices &amp; updates ↗</a></p>`;
+    rulesDialog.scrollTop=0;
+  }
+  function openRules(trigger) {
+    const card=trigger.closest('.lake-card');
+    const root=card?.querySelector('[data-rules-context]');
+    const lake=contexts.get(root?.dataset.rulesContext);
+    if(!lake)return;
+    const selected=card.querySelector('[data-setup-fish][aria-pressed="true"]');
+    activeRules={lake,fish:selected?.dataset.setupFish,fishName:selected?.textContent.trim(),section:trigger.dataset.rulesOpen,all:false};
+    rulesTrigger=trigger;
+    if(!rulesDialog){
+      rulesDialog=document.createElement('dialog');
+      rulesDialog.className='simple-dialog lake-rules-dialog';
+      rulesDialog.id='lakeRulesDialog';
+      rulesDialog.setAttribute('aria-labelledby','lakeRulesTitle');
+      rulesDialog.innerHTML=`<div class="rules-dialog-header"><div class="dialog-heading"><h2 id="lakeRulesTitle"></h2><button type="button" data-rules-close aria-label="Close rules">✕</button></div><p class="rules-dialog-meta"></p><div class="rules-actions" role="group" aria-label="Choose rule details">${ruleButtons}</div><div class="rules-species-filter"></div></div><div class="rules-dialog-content"></div>`;
+      document.body.append(rulesDialog);
+      rulesDialog.addEventListener('click',event=>{
+        if(event.target.closest('[data-rules-close]'))rulesDialog.close();
+        const button=event.target.closest('[data-rules-open]');
+        if(button){activeRules.section=button.dataset.rulesOpen;renderDialog();}
+        if(event.target.closest('[data-rules-scope]')){activeRules.all=!activeRules.all;renderDialog();}
+      });
+      rulesDialog.addEventListener('close',()=>{if(rulesTrigger?.isConnected)rulesTrigger.focus({preventScroll:true});});
+    }
+    renderDialog();
+    rulesDialog.showModal();
+    rulesDialog.querySelector('[data-rules-close]').focus({preventScroll:true});
+  }
+  document.addEventListener('click',event=>{
+    const trigger=event.target.closest('[data-rules-open]');
+    if(trigger&&!trigger.closest('#lakeRulesDialog'))openRules(trigger);
+  });
   function forSpecies(l,fish) {
     if(!l)return {html:'',blocked:false,allow:()=>true};
     if(!data||!current(data))return {html:`<div class="species-rules"><strong>Check the official rules for this date.</strong><p>Catch limits, seasons and bait restrictions are unavailable for this date in the app’s data.</p><p>${officialGuide}</p></div>`,blocked:false,allow:()=>true};
@@ -165,10 +214,10 @@ window.FishingRules = (() => {
       if(anyBaitRestriction&&(natural.test(s)||naturalWorm(lure.name)||fishbait.test(s)||/powerbait|scented bait|pack bait|stink bait|with bait|boilie/i.test(s)))return false;
       if(liveBan&&/\blive\b/i.test(s))return false;
       return true;};
-    return {blocked,allow,html:`<div class="species-rules"><strong class="rule-status ${blocked?'closed':open?'open':'check'}">${title}</strong><p>${esc(date)}${zones(l).map(zone => zoneLink(zone)).filter(Boolean).map((link, i) => (i ? ' / ' : ' · ') + link).join('')}</p>${catchLimits(zr,local,blocked,uncertain)}${blocked?'<p>Bait and tackle suggestions are hidden for this date. Choose another date to plan a trip.</p>':''}<details><summary>Seasons, limits &amp; restrictions</summary>${detailList(zr)}${detailList(local)}${detailList(base(l))}${detailList(baitRows.filter(r=>!local.includes(r)&&r.kind!=='zone'))}${notices(l).length?'<p class="rule-caution">See the sanctuary notices above for exact areas and closure dates.</p>':''}</details>${anyBaitRestriction?'<p class="rule-caution">Bait restrictions are listed. Natural bait suggestions are hidden conservatively, including where the rule covers only a section, season, species or method. Check the wording above before choosing your tackle.</p>':liveBan?'<p>Live baitfish suggestions are hidden for this mapped location.</p>':''}${baitRows.some(r=>r.gear)?'<p class="rule-caution">Gear restrictions apply. Check hook and method requirements above.</p>':''}</div>`};
+    return {blocked,allow,html:`<div class="species-rules"><strong class="rule-status ${blocked?'closed':open?'open':'check'}">${title}</strong><p>${esc(date)}${zones(l).map(zone => zoneLink(zone)).filter(Boolean).map((link, i) => (i ? ' / ' : ' · ') + link).join('')}</p>${catchLimits(zr,local,blocked,uncertain)}${Array.from(new Set(local.filter(r=>r.sizeLimit&&!limitEntry(r)).map(r=>r.sizeLimit))).map(size=>`<p class="rule-caution"><strong>Size:</strong> ${esc(size)} · <button type="button" class="rules-text-button" data-rules-open="local">Check area</button></p>`).join('')}${blocked?'<p>Bait and tackle suggestions are hidden for this date. Choose another date to plan a trip.</p>':''}<p><button type="button" class="rules-text-button" data-rules-open="fishing">View full rules</button></p>${anyBaitRestriction?'<p class="rule-caution">Bait restrictions are listed. Natural bait suggestions are hidden conservatively, including where the rule covers only a section, season, species or method. <button type="button" class="rules-text-button" data-rules-open="bait">View bait rules</button> before choosing your tackle.</p>':liveBan?'<p>Live baitfish suggestions are hidden for this mapped location.</p>':''}${baitRows.some(r=>r.gear)?'<p class="rule-caution">Gear restrictions are listed. <button type="button" class="rules-text-button" data-rules-open="bait">View bait and gear rules</button>.</p>':''}</div>`};
   }
   function render(id,l){contexts.set(id,l);return `<section class="lake-section lake-rules" data-rules-context="${esc(id)}"><div class="rules-body">${overview(l)}</div></section>`;}
-  document.addEventListener('change',e=>{if(!e.target.matches('.fishing-date'))return;if(!/^\d{4}-\d{2}-\d{2}$/.test(e.target.value))return;date=e.target.value;document.querySelectorAll('[data-rules-context]').forEach(root=>{const lake=contexts.get(root.dataset.rulesContext);const body=root.querySelector('.rules-body');const wasOpen=body.querySelector('details')?.open;body.innerHTML=overview(lake);body.querySelector('details').open=!!wasOpen;const flag=root.closest('.lake-card')?.querySelector('.fishing-badge');if(flag)flag.innerHTML=badge(lake);});window.LakeSetups?.refresh();});
+  document.addEventListener('change',e=>{if(!e.target.matches('.fishing-date'))return;if(!/^\d{4}-\d{2}-\d{2}$/.test(e.target.value))return;date=e.target.value;document.querySelectorAll('[data-rules-context]').forEach(root=>{const lake=contexts.get(root.dataset.rulesContext);const body=root.querySelector('.rules-body');body.innerHTML=overview(lake);const flag=root.closest('.lake-card')?.querySelector('.fishing-badge');if(flag)flag.innerHTML=badge(lake);});window.LakeSetups?.refresh();});
   function badge(l) { return data && current(data) && closedWater(l) ? '<span class="lake-closure-badge">No fishing · '+esc(date)+'</span>' : ''; }
   return {init:d=>{data=d;},badge,render,forSpecies,seasonStatus,whole,matches,closedWater};
 })();
