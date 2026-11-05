@@ -160,8 +160,8 @@ window.FishingRules = (() => {
     const baseline = standard ? (reference ? `<details><summary>Zone-wide limits for reference</summary>${standard}</details>` : standard)
       : '<p>No zone-wide limit is listed for this species in the app’s data. Check the official regulations.</p>';
     return `<section class="catch-limits">${title}
-      ${localChanges ? '<p><strong>Local rules may change these limits.</strong> Confirm the exact area and dates in the official regulations.</p>' : ''}
-      ${!localChanges && uncertain ? '<p>Check the exact zone and any local closures for where you plan to fish.</p>' : ''}
+      ${localChanges ? '<p><strong>Lake-specific provincial rules may change these limits.</strong> Confirm the exact area and dates in the official regulations.</p>' : ''}
+      ${!localChanges && uncertain ? '<p>Check the exact zone and listed closures for where you plan to fish.</p>' : ''}
       ${exceptions}${baseline}
       ${zoneRules.some(r => r.aggregate === 'Yes') ? '<p>Also counts toward the combined trout and salmon limit.</p>' : ''}
       </section>`;
@@ -206,7 +206,7 @@ window.FishingRules = (() => {
     rulesDialog.querySelector('.rules-dialog-date').innerHTML=`<label class="fishing-date-label">Change date<input type="date" class="fishing-date" value="${esc(date)}" aria-label="Change fishing date"></label>${date!==today()?'<button type="button" class="rules-text-button" data-rules-today>Use today</button>':''}`;
     rulesDialog.querySelectorAll('[data-rules-open]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rulesOpen===section)));
     rulesDialog.querySelector('.rules-species-filter').innerHTML=fish&&section==='fishing'?`<span>${all?'Showing all species':'Selected fish: '+esc(fishName)}</span><button type="button" class="rules-text-button" data-rules-scope>${all?'Show selected fish':'Show all species'}</button>`:'';
-    rulesDialog.querySelector('.rules-dialog-content').innerHTML=warning+content+`<p class="record-note">2026 regulations, source file dated ${esc(data?.sourceDate||'unavailable')}. Limits and residency conditions still apply.</p><p>${officialGuide} · <a href="https://www.ontario.ca/page/fishing-notices-and-updates" target="_blank" rel="noopener noreferrer">Notices &amp; updates ↗</a></p>`;
+    rulesDialog.querySelector('.rules-dialog-content').innerHTML=warning+'<p class="record-note rules-coverage-note"><strong>Provincial rules summary.</strong> Local bylaws, access restrictions and temporary closures may not be included. An open season does not confirm permission to fish. See Help &gt; About the data.</p>'+content+`<p class="record-note">2026 regulations, source file dated ${esc(data?.sourceDate||'unavailable')}. Limits and residency conditions still apply.</p><p>${officialGuide} · <a href="https://www.ontario.ca/page/fishing-notices-and-updates" target="_blank" rel="noopener noreferrer">Notices &amp; updates ↗</a></p>`;
     rulesDialog.scrollTop=0;
   }
   function focusBaitRules() {
@@ -262,7 +262,7 @@ window.FishingRules = (() => {
     const blocked=closedWater(l)||(!uncertain && states.length>0 && states.every(x=>x===false));
     const scopeNeedsReview=records(l.regulationIds).some(r=>current(r)&&r.descriptionStatus==='needs_review');
     const open=!scopeNeedsReview && !uncertain && states.length>0 && states.every(x=>x===true);
-    const title=closedWater(l)?'No fishing on this date':blocked?'Species season closed':open?(wholeRules.length?'Species season open':'Zone season open'):'Check local season and area';
+    const title=closedWater(l)?'No fishing on this date':blocked?'Species season closed':open?(wholeRules.length?'Provincial season open':'Zone season open'):'Check provincial season and area';
     const baitRows=[...base(l),...records(l.regulationIds)].filter(r=>current(r)&&(r.bait||r.gear)&&(!/while angling for lake trout/i.test(r.bait||'')||fish==='laketrout'));
     // For partial/conditional bait rules, show artificial options conservatively and retain exact wording.
     const text=baitRows.map(r=>(r.bait||'')+' '+(r.gear||'')).join(' ').toLowerCase();

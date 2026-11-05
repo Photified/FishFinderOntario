@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v115-search-pin-colour';
+const CACHE_NAME = 'fish-finder-v116-provincial-coverage';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
