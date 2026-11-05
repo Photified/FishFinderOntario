@@ -196,6 +196,9 @@
     .lake-info-expanded { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.3s ease-out; }
     .lake-info-expanded.open { max-height: 800px; opacity: 1; margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
     
+    .water-clarity-info {cursor:pointer;min-height:32px;text-align:left;}
+    .water-clarity-info:hover {border-color:var(--accent);}
+    .water-clarity-info:focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
     .lake-stats-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
     .stat-item { font-size: 0.7rem; color: var(--text-main); background-color: rgba(255, 255, 255, 0.08); padding: 4px 8px; border-radius: 12px; display: flex; align-items: center; gap: 4px; border: 1px solid rgba(255, 255, 255, 0.1); }
     .species-list { margin: 8px 0 0 0; font-size: 0.75rem; color: #9ca3af; line-height: 1.4; }
@@ -1711,7 +1714,8 @@
           }
           if (depthStr) statsArray.push(`<span class="stat-item">⚓ ${depthStr} deep</span>`);
           if (areaStr) statsArray.push(`<span class="stat-item">🗺️ ${areaStr}</span>`);
-          if (lake.secchiDepth) statsArray.push(`<span class="stat-item">🕶️ ${parseFloat(lake.secchiDepth).toFixed(1).replace(/\.0$/, '')}m recorded Secchi depth</span>`);
+          const clarityMetres = Number(lake.secchiDepth);
+          if (Number.isFinite(clarityMetres) && clarityMetres > 0) statsArray.push(`<button type="button" class="stat-item water-clarity-info" aria-haspopup="dialog" title="What does recorded water clarity mean?">Recorded water clarity: ${clarityMetres.toFixed(1).replace(/\.0$/, '')} m <span aria-hidden="true">ⓘ</span></button>`);
           
           if (latestStock && latestStock[0] !== 'Year unknown') statsArray.push(`<span class="stat-item">Last stocked: ${latestStock[0]}</span>`);
           const statsTextHTML = statsArray.length ? `<div class="lake-stats-grid">${statsArray.join('')}</div>` : '';
@@ -1768,6 +1772,10 @@
       }
 
       document.getElementById('ff-results').addEventListener('click', function(e) {
+        if (e.target.closest('.water-clarity-info')) {
+          AppPopups.notice('Recorded water clarity', 'This is a recorded water clarity measurement, also called Secchi depth. A black-and-white disk is lowered into the water until it disappears from view. That depth is recorded in metres. A higher number means clearer water; a lower number means murkier water. This is a historical reading, not today’s conditions. The measurement date is not available for every record.');
+          return;
+        }
         const infoToggle = e.target.closest('.info-toggle, .lake-header-left');
         if (infoToggle && !e.target.closest('.star-btn')) {
           const id = e.target.closest('.lake-card').dataset.lakeid;
