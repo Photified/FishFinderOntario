@@ -141,19 +141,29 @@ window.FishingRules = (() => {
   function renderDialog() {
     const {lake:l, fish, fishName, section, all}=activeRules;
     const filter=rows=>fish&&!all?rows.filter(r=>matches(r.species,fish)):rows;
-    const local=filter(records(l.regulationIds)), sanct=notices(l), z=zones(l);
+    const lakeRules=records(l.regulationIds);
+    const local=filter(lakeRules), sanct=notices(l), z=zones(l);
     const seasons=filter(z.flatMap(zone=>records(data?.zoneSeasons[zone])));
     const general=base(l);
     const bait=[...base(l),...records(l.regulationIds)].filter(r=>r.bait||r.gear);
     const warning=!data||!current(data)?'<p class="rule-caution">The included rules are unavailable for the chosen date. Check the current official regulations.</p>':'';
     let content='';
-    if(section==='local') content=`${sanct.length?'<h3>Sanctuary notices</h3><p class="rule-caution">Read the exact areas and dates. A notice may cover only part of a waterbody or a neighbouring water.</p>'+detailList(sanct):''}<h3>Lake-specific rules${fish&&!all?' for '+esc(fishName):''}</h3>${local.length?detailList(local):'<p>No lake-specific record is matched for this selection. This does not confirm that fishing is permitted everywhere.</p>'}`;
+    if(section==='local') {
+      const bySpecies=new Map();
+      for(const rule of lakeRules){
+        const name=rule.species||'All species / other lake rules';
+        if(!bySpecies.has(name))bySpecies.set(name,[]);
+        bySpecies.get(name).push(rule);
+      }
+      const grouped=[...bySpecies].sort(([a],[b])=>a.localeCompare(b)).map(([name,rows])=>`<section class="lake-species-rule-group"><h3>${esc(name)}</h3>${detailList(rows)}</section>`).join('');
+      content=`${sanct.length?'<h3>Sanctuary notices</h3><p class="rule-caution">Read the exact areas and dates. A notice may cover only part of a waterbody or a neighbouring water.</p>'+detailList(sanct):''}${lakeRules.length?'<p>All recorded lake-specific exceptions, grouped by species. Check the area and conditions in each record.</p>'+grouped:'<h3>Lake-specific rules</h3><p>No lake-specific exceptions are listed in the app’s data. <button type="button" class="rules-text-button" data-rules-open="fishing">View Fishing rules for zone seasons and limits</button>. This does not confirm that fishing is permitted everywhere.</p>'}`;
+    }
     if(section==='fishing') content=`${fish&&!all?'<h3>'+esc(fishName)+'</h3>':'<h3>Species seasons and limits</h3>'}${detailList(seasons)||'<p>No species season or limit is available for this selection in the app’s data.</p>'}${local.length?'<h3>Lake-specific rules</h3>'+detailList(local):''}${general.length?'<h3>Other zone rules</h3>'+detailList(general):''}${sanct.length?'<h3>Sanctuary notices</h3><p class="rule-caution">Check the exact areas and closure dates.</p>'+detailList(sanct):''}`;
     if(section==='bait') content=`<h3>Bait and gear</h3><p>${esc((l.bmz||[]).join(' / ')||'Bait zone not confirmed at this point')}</p>${(l.bmz||[]).some(s=>/no use/i.test(s))?'<p class="rule-caution">No use or possession of live baitfish at the mapped point.</p>':''}<p>Listed restrictions may depend on the area, season, species or method. Check each record’s scope.</p>${detailList(bait)||'<p>No additional bait or gear record was matched. General Ontario bait rules still apply.</p>'}<p><a href="https://www.ontario.ca/document/ontario-fishing-regulations-summary/bait" target="_blank" rel="noopener noreferrer">Official Ontario bait rules ↗</a></p>`;
     rulesDialog.querySelector('#lakeRulesTitle').textContent=l.name+' rules';
     rulesDialog.querySelector('.rules-dialog-meta').innerHTML=`${esc(date)} · ${z.length?z.map(zone=>zoneLink(zone)).join(' / '):'Zone not confirmed'}`;
     rulesDialog.querySelectorAll('[data-rules-open]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rulesOpen===section)));
-    rulesDialog.querySelector('.rules-species-filter').innerHTML=fish&&section!=='bait'?`<span>${all?'Showing all species':'Selected fish: '+esc(fishName)}</span><button type="button" class="rules-text-button" data-rules-scope>${all?'Show selected fish':'Show all species'}</button>`:'';
+    rulesDialog.querySelector('.rules-species-filter').innerHTML=fish&&section==='fishing'?`<span>${all?'Showing all species':'Selected fish: '+esc(fishName)}</span><button type="button" class="rules-text-button" data-rules-scope>${all?'Show selected fish':'Show all species'}</button>`:'';
     rulesDialog.querySelector('.rules-dialog-content').innerHTML=warning+content+`<p class="record-note">2026 regulations, source file dated ${esc(data?.sourceDate||'unavailable')}. S = Sport licence; C = Conservation licence. Limits and residency conditions still apply.</p><p>${officialGuide} · <a href="https://www.ontario.ca/page/fishing-notices-and-updates" target="_blank" rel="noopener noreferrer">Notices &amp; updates ↗</a></p>`;
     rulesDialog.scrollTop=0;
   }
