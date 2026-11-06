@@ -420,8 +420,9 @@
     .map-toolbar #viewFavoritesBtn.active {background:#453817;border-color:#fbbf24;color:#fde68a;}
     .map-toolbar .locate-btn {position:static;box-shadow:none;}
     #map {height:38dvh;min-height:240px;max-height:480px;}
-    #fishSlider .fish-btn {width:78px;padding:6px 3px;}
-    #fishSlider .fish-btn img {width:38px;height:34px;}
+    #fishSlider .fish-btn {box-sizing:border-box;width:78px;height:88px;padding:6px 3px;justify-content:center;}
+    #fishSlider .fish-btn img {display:block;flex:none;width:64px;height:40px;object-fit:contain;object-position:center;}
+    #fishSlider .fish-btn span {display:flex;flex:none;align-items:center;justify-content:center;width:100%;height:2.2em;margin-top:4px;line-height:1.1;}
     #fishSlider .fish-btn.active {transform:none;box-shadow:none;}
     #view-map.spot-selected .desktop-map-tools > .search-container {display:grid;}
     .lake-title-group {border:0;background:none;color:inherit;font:inherit;text-align:left;min-width:0;padding:6px 0;cursor:pointer;}
