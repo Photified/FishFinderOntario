@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v116-provincial-coverage';
+const CACHE_NAME = 'fish-finder-v117-original-fish-art';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
