@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v119-bait-tackle-art';
+const CACHE_NAME = 'fish-finder-v120-tackle-coach';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -7,6 +7,8 @@ const ASSETS_TO_CACHE = [
   './guided-tour.js',
   './map-legend.js',
   './lake-setups.js',
+  './tackle-coach.js',
+  './tackle-coach.css',
   './crown-land.js',
   './fisheries-zones.js',
   './fishing-rules.js',

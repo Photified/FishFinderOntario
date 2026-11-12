@@ -35,16 +35,55 @@ window.LakeSetups = (() => {
         item.techniques.set(lure.technique, (item.techniques.get(lure.technique) || 0) + 1);
       }
     }
-    const lures = [...baits].sort((a,b) => b[1].count-a[1].count).slice(0,3).map(([name,item]) => ({
-      name, technique:[...item.techniques].sort((a,b) => b[1]-a[1])[0]?.[0] || ''
-    }));
+    const lures = [...baits].sort((a,b) => b[1].count-a[1].count).slice(0,3).map(([name,item]) => {
+      const technique = [...item.techniques].sort((a,b) => b[1]-a[1])[0]?.[0] || '';
+      return {name, technique};
+    });
     const colors = [...colorCounts].sort((a,b) => b[1]-a[1]).slice(0,3).map(([color]) => color);
     return {lures, colors, gear:gearMap[fish], specific:false};
   }
 
-  function lureHTML(lure) {
-    const image = lureMap[lure.name]?.image || lureMap[lureBaseMap[lure.name]]?.image;
-    return `<article class="setup-lure">${image ? `<img src="${escape(image)}" alt="${escape(lure.name)}" loading="lazy">` : '<span class="setup-image-unavailable">Image unavailable</span>'}<div><h5>${escape(lure.name)}</h5><p>${escape(lure.technique)}</p>${lure.reason ? `<p>${escape(lure.reason)}</p>` : ''}</div></article>`;
+  function icon(name) {
+    const paths = {
+      retrieve:'<path d="M3 7h18M17 3l4 4-4 4M21 17H3m4-4-4 4 4 4"/>',
+      depth:'<path d="M5 4v16m-3-3 3 3 3-3M12 5h9m-9 7h6m-6 7h9"/>',
+      size:'<path d="M3 8h18v9H3zM7 8v4m5-4v6m5-6v4"/>',
+      position:'<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z"/><circle cx="12" cy="10" r="2"/>',
+      setup:'<path d="M4 6h16M4 18h16M8 3v6m8 6v6"/>',
+      chevron:'<path d="m7 10 5 5 5-5"/>',
+      next:'<path d="M4 12h16m-6-6 6 6-6 6"/>'
+    };
+    return `<svg class="setup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.setup}</svg>`;
+  }
+
+  function coachTipHTML(lure, state, step = 0) {
+    const tips = TackleCoach.adviceFor(lure, state.fish, state.conditions);
+    const current = tips[step % tips.length];
+    return `<div class="setup-coach-tip" aria-live="polite" aria-atomic="true"><span class="setup-coach-icon">${icon(current.icon)}</span><div><h6>${escape(current.title)}</h6><p>${escape(current.text)}</p><p class="setup-coach-why"><strong>Why:</strong> ${escape(current.why)}</p></div></div>`;
+  }
+
+  function lureHTML(lure, index, state, rec) {
+    const profile = TackleCoach.profileFor(lure, state.fish);
+    const image = profile.image;
+    const alternativeIndex = rec.lures.findIndex((other, i) => i !== index && TackleCoach.imageFor(other) !== image);
+    const alternative = rec.lures[alternativeIndex];
+    const alternativeImage = alternative && TackleCoach.imageFor(alternative);
+    const conditionLabels = Object.entries(state.conditions).filter(([,v]) => v).map(([k,v]) => groups[k][v]?.name).filter(Boolean);
+    return `<details class="setup-lure" data-setup-lure="${index}" data-lure-name="${escape(lure.name)}" name="setup-lures-${escape(state.id)}"${state.openLure === lure.name ? ' open' : ''}>
+      <summary><span class="setup-lure-thumb">${image ? `<img src="${escape(image)}" alt="" loading="lazy">` : icon('setup')}</span><span class="setup-lure-summary"><span class="setup-lure-name">${escape(lure.name)}</span><span class="setup-lure-technique">${escape(lure.technique)}</span><span class="setup-lure-hint"><span class="setup-when-closed">View setup & coaching</span><span class="setup-when-open">Hide details</span></span></span>${icon('chevron')}</summary>
+      <div class="setup-lure-body">
+        ${image ? `<div class="setup-lure-art"><img src="${escape(image)}" alt="${escape(lure.name)}" loading="lazy"></div>` : ''}
+        <dl class="setup-lure-facts"><div><dt>${icon('size')} Starting size</dt><dd>${escape(profile.size)}</dd></div><div><dt>${icon('setup')} Rigging</dt><dd>${escape(profile.rigging)}</dd></div></dl>
+        <h6>How to fish it</h6><p>${escape(lure.technique)}</p>
+        ${lure.reason && rec.specific ? `<p class="setup-lure-reason"><strong>Why this option:</strong> ${escape(lure.reason)}</p>` : ''}
+        <p class="setup-size-note">A starting point, not an exact requirement. Use a similar option you own and match the weight to your rod and conditions.</p>
+        <details class="setup-coach"><summary>${icon('retrieve')}<span>Not getting bites?</span>${icon('chevron')}</summary>
+          ${conditionLabels.length ? `<div class="setup-coach-context">${conditionLabels.map(label=>`<span>${escape(label)}</span>`).join('')}</div>` : ''}
+          <div class="setup-coach-result">${coachTipHTML(lure, state)}</div>
+          <div class="setup-coach-controls"><span>Try one adjustment at a time.</span><button type="button" data-setup-coach-next="${index}" data-coach-step="0">Another adjustment ${icon('next')}</button></div>
+          ${alternative ? `<div class="setup-coach-alternative"><span>Have another option?</span><button type="button" data-setup-alternative="${alternativeIndex}">${alternativeImage ? `<img src="${escape(alternativeImage)}" alt="" loading="lazy">` : ''}<span>${escape(alternative.name)}</span>${icon('next')}</button></div>` : ''}
+        </details>
+      </div></details>`;
   }
 
   function content(state) {
@@ -52,6 +91,8 @@ window.LakeSetups = (() => {
     const rule = window.FishingRules?.forSpecies(state.lake, state.fish) || {html:'',blocked:false,allow:()=>true};
     if(rule.blocked) return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)}</h4><button type="button" data-setup-action="close" aria-label="Close recommendations">✕</button></div>${rule.html}</div>`;
     const rec = getRecommendation(state.fish, state.conditions, rule.allow);
+    state.recommendation = rec;
+    if (!rec.lures.some(lure => lure.name === state.openLure)) state.openLure = null;
     const selected = Object.entries(state.conditions).filter(([,value]) => value).map(([key,value]) => groups[key][value].name);
     const intro = rec.specific ? `For ${selected.join(' · ').toLowerCase()}.` :
       selected.length ? `Starting suggestions for ${selected.join(' · ').toLowerCase()}. Unspecified conditions remain open.` :
@@ -61,8 +102,8 @@ window.LakeSetups = (() => {
     return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)} bait and tackle recommendations</h4><button type="button" data-setup-action="close" aria-label="Close bait and tackle recommendations">✕</button></div>
       ${rule.html}
       <p class="setup-intro">${escape(intro)}</p>
-      ${rec.lures.map(lureHTML).join('') || '<p class="record-note">Suggestions are unavailable for these selections.</p>'}
       ${rec.colors?.length ? `<div class="setup-color-section"><h5>Suggested colours</h5><div class="setup-colors">${rec.colors.map(color => `<span><i style="background:${escape(colorMap[color]?.hex || '#ccc')}" aria-hidden="true"></i>${escape(color)}</span>`).join('')}</div></div>` : '<div class="setup-color-section"><h5>Suggested colours</h5><p class="record-note">No colour preference specified for these recommendations.</p></div>'}
+      <div class="setup-lure-options">${rec.lures.map((lure, index)=>lureHTML(lure,index,state,rec)).join('') || '<p class="record-note">Suggestions are unavailable for these selections.</p>'}</div>
       <details class="setup-refine"><summary>Adjust conditions</summary><form class="setup-conditions">${conditionFields}<button type="submit">Update recommendations</button></form></details>
       <details class="setup-extra"><summary>Gear${rec.specific ? ' & fishing tips' : ' recommendations'}</summary>
       <h5>Rod</h5><p>${escape(rec.gear?.rod || 'Not specified')}</p><h5>Line</h5><p>${escape(rec.gear?.line || 'Not specified')}</p>
@@ -74,7 +115,7 @@ window.LakeSetups = (() => {
   function render(id, allowed, lake = null, preferredFish = null) {
     if (!Object.keys(allowed).length) return '<p class="record-note">Bait and tackle recommendations are not available for these species records.</p>';
     let state = contexts.get(id);
-    if (!state) {state={fish:null, conditions:{weather:'',clarity:'',temp:''}, allowed};contexts.set(id,state);}
+    if (!state) {state={id, fish:null, openLure:null, conditions:{weather:'',clarity:'',temp:''}, allowed};contexts.set(id,state);}
     state.allowed = allowed;
     state.lake = lake;
     if (preferredFish && Object.hasOwn(allowed, preferredFish)) state.fish = preferredFish;
@@ -88,8 +129,31 @@ window.LakeSetups = (() => {
     const root = event.target.closest('.lake-setups');
     if (!root) return;
     const state = contexts.get(root.dataset.setupContext);
+    if (!state) return;
+    const coachNext = event.target.closest('[data-setup-coach-next]');
+    if (coachNext) {
+      const lure = state.recommendation?.lures[Number(coachNext.dataset.setupCoachNext)];
+      if (!lure) return;
+      const step = Number(coachNext.dataset.coachStep || 0) + 1;
+      coachNext.dataset.coachStep = String(step);
+      coachNext.closest('.setup-coach').querySelector('.setup-coach-result').innerHTML = coachTipHTML(lure, state, step);
+      return;
+    }
+    const alternative = event.target.closest('[data-setup-alternative]');
+    if (alternative) {
+      const target = root.querySelector(`[data-setup-lure="${Number(alternative.dataset.setupAlternative)}"]`);
+      if (target) {
+        root.querySelectorAll('.setup-lure[open]').forEach(item => {if (item !== target) item.open = false;});
+        target.open = true;
+        state.openLure = target.dataset.lureName;
+        target.querySelector('summary').focus({preventScroll:true});
+        target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'nearest'});
+      }
+      return;
+    }
     const fishButton = event.target.closest('[data-setup-fish]');
     if (fishButton && state.allowed[fishButton.dataset.setupFish]) {
+      if (state.fish !== fishButton.dataset.setupFish) state.openLure = null;
       state.fish = fishButton.dataset.setupFish;
       root.querySelectorAll('[data-setup-fish]').forEach(button => button.setAttribute('aria-pressed', button.dataset.setupFish === state.fish));
       root.querySelector('.setup-output').innerHTML = content(state);
@@ -98,6 +162,7 @@ window.LakeSetups = (() => {
     if (event.target.closest('[data-setup-action="close"]')) {
       const previousFish = state.fish;
       state.fish = null;
+      state.openLure = null;
       root.querySelector('.setup-output').innerHTML = '';
       root.querySelectorAll('[data-setup-fish]').forEach(button => {
         button.setAttribute('aria-pressed','false');
@@ -105,6 +170,18 @@ window.LakeSetups = (() => {
       });
     }
   });
+  // Native details/summary supports keyboard and touch. Capture also supports browsers
+  // that do not implement exclusive details groups through the name attribute.
+  document.addEventListener('toggle', event => {
+    const lure = event.target;
+    if (!lure.matches?.('.setup-lure')) return;
+    const root = lure.closest('.lake-setups');
+    if (!root || !lure.isConnected) return;
+    const state = contexts.get(root.dataset.setupContext);
+    if (!state) return;
+    if (lure.open) root.querySelectorAll('.setup-lure[open]').forEach(other => {if (other !== lure) other.open = false;});
+    state.openLure = root.querySelector('.setup-lure[open]')?.dataset.lureName || null;
+  }, true);
   document.addEventListener('submit', event => {
     if (!event.target.matches('.setup-conditions')) return;
     event.preventDefault();
