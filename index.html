@@ -594,6 +594,7 @@
   <link id="darkTheme" rel="stylesheet" href="dark-theme.css" media="not all">
   <link rel="stylesheet" href="popups.css">
   <link rel="stylesheet" href="tackle-coach.css">
+  <link rel="stylesheet" href="logbook.css">
   <script src="theme.js"></script>
 </head>
 <body>
@@ -646,6 +647,7 @@
 <div class="map-toolbar">      <button id="locateMeBtn" class="locate-btn" type="button" aria-label="Use my location" title="Use my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>My location</span></button>      <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg><span>Saved spots</span></button><button id="openMapOptions" type="button"><span>Map layers</span><span id="mapLayerCount" hidden></span></button></div>
 
 
+    <div id="savedLogbookTools" class="saved-logbook-tools" hidden><button type="button" data-logbook-all>Fishing logbook <span data-logbook-count>0</span></button></div>
     <div class="map-layer-controls" role="group" aria-label="Browse waterbodies, boat launches or shore access">
       <button type="button" data-map-layer="waters" aria-pressed="true"><span class="legend-dot pin-blue"></span>Waterbodies</button>
       <button type="button" data-map-layer="launch" aria-pressed="false"><span class="access-layer-icon"></span>Boat launches</button>
@@ -819,20 +821,10 @@
 
   <dialog id="clearDataModal" class="simple-dialog" aria-labelledby="clearDataTitle">
     <div class="dialog-heading"><h2 id="clearDataTitle">Clear saved data?</h2></div>
-      <p class="record-note mb-6">Are you sure you want to delete all saved lakes, access points, notes, and preferences? This cannot be undone.</p>
+      <p class="record-note mb-6">Are you sure you want to delete all saved lakes, access points, fishing log entries, and preferences? This cannot be undone.</p>
       <button class="btn-primary mb-3" id="confirmClearDataBtn" style="background: #ef4444;">Yes, Delete Everything</button>
       <button class="btn-secondary" id="cancelClearDataBtn" data-close-dialog autofocus style="margin-top:0;">Cancel</button>
   </dialog>
-
-  <div class="modal-overlay" id="noteModal" style="z-index: 1060;">
-    <div class="modal-content">
-      <h2 class="text-xl font-bold mb-2 text-white">Lake Notes</h2>
-      <p class="text-xs text-gray-400 mb-2">Save details about your catches or access points.</p>
-      <textarea id="noteInput" class="custom-textarea" placeholder="e.g., Caught a 4lb walleye near the sunken log..."></textarea>
-      <button class="btn-primary mb-2" id="saveNoteBtn">Save Note</button>
-      <button class="btn-secondary" id="cancelNoteBtn" style="margin-top:0;">Cancel</button>
-    </div>
-  </div>
 
 <dialog id="generalAdviceDialog" class="simple-dialog" aria-labelledby="generalAdviceTitle"><div class="dialog-heading"><h2 id="generalAdviceTitle">General fishing advice</h2><button type="button" data-close-dialog aria-label="Close fishing advice">✕</button></div><p class="record-note">Choose any supported species. These suggestions are independent of waterbody records.</p><div id="generalAdviceContent"></div></dialog>
   <dialog id="appPopup" class="simple-dialog" aria-labelledby="appPopupTitle">
@@ -849,6 +841,7 @@
   <script src="tackle-coach.js"></script>
   <script src="tackle-animation.js"></script>
   <script src="lake-setups.js"></script>
+  <script src="logbook.js"></script>
   <script src="crown-land.js"></script>
   <script src="fisheries-zones.js"></script>
   <script src="guided-tour.js"></script>
@@ -956,6 +949,7 @@
         localStorage.removeItem('appUnitsData');
         localStorage.removeItem('savedLakesData');
         localStorage.removeItem('savedAccessPointsData');
+        localStorage.removeItem('ffoLogbookV1');
         window.location.reload(); 
       });
 
@@ -1479,6 +1473,7 @@
         return fishSpeciesList.find(f => f.id === currentActiveSpecies)?.name.toLowerCase() || '';
       }
       function findClosestLakes(speciesId) {
+        document.getElementById('savedLogbookTools').hidden = !favoritesOnly;
         currentActiveSpecies = speciesId;
         selectedLakeId = null;
         document.getElementById('view-map').classList.remove('spot-selected');
@@ -1642,23 +1637,6 @@
         document.getElementById('generalAdviceDialog').showModal();
       });
 
-      const noteModal = document.getElementById('noteModal');
-      const noteInput = document.getElementById('noteInput');
-      let pendingNoteLakeId = null;
-
-      document.getElementById('cancelNoteBtn').addEventListener('click', () => { noteModal.classList.remove('open'); pendingNoteLakeId = null; });
-      document.getElementById('saveNoteBtn').addEventListener('click', () => {
-        if (pendingNoteLakeId) {
-          const newNote = noteInput.value.trim();
-          if (!savedLakes[pendingNoteLakeId]) savedLakes[pendingNoteLakeId] = {};
-          savedLakes[pendingNoteLakeId].note = newNote;
-          localStorage.setItem('savedLakesData', JSON.stringify(savedLakes));
-          refreshSavedState();
-        }
-        noteModal.classList.remove('open');
-        pendingNoteLakeId = null;
-      });
-
       function stockingByYear(history) {
         const years = new Map();
         for (const entry of (history || '').split(';')) {
@@ -1686,7 +1664,6 @@
           const isSelected = uniqueId === selectedLakeId;
           const isFavorited = !!savedLakes[uniqueId];
           const starActiveClass = isFavorited ? 'active' : '';
-          const customNote = isFavorited && savedLakes[uniqueId].note ? savedLakes[uniqueId].note : '';
 
           let isStockedMatch = false;
           if (lake.isStocked && lake.stockingInfo) {
@@ -1750,15 +1727,12 @@
                 <section class="lake-section lake-fish-section">
                   ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake, preferredFish, {factsHTML, overviewHTML: FishingRules.render(uniqueId, lake, true), recordedFishHTML, stockingHTML: stockingContentHTML})}
                 </section>
-                <section class="lake-section">
-                  ${customNote ? `<div class="lake-note-display">${LakeSetups.escape(customNote)}</div>` : ''}
+                ${lake.localNotes||lake.regulationsNotes ? `<section class="lake-section">
                   ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}
                   ${lake.regulationsNotes ? `<p class="species-list">${lake.regulationsNotes}</p>` : ''}
-                  <div class="lake-card-actions">
-                    <button type="button" class="maps-btn note-btn" data-lakeid="${LakeSetups.escape(uniqueId)}">${customNote ? 'Edit note' : 'Add note'}</button>
-                  </div>
-        
                 </section>` : ''}
+                ${window.FFOLogbook?.preview({id:uniqueId,name:lake.name,town:lake.town}) || ''}
+                ` : ''}
               </div>
             </div>`;
         });
@@ -1771,13 +1745,6 @@
         if (infoToggle && !e.target.closest('.star-btn')) {
           const id = e.target.closest('.lake-card').dataset.lakeid;
           updateSelection(selectedLakeId === id ? null : id);
-        }
-
-        const noteBtn = e.target.closest('.note-btn');
-        if (noteBtn) {
-          pendingNoteLakeId = noteBtn.dataset.lakeid;
-          noteInput.value = savedLakes[pendingNoteLakeId]?.note || '';
-          noteModal.classList.add('open');
         }
 
         const starBtn = e.target.closest('.star-btn');

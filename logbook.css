@@ -1,0 +1,96 @@
+.fishing-logbook-dialog,.logbook-lake {--log-soft:#f5f7fa;--log-muted:var(--text-muted,#53616e);--log-line:var(--popup-border,#dce3eb);--log-ink:var(--text-main,#252a30);}
+[data-theme="dark"] .fishing-logbook-dialog,[data-theme="dark"] .logbook-lake {--log-soft:#1a2a38;}
+.saved-logbook-tools {display:flex;justify-content:flex-end;margin:8px 0;}
+.saved-logbook-tools[hidden] {display:none;}
+.saved-logbook-tools button,.setup-content .setup-log-setup,.log-action,.log-view-all,.log-back {box-sizing:border-box;min-height:44px;max-width:100%;padding:9px 13px;border:1px solid var(--rules-button-border);border-radius:6px;background:var(--rules-button-bg);color:var(--rules-button-text);font:inherit;font-size:.82rem;font-weight:600;line-height:1.5;cursor:pointer;}
+.saved-logbook-tools [data-logbook-count] {display:inline-block;margin-left:6px;min-width:16px;font-weight:700;}
+.setup-content .setup-log-setup {grid-column:1 / -1;justify-self:end;}
+.logbook-lake-heading {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.logbook-lake-heading h4 {margin:0;}
+.logbook-lake .log-muted,.fishing-logbook-dialog .log-muted {color:var(--log-muted);font-size:.8rem;line-height:1.5;}
+.log-view-all {margin-top:12px;background:transparent;}
+.log-entry-card {min-width:0;margin:0 0 12px;padding:12px 14px;border:1px solid var(--log-line);border-radius:8px;background:var(--card-bg);color:var(--log-ink);}
+.log-entry-card:last-child {margin-bottom:0;}
+.log-entry-heading {display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:0;border:0;background:transparent;color:var(--rules-button-text);font:inherit;font-size:.85rem;line-height:1.5;text-align:left;cursor:pointer;}
+.log-entry-heading>span:first-child {min-width:0;}
+.log-entry-heading strong,.log-entry-heading time {display:block;overflow-wrap:anywhere;}
+.log-entry-heading strong {color:var(--log-ink);}
+.log-entry-heading time {font-weight:600;}
+.log-result {display:inline-block;flex:none;padding:4px 7px;border-radius:4px;background:var(--log-soft);color:var(--log-muted);font-size:.75rem;font-weight:600;line-height:1.4;}
+.log-result-caught {background:#e6f3ea;color:#246339;}
+[data-theme="dark"] .log-result-caught {background:#183e30;color:#a2e7ba;}
+.log-setup-preview {display:flex;align-items:center;gap:12px;margin:8px 0 10px;min-width:0;}
+.log-setup-preview>div {min-width:0;}
+.log-setup-preview p {margin:2px 0;font-size:.8rem;line-height:1.5;overflow-wrap:anywhere;}
+.log-target {color:var(--log-muted);}
+.log-lure-name {color:var(--log-ink);font-weight:600;}
+.log-lure-thumb {flex:none;width:88px;height:64px;object-fit:contain;background:#fff;border-radius:6px;}
+img[data-logbook-image][hidden] {display:none;}
+.log-condition-chips {display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0;}
+.log-condition-chip {display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid var(--log-line);border-radius:5px;background:var(--log-soft);color:var(--log-ink);font-size:.74rem;line-height:1.4;}
+.log-condition-chip .condition-choice-icon {width:16px;height:16px;}
+.log-water {display:inline-grid;place-items:center;width:20px;height:18px;border-radius:3px;}
+.log-water .condition-choice-icon {width:16px;height:14px;}
+.log-no-conditions {display:block;margin:8px 0;}
+.log-note-excerpt {display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:10px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.84rem;line-height:1.6;}
+.log-catch-preview {margin:8px 0 0;font-size:.8rem;line-height:1.5;color:var(--log-muted);overflow-wrap:anywhere;}
+.fishing-logbook-dialog {box-sizing:border-box;width:min(760px,calc(100% - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);padding:0;background:var(--card-bg);color:var(--log-ink);overflow:auto;}
+.log-dialog-header {position:sticky;top:0;z-index:3;padding:16px 20px 12px;border-bottom:1px solid var(--log-line);background:var(--card-bg);}
+.log-dialog-header .dialog-heading {margin-bottom:6px;}
+.log-dialog-subtitle {margin:0;font-size:.8rem;line-height:1.5;color:var(--log-muted);overflow-wrap:anywhere;}
+.log-dialog-body {padding:16px 20px 20px;}
+.log-list-toolbar {display:flex;align-items:end;gap:12px;margin-bottom:12px;}
+.log-list-filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;flex:1;min-width:0;}
+.log-list-filters label,.log-form-field {display:grid;gap:6px;min-width:0;font-size:.8rem;font-weight:600;line-height:1.4;}
+.log-list-filters select,.log-form-field input,.log-form-field textarea {box-sizing:border-box;min-width:0;width:100%;min-height:44px;padding:9px 10px;border:1px solid var(--log-line);border-radius:6px;background:var(--card-bg);color:var(--log-ink);font:inherit;font-size:.85rem;font-weight:400;line-height:1.5;}
+.log-list-count,.log-device-note {margin:0 0 12px;font-size:.78rem;line-height:1.5;color:var(--log-muted);}
+.log-device-note {margin:16px 0 0;}
+.log-empty {padding:16px 0;font-size:.86rem;line-height:1.6;color:var(--log-muted);}
+.log-detail-top {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.log-detail-lure {width:200px;max-width:70%;height:140px;object-fit:contain;background:#fff;border-radius:6px;}
+.log-detail-facts {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0;}
+.log-detail-facts>div {min-width:0;padding:12px;border:1px solid var(--log-line);border-radius:7px;background:var(--log-soft);}
+.log-detail-facts dt {margin:0 0 5px;font-size:.78rem;font-weight:600;color:var(--log-muted);}
+.log-detail-facts dd {margin:0;font-size:.85rem;line-height:1.55;overflow-wrap:anywhere;}
+.log-detail-notes h3 {margin:16px 0 8px;font-size:.9rem;}
+.log-detail-notes p {white-space:pre-wrap;overflow-wrap:anywhere;font-size:.86rem;line-height:1.65;}
+.log-detail-actions {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;}
+.log-text-danger {min-height:44px;padding:8px 0;border:0;background:transparent;color:#b54036;font:inherit;font-size:.82rem;text-decoration:underline;cursor:pointer;}
+[data-theme="dark"] .log-text-danger {color:#ffb3aa;}
+.log-delete-confirm {margin-top:12px;padding:12px;border:1px solid var(--log-line);border-radius:7px;background:var(--log-soft);font-size:.85rem;}
+.log-delete-confirm[hidden] {display:none;}
+.log-delete-confirm p {margin:0 0 10px;}
+.log-danger {min-height:44px;margin-left:8px;padding:8px 12px;border:1px solid #a12e2e;border-radius:6px;background:#a12e2e;color:#fff;font:inherit;font-size:.82rem;cursor:pointer;}
+.log-form-intro {margin:0 0 16px;font-size:.82rem;line-height:1.5;color:var(--log-muted);}
+.log-form-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px;}
+.log-entry-form>.log-form-field {margin:14px 0;}
+.log-form-field textarea {resize:vertical;min-height:118px;}
+.log-editor-image {display:flex;justify-content:center;}
+.log-editor-image img {width:160px;height:100px;object-fit:contain;background:#fff;border-radius:6px;}
+.log-setup-fields,.log-condition-fields {margin:14px 0;border:1px solid var(--log-line);border-radius:7px;background:var(--log-soft);}
+.log-setup-fields>summary,.log-condition-fields>summary {min-height:44px;padding:12px;box-sizing:border-box;font-size:.85rem;font-weight:600;line-height:1.5;color:var(--rules-button-text);cursor:pointer;}
+.log-setup-fields .log-form-grid,.log-setup-fields>.log-form-field {margin:0 12px 12px;}
+.log-condition-fields>summary {display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;}
+.log-draft-conditions {flex:1;min-width:0;}
+.log-draft-conditions .log-condition-chips,.log-draft-conditions .log-no-conditions {margin:0;}
+.log-edit-hint {font-size:.78rem;text-decoration:underline;}
+.log-condition-options {padding:0 12px 12px;}
+.log-condition-options .condition-tile {background:var(--card-bg);}
+.log-condition-options .condition-option input:checked+.condition-tile {background:var(--rules-button-bg);}
+.log-outcome-field {min-width:0;padding:0;margin:18px 0;border:0;}
+.log-outcome-field legend {margin-bottom:8px;font-size:.8rem;font-weight:600;}
+.log-outcome-options {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.log-outcome-options label {position:relative;min-width:0;cursor:pointer;}
+.log-outcome-options input {position:absolute;left:8px;top:8px;opacity:0;width:1px;height:1px;}
+.log-outcome-options span {display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;height:100%;padding:8px;border:2px solid var(--log-line);border-radius:6px;color:var(--log-ink);font-size:.78rem;line-height:1.4;text-align:center;}
+.log-outcome-options input:checked+span {background:var(--rules-button-bg);border-color:var(--rules-button-text);color:var(--rules-button-text);}
+.log-outcome-options input:focus-visible+span {outline:3px solid var(--accent);outline-offset:2px;}
+.log-form-field[hidden] {display:none;}
+.log-error {margin:10px 0;color:#a4372c;font-size:.82rem;line-height:1.5;overflow-wrap:anywhere;}
+[data-theme="dark"] .log-error {color:#ffb3aa;}
+.log-error:empty {display:none;}
+.log-form-actions {position:sticky;bottom:0;z-index:2;display:flex;gap:10px;margin:18px -20px -20px;padding:14px 20px;background:var(--card-bg);border-top:1px solid var(--log-line);}
+.log-form-actions button {flex:1;min-width:0;min-height:44px;padding:9px 12px;border:1px solid var(--rules-button-border);border-radius:6px;background:var(--rules-button-bg);color:var(--rules-button-text);font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;}
+.log-form-actions .log-save-entry {flex:1.6;background:#315f9b;border-color:#315f9b;color:#fff;}
+.fishing-logbook-dialog button:focus-visible,.fishing-logbook-dialog input:focus-visible,.fishing-logbook-dialog textarea:focus-visible,.fishing-logbook-dialog select:focus-visible,.logbook-lake button:focus-visible,.setup-log-setup:focus-visible {outline:3px solid var(--accent);outline-offset:2px;}
+@media(max-width:520px) {.log-dialog-header {padding:12px;}.log-dialog-body {padding:12px;}.log-list-toolbar {align-items:stretch;flex-direction:column;}.log-form-grid,.log-detail-facts {grid-template-columns:minmax(0,1fr);}.log-list-filters select,.log-form-field input,.log-form-field textarea {font-size:16px;}.log-form-actions {margin:16px -12px -12px;padding:12px;}.log-entry-card {padding:10px 12px;}.log-entry-heading {align-items:start;}.log-result {white-space:normal;max-width:90px;}.log-lure-thumb {width:76px;height:60px;}}

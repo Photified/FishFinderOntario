@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v133-compact-lake-limits';
+const CACHE_NAME = 'fish-finder-v134-fishing-logbook';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -7,6 +7,8 @@ const ASSETS_TO_CACHE = [
   './guided-tour.js',
   './map-legend.js',
   './lake-setups.js',
+  './logbook.js',
+  './logbook.css',
   './tackle-coach.js',
   './tackle-animation.js',
   './tackle-coach.css',

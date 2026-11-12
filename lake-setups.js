@@ -96,7 +96,7 @@ window.LakeSetups = (() => {
 
   function playDiagram(figure, retry = false) {
     if (playingDiagram?.figure === figure) return;
-    if (conditionsDialog?.open) return;
+    if (conditionsDialog?.open||document.getElementById('fishingLogbookDialog')?.open) return;
     stopDiagram();
     if (!figure.isConnected || !figure.closest('.setup-lure')?.open) return;
     const controller = controllerFor(figure);
@@ -187,7 +187,20 @@ window.LakeSetups = (() => {
         </div>
         ${detailBox('How to fish it','retrieve',`<div class="setup-method-layout${diagram ? ' has-animation' : ''}">${diagramHTML(diagram,profile,lure.name)}<div class="setup-method-copy">${tips.map(tip=>`<section class="setup-fishing-tip"><h6>${escape(tip.title)}</h6>${tip.lead ? `<p class="setup-detail-lead">${escape(tip.lead)}</p>` : ''}${tip.description ? `<p>${escape(tip.description)}</p>` : ''}</section>`).join('')}</div></div>`,'setup-detail-method')}
         ${explanation.length ? detailBox('Why this lure','reason',explanation.map(paragraph=>`<p>${escape(paragraph)}</p>`).join(''),'setup-detail-reason') : ''}
+        ${state.lake&&state.id!=='tour-example' ? `<button type="button" class="setup-log-setup" data-log-setup="${escape(lure.name)}">Log this setup</button>` : ''}
       </div></details>`;
+  }
+
+  function snapshotFor(id, lureName = null) {
+    const state=contexts.get(id);
+    if(!state)return null;
+    const fish=state.allowed[state.fish];
+    const allow=fish ? window.FishingRules?.forSpecies(state.lake,state.fish).allow || (()=>true) : (()=>true);
+    const rec=fish ? getRecommendation(state.fish,state.conditions,allow) : {};
+    const lure=(rec.lures||[]).find(item=>item.name===(lureName||state.openLure));
+    const profile=lure ? TackleCoach.profileFor(lure,state.fish) : null;
+    const gear=lure ? rec.gear||gearMap[state.fish]||{} : {};
+    return {speciesId:fish?state.fish:'',species:fish?.name||'',lure:lure?.name||'',image:profile?.image||'',size:profile?.size||'',retrieve:lure?.technique||'',rod:gear.rod||'',line:gear.line||'',suggestedColors:lure?[...(rec.colors||[])]:[],conditions:{...state.conditions}};
   }
 
   function speciesInformation(state) {
@@ -357,6 +370,11 @@ window.LakeSetups = (() => {
     if (!root) return;
     const state = contexts.get(root.dataset.setupContext);
     if (!state) return;
+    const logButton=event.target.closest('[data-log-setup]');
+    if(logButton&&state.lake&&state.id!=='tour-example'){
+      window.FFOLogbook?.openEditor({lake:{id:state.id,name:state.lake.name,town:state.lake.town},snapshot:snapshotFor(state.id,logButton.dataset.logSetup)});
+      return;
+    }
     const conditionsTrigger=event.target.closest('[data-open-conditions]');
     if(conditionsTrigger){openConditions(root,state,conditionsTrigger);return;}
     const recordButton = event.target.closest('[data-lake-records]');
@@ -401,5 +419,5 @@ window.LakeSetups = (() => {
     watchDiagram(lure);
   }, true);
   function refresh() { document.querySelectorAll('.lake-setups').forEach(root=>{ const state=contexts.get(root.dataset.setupContext);if(state) update(root,state); }); }
-  return {render, refresh, escape, getRecommendation, speciesName: id => speciesLabels[id.replace(/[^a-z]/g, '')] || id};
+  return {render, refresh, escape, getRecommendation, snapshotFor, pauseAnimations:()=>stopDiagram(), conditionIcon, conditionFieldsFor:conditions=>conditionFields({conditions}), speciesName: id => speciesLabels[id.replace(/[^a-z]/g, '')] || id};
 })();

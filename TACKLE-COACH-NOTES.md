@@ -44,7 +44,9 @@ an illustrative retrieve path rather than a simulation of each moving component.
 - `tackle-animation.js`: reusable SVG scenes and unchanged PNG sprites for all 18 techniques.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
 - `fishing-rules.js`: renders the four lake-information buttons and retains them on date changes.
-- `sw.js`: cache version 133 to refresh these assets on existing installations.
+- `logbook.js`: dated entries, editable setup snapshots, conditions and lake/species filters.
+- `logbook.css`: responsive logbook cards and editor in both themes.
+- `sw.js`: cache version 134 to refresh these assets on existing installations.
 - Original lure PNGs remain in `images/lures/`, with no pixel edits or new image assets.
 
 Existing script and stylesheet filenames are retained.
@@ -73,15 +75,37 @@ playback. Image loading failure leaves the written instructions available; Play
 retries the original image. Titles, three step labels and cues remain HTML text.
 Surface zig-zag and glide demonstrations are labelled as top views.
 
-For the compact-limits update, replace `index.html`, `lake-setups.js`,
-`fishing-rules.js`, `tackle-coach.css` and `sw.js` in the app's root folder.
-No new files or images are needed.
+For the fishing-logbook update, replace `index.html`, `lake-setups.js` and `sw.js`
+in the app's root folder. Add `logbook.js` and `logbook.css` beside `index.html`.
+No new images are needed.
 If PNG animation support is not already installed, use the complete app archive,
 including its `index.html` and `tackle-animation.js`.
 There are no image uploads for this update. The old `images/techniques/` GIF and
 poster folder is no longer referenced and may be removed from an existing install.
 The existing `images/lures/` folder is unchanged. The service worker includes the
 new script and continues caching original lure images on demand.
+
+## Fishing logbook
+
+The lake card now has Add entry, a preview of the latest dated entry and View all
+entries. Log this setup in an expanded lure prefills its setup and the selected
+conditions. Review these fields to record the equipment actually used; suggested
+colours are placeholders until the angler enters their actual colour. Dates default
+to the local day and can be changed. Time, target species, setup, conditions, notes
+and result are optional. Entries can be edited and deleted individually.
+
+Saved spots includes a Fishing logbook button for viewing all entries, newest trip
+date first, with lake and target-species filters. Long lists load 20 entries at a
+time. Each lake's own view starts with that lake selected. Entries remain available
+when a lake is removed from Saved spots.
+
+The new logbook starts empty. Previous single notes are not imported or shown.
+Favourites are preserved. Entries use the independent `ffoLogbookV1` browser store;
+there is no account or cloud synchronisation. Clearing saved app data also removes
+logbook entries. Setup and condition strings are saved as snapshots, so later
+recommendation changes do not change previous entries. Cancel and Escape discard
+an unsaved draft. Storage errors retain the draft and do not overwrite the existing
+store. Opening the logbook pauses lure playback.
 
 ## Compact lake rules summary
 
@@ -213,3 +237,12 @@ aggregate notes, warnings, blocked states and bait filters match the prior versi
 Browser checks cover Bluegill/Sunfish, combined bass scope, single/multiple zones,
 clickable/keyboard-accessible pills, dates, modal access, unknown selections,
 physical facts and unit conversions at 320, 390, 768, 1280 and 1440 px in both themes.
+
+Logbook Chromium checks cover 320, 390, 1280 and 1440 px in light and dark themes:
+empty initial history despite old notes, setup prefilling, editable conditions,
+independent snapshots, multiple lakes, date ordering, lake/species filters,
+edit/cancel/delete, reload persistence, favourite removal, Escape and dialog bounds.
+Additional checks cover unavailable/full storage, unreadable stores and escaped
+note text. The existing PNG animation checks still pass at all five viewport sizes
+in both themes. These checks use the real lake renderer with map services stubbed;
+they do not represent physical-device or cross-browser testing.
