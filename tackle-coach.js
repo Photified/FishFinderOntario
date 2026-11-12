@@ -1,4 +1,4 @@
-/* Shared lure profiles and optional coaching. No location, depth or weather is inferred.
+/* Shared lure profiles and detailed fishing instructions. No location, depth or weather is inferred.
  * Starting sizes are broad options, not requirements. See TACKLE-COACH-NOTES.md.
  */
 window.TackleCoach = (() => {
@@ -91,66 +91,147 @@ window.TackleCoach = (() => {
     return {...base, image, key, kind, size, rigging};
   }
 
-  const tip = (icon, title, text, why) => ({icon,title,text,why});
-  function adviceFor(lure, fish, conditions = {}) {
+  // Presentation and depth guidance supplement the selected recommendation;
+  // no fish position, measured depth or current weather is assumed.
+  const methods = {
+    moving: {
+      presentation:'Cast beyond the area you want to cover and reel at a controlled pace. Keep the rod tip steady so the lure swims straight and its tail or blade works freely.',
+      depth:'With a sinking model, allow it to settle before retrieving. More sink time works deeper; a quicker retrieve generally keeps it higher above cover.'
+    },
+    spinner: {
+      presentation:'Start the retrieve promptly and use enough speed to keep the blade rotating. Keep the rod tip steady and check the blade for weeds if the vibration stops.',
+      depth:'Let a sinking spinner settle before starting a deeper pass. Retrieve above weeds rather than pulling the blade through thick vegetation.'
+    },
+    crank: {
+      presentation:'Reel until the lure reaches its working depth, then maintain the pace described above. A brief pause lets a floating model rise away from an obstacle before you continue.',
+      depth:'Choose the model’s diving range for the depth you want to fish. A deeper-running lure, line diameter and casting distance all affect where it travels.'
+    },
+    jerk: {
+      presentation:'Reel the lure down, then use short rod twitches followed by a pause. Recover loose line between movements while leaving enough slack for the lure to dart freely.',
+      depth:'Watch your model beside you first: floating, suspending and sinking jerkbaits behave differently during a pause. Keep the pause short enough to avoid sinking into snags.'
+    },
+    sinking: {
+      presentation:'Let the lure sink, lift the rod to make it rise and vibrate, then follow it down while recovering loose line. Pause briefly before the next lift.',
+      depth:'Control depth with sink time and the height of each lift. Watch the line during the fall and lift clear of bottom rather than repeatedly dragging the hooks through it.'
+    },
+    bottom: {
+      presentation:'Let the rig settle, then work it with small lifts or short drags separated by pauses. Recover loose line so you can feel contact without pulling the bait continuously.',
+      depth:'Use enough weight to stay in touch with the rig at the depth and current you are fishing. Keep movements small around rock and vegetation to reduce snagging.'
+    },
+    finesse: {
+      presentation:'Let the bait settle and move it with small rod-tip shakes or a gentle drag. Pause between movements; avoid constantly hopping it away from the area you want to fish.',
+      depth:'Use the lightest head that still lets you track the bait. A lighter head falls more slowly, while more weight helps maintain contact in deeper water or current.'
+    },
+    dropshot: {
+      presentation:'Let the sinker reach bottom, then hold the bait in place with small rod-tip shakes. Pause with gentle line tension instead of repeatedly lifting the weight.',
+      depth:'The distance between hook and sinker sets how far the bait sits above bottom when the line is near vertical. A longer cast lowers that height because the line angles away.'
+    },
+    fall: {
+      presentation:'Let the bait fall on its own with a small amount of slack, watching the line for a jump or sideways movement. Lift or twitch gently, then allow another free fall.',
+      depth:'Allow more time for a deeper presentation. Adding weight increases the fall rate and changes the action, so choose the rig for the depth and cover you are fishing.'
+    },
+    spoon: {
+      presentation:'Cast and retrieve at a pace that produces a regular side-to-side wobble. Check the spoon beside you; if it rolls or spins continuously, ease off the speed.',
+      depth:'With a sinking casting spoon, vary the sink time before retrieving. Keep it clear of vegetation and use a swivel to help limit line twist.'
+    },
+    vertical: {
+      presentation:'Lower the lure to your chosen depth, lift the rod, then follow the lure down without pulling against its fall. Let it finish moving before the next lift.',
+      depth:'Keep the line close to vertical for better depth control. If fishing near bottom, lift clear of it and watch the line for an unexpected stop during the fall.'
+    },
+    pull: {
+      presentation:'Let the lure sink, then use a deliberate rod sweep followed by a pause. Recover loose line before the next sweep while leaving the tail free to work on the fall.',
+      depth:'Longer pauses let a sinking lure work deeper. Start above snags and check how quickly your particular model sinks before making a long cast.'
+    },
+    glide: {
+      presentation:'Use short rod taps or brief turns of the reel, recovering slack between movements. Leave enough freedom in the line for the bait to glide sideways rather than pulling it straight.',
+      depth:'Check whether the model floats, suspends or sinks. Pause length changes the depth of a sinking glide bait, so keep it clear of bottom and cover.'
+    },
+    surface: {
+      presentation:'Work the lure with short rod-tip movements and pauses, keeping enough slack for the intended surface action. Let it settle after splashdown before starting the retrieve.',
+      depth:'Keep the lure on the surface. Use controlled rod movements rather than pulling the nose under, and clear any weeds that stop its action.'
+    },
+    surfaceSteady: {
+      presentation:'Retrieve at a consistent pace that keeps the tail or wings working and the body upright. Watch the lure beside you to find a speed that produces a clean surface action.',
+      depth:'Run the lure across the surface beside openings or along cover edges. Remove any vegetation caught in the moving parts before the next cast.'
+    },
+    float: {
+      presentation:'Set the stop or float position for the depth you want to test, then let the bait settle beneath it. Manage loose line so you can respond without repeatedly dragging the float.',
+      depth:'Start with the bait clear of weeds and bottom snags. Moving the stop up the line fishes deeper; moving it toward the hook fishes shallower.'
+    },
+    bait: {
+      presentation:'Place the bait at the intended depth and keep enough contact to notice a bite. Check it after a missed bite or retrieve so it stays attached with the hook point clear.',
+      depth:'For a bottom rig, use enough weight to hold position without burying the bait in debris. For a float presentation, set the float to suspend it above cover.'
+    },
+    drift: {
+      presentation:'Let the rig move naturally with the current or a controlled boat drift. Follow the line with the rod and recover slack so you can notice a change in the drift.',
+      depth:'Adjust the weight for occasional bottom contact rather than a continuous drag. Excess weight can pin the rig in place or pull it into snags.'
+    },
+    troll: {
+      presentation:'Check the lure or rig beside the boat at your intended speed. Once it works cleanly, let it out under control and keep the speed consistent with the recommended presentation.',
+      depth:'Use the model’s dive information or a controlled weight system to set depth. Line length alone does not tell you the lure’s actual running depth.'
+    },
+    carp: {
+      presentation:'Place the rig so the hookbait sits freely beside the feed or feeder. Take up loose line without moving the rig and check that the bait remains attached after casting.',
+      depth:'For a bottom presentation, keep the hookbait clear of deep weed or soft debris. Balance buoyant bait so it sits at the intended height rather than lifting the whole rig.'
+    },
+    suspended: {
+      presentation:'Cast the balanced rig carefully so the hooklink can straighten without tangling. Take up slack without dragging the weight from its position.',
+      depth:'The hooklink length and hookbait buoyancy set the suspension height. Test the rig close to you before casting it out to a chosen depth.'
+    },
+    general: {
+      presentation:'Use the presentation described above and check the lure close to you before casting. Keep the rig free of tangles so the bait or lure can move as intended.',
+      depth:'Choose a working depth for the model and control it with the appropriate sink time, weight or float setting.'
+    }
+  };
+  const lurePresentation = {
+    chatterbait:'Begin reeling until you feel the blade pulsing, then maintain the retrieve described above. Hold the rod steadily and thread the trailer straight so the lure tracks cleanly; clear the blade if it catches weeds.',
+    spinnerbait:'Reel at a controlled pace with the blades turning throughout the retrieve. Follow the edge of cover and let the skirt and trailer move freely rather than repeatedly jerking the lure.',
+    swimbait:'Let the bait settle, then swim it at a pace that keeps the tail moving. Use the reel for most of the movement and keep the body tracking upright instead of rolling.',
+    arig:'Cast smoothly and keep the arms and swimbaits separated. Retrieve as a small school, checking each bait for straight rigging or tangled hooks before the next cast.',
+    frog:'Use short twitches across openings and pauses beside cover. Let the frog settle after splashdown; when a fish strikes, wait until you feel its weight before setting the hook.',
+    popper:'Use a short rod twitch to make the cupped face spit or pop, then let the lure rest. Recover slack before the next twitch without pulling it continuously across the surface.',
+    spook:'Use short, repeated rod-tip twitches with slack between them so the lure walks from side to side. Recover line with the reel while keeping that alternating action.',
+    senko:'Let the worm fall on slack line and watch for the line to jump or move sideways. Lift it gently after the fall, then give it time to sink again without constant shaking.',
+    fluke:'Use short twitches to dart the bait, followed by a pause that lets it glide and fall. Recover slack between twitches so the bait moves freely instead of being pulled straight.',
+    tube:'Let the tube settle, then drag or hop it with small rod movements. Pause to let the tentacles relax, keeping enough line contact to notice a bite during the fall.',
+    footballjig:'Drag the jig with slow rod sweeps across suitable hard bottom, pausing between movements. Recover slack with the reel and avoid wedging the head into cracks.',
+    flippingjig:'Pitch to a specific opening in cover and let the jig fall under control. Pause, make a few small lifts, then retrieve and place the next cast accurately.',
+    jiggingrap:'Use a lift, fall and pause sequence. Let the lure swim out and settle without holding the line tight through its circular glide, then recover slack before the next lift.',
+    methodfeeder:'Mould the feed around the feeder and keep the hookbait beside it. Cast smoothly to keep the bait together, then tighten the line gently without shifting the feeder.',
+    packbait:'Mould the pack bait securely around the chosen feeder or weight with the hookbait close by. Place the rig carefully and allow the feed to break down around the hookbait.',
+    zigrig:'Check the hookbait floats and the hooklink straightens before casting. After the rig settles, tighten the line gently while allowing the hookbait to remain suspended.',
+    powerbait:'Check whether your bait floats or sinks before casting. For a floating-dough bottom rig, let the sinker settle and take up slack without moving it; leave the bait free to lift on its leader.',
+    cutbait:'Present the bait on the bottom rig and leave the hook gap clear. With a circle hook, tighten steadily into a bite rather than making a sharp strike.',
+    chickenliver:'Secure the soft bait so it stays attached during the cast while leaving the hook gap clear. Use a smooth cast and check the bait after each missed bite.',
+    stinkbait:'Load a suitable bait holder without clogging the hook point or gap. Place the rig under control and check that the bait has not washed away before recasting.',
+    bottombouncer:'Troll slowly enough to keep the bouncer near bottom and the harness working. Maintain controlled line tension and lift through snags rather than dragging the wire continuously.'
+  };
+
+  function fishingDetailsFor(lure, fish) {
     const profile = profileFor(lure, fish);
     const technique = (lure.technique || '').toLowerCase();
-    const cool = conditions.temp === 'cool';
-    const advice = [];
-    switch (profile.kind) {
-      case 'float':
-        advice.push(tip('depth','Adjust the bait depth','Move the bobber stop a little and test the same area again. Keep the bait clear of weeds and snags.','This tests another part of the water column while keeping the same bait.'));
-        break;
-      case 'bait': case 'carp':
-        advice.push(tip('setup','Check the bait and hook','Check that the bait is still attached and the hook point and gap are clear. Refresh or rebalance the bait if needed.','An intact bait and unobstructed hook keep the rig fishing as intended.'));
-        break;
-      case 'suspended':
-        advice.push(tip('depth','Test another suspension depth','Change the hooklink length to suspend the bait a little higher or lower, then test that depth.','Fish may be using a different layer of water. The adjustment keeps your hookbait the same.'));
-        break;
-      case 'troll':
-        advice.push(tip('retrieve','Check the lure’s working speed','Watch the lure or rig beside the boat at a controlled speed. Adjust until it works cleanly without spinning or tangling.','The lure’s action matters more than choosing one speed for every model.'));
-        break;
-      case 'vertical':
-        advice.push(tip('retrieve','Shorten the lift','Try a smaller lift and a controlled fall. Keep enough contact to notice a bite without stopping the lure’s action.','This tests a less aggressive jigging action using the same lure.'));
-        break;
-      case 'surface':
-        advice.push(tip('retrieve','Change the pause','Try a longer pause between small twitches. For walking baits, keep a short walking sequence before the pause.','A different cadence tests how fish respond without changing the surface lure.'));
-        break;
-      case 'surfaceSteady':
-        advice.push(tip('retrieve','Find a clean surface action','Adjust the retrieve until the tail or wings work consistently. Keep the lure upright rather than pulling it under.','These lures need their moving parts working freely to produce their intended action.'));
-        break;
-      case 'jerk': case 'glide': case 'pull':
-        advice.push(tip('retrieve',cool?'Lengthen the pause':'Vary the pull and pause',cool?'With cool water selected, try a longer pause between shorter movements. Watch whether your model floats, suspends or sinks.':'Test a different pull-and-pause cadence. Watch whether your model floats, suspends or sinks during the pause.','Changing the cadence gives you another presentation with the lure you already have.'));
-        break;
-      case 'bottom': case 'finesse': case 'dropshot': case 'fall':
-        advice.push(tip('retrieve','Use less rod movement',profile.kind === 'fall'?'Let the bait fall on its own with just enough line control to notice a bite. Pause before working it again.':'Try smaller movements with a longer pause. Keep enough contact to feel the rig without constantly moving it.','This tests a subtler presentation before changing your lure or rig.'));
-        break;
-      case 'drift':
-        advice.push(tip('depth','Fine-tune the drift','Adjust the weight so the rig drifts under control without continually hanging on bottom.','Weight changes how naturally the bait travels and how well you can keep contact.'));
-        break;
-      case 'crank':
-        advice.push(tip('depth','Check the running depth','Check your model’s diving range. Try another casting angle or retrieve speed to work the intended water without constantly snagging.','A diving lure’s working depth depends on its design, line and how it is fished.'));
-        break;
-      default:
-        advice.push(tip('retrieve',cool && !/slow/.test(technique)?'Try a slower retrieve':'Vary the retrieve speed',cool && !/slow/.test(technique)?'With cool water selected, test a slower pass. Keep enough speed for the blade to turn or the spoon to wobble.':'Test a slightly different pace while keeping the lure working cleanly. For blades and spoons, avoid a speed that stops the action or makes the lure spin.','Changing pace tests another presentation without needing another lure.'));
+    let kind = profile.kind;
+    if (kind !== 'float' && /drift/.test(technique)) kind = 'drift';
+    const method = methods[kind] || methods.general;
+    const baseKind = profiles[profile.key]?.kind;
+    let presentation = kind === baseKind ? lurePresentation[profile.key] || method.presentation : method.presentation;
+    let depth = method.depth;
+    if (kind === 'sinking' && /steady|straight|swim/.test(technique) && !/yo.yo|hop|rip|lift/.test(technique)) {
+      presentation = 'Let the lure settle to the chosen depth, then reel at the described pace while keeping it vibrating. Recover line steadily and clear the hooks if the action changes after contacting weeds.';
     }
-    if (['moving','spinner','spoon','sinking'].includes(profile.kind)) {
-      advice.push(tip('depth','Test a different depth','For a sinking lure, vary the sink time before retrieving. Start with small changes and avoid dragging through snags.','Sink time lets you test another layer of water using the same lure.'));
-    } else if (!['surface','surfaceSteady','troll','suspended'].includes(profile.kind)) {
-      advice.push(tip('position','Work another angle',profile.natural || ['carp','bait'].includes(profile.kind)?'Try a nearby position or recast beside a different piece of cover, where access and fishing are permitted.':'Make a few casts from another angle to the same feature, then try adjacent cover.','A different angle or position changes where the offering passes without requiring a different setup.'));
+    if (kind === 'bottom' && /drag|crawl/.test(technique) && !lurePresentation[profile.key]) {
+      presentation = 'Let the rig settle, then move it with a short, slow rod sweep. Recover slack, pause, and repeat while keeping enough contact to distinguish bottom from a bite.';
     }
-    if (!profile.natural && !['carp','troll','suspended'].includes(profile.kind) && conditions.clarity !== 'muddy') {
-      advice.push(tip('size','Try a smaller profile','If you have a smaller version, test it with suitable hooks and weight. Stay within your rod’s lure rating.','This changes the size of the offering while keeping a familiar lure type.'));
-    } else {
-      advice.push(tip('setup','Check the whole rig','Inspect the line, knots, leader and hook. Remove any weeds and make sure the rig is not tangled.','A fouled or tangled rig may not present the bait or lure the way you intend.'));
+    if (profile.key === 'chatterbait' && kind === baseKind) {
+      depth = /bottom|drag|crawl/.test(technique)
+        ? 'Allow the lure to sink before starting and use controlled rod movements to follow bottom without continually snagging. Keep enough speed for the blade to pulse.'
+        : 'Allow more sink time for a deeper pass or start reeling sooner to run above vegetation. Retrieve speed, head weight and the trailer affect how high it swims.';
     }
-    if (conditions.weather === 'windy' && ['bottom','finesse','dropshot','vertical'].includes(profile.kind)) {
-      advice.unshift(tip('depth','Keep contact in the wind','If wind bows the line, change your casting angle or position. For a weighted rig, use enough weight to regain control within your rod’s rating.','Better line control makes it easier to track the lure and notice a bite.'));
+    if (kind === 'troll' && profile.key === 'bottombouncer') {
+      presentation = lurePresentation.bottombouncer;
+      depth = 'Use enough weight to touch bottom at a controlled speed, keeping the line at a manageable angle. The leader and harness should trail freely behind the bouncer.';
     }
-    if (conditions.clarity === 'muddy' && ['chatterbait','spinnerbait','inlinespinner','bucktail','largebucktail'].includes(profile.key) && !['troll','float'].includes(profile.kind)) {
-      advice.unshift(tip('retrieve','Keep the blade working','In muddy water, try a steady pass close to suitable cover. Reel just fast enough to keep the blade working and check it for weeds.','The blade’s vibration can help fish locate the lure when visibility is limited.'));
-    }
-    return advice;
+    return {presentation, depth};
   }
-  return {profileFor, imageFor, adviceFor};
+  return {profileFor, imageFor, fishingDetailsFor};
 })();

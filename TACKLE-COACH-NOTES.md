@@ -1,55 +1,50 @@
-# Smart Tackle Box update
+# Selected lure details
 
-Selecting a lure enlarges its original image in place, with the starting size or
-weight alongside it. Rigging, technique and optional “Not getting bites?” coaching
-open below. Each lure has only one image. There is no separate image panel.
-One lure is expanded per waterbody card. Suggested colours remain visible above
-the lure options. Coaching cycles through one adjustment at a time. Other baits
-remain available as the next lure rows; there is no repeated alternative bait card.
+Selecting a lure enlarges its original image in place and reveals a single stack
+of detail boxes: Size & weight, Rigging, How to fish it, and Why this lure when
+a relevant explanation is available. Suggested colours remain above the options.
+There is one image per lure. The coach and adjustment controls have been removed.
 
-## Files
+## Updated app files
 
-- `lake-setups.js`: lure rendering and coaching controls.
-- `tackle-coach.js`: shared lure profiles and method-based coaching.
-- `tackle-coach.css`: responsive accordion and coaching styling for both themes.
-- `index.html`: loads the two new assets.
-- `sw.js`: cache version 121, with both new assets cached.
+- `lake-setups.js`: stacked detail boxes and conditional recommendation explanations.
+- `tackle-coach.js`: starting sizes, rigging and fuller lure/method instructions.
+- `tackle-coach.css`: stacked boxes, enlarged selected image, light and dark themes.
+- `sw.js`: cache version 123 to refresh these assets on existing installations.
 
-## Advice and scope
+The asset filenames are retained so `index.html` does not need another change.
+No images, species, recommendation rankings, colours or rules data were changed.
 
-FFO editorial guidance, not Ministry-approved advice. Sizes are broad starting
-options, not manufacturer specifications or requirements to purchase particular
-gear. Rig weight, lure model, target fish and conditions still matter. No lake
-depth, fish location, weather observation or result is inferred. Conditions are
-the user's selections; unspecified conditions stay unspecified.
+## Content
 
-The original recommendation selection, colours, species, rules data and filtering
-are unchanged. A selected condition combination supplies the existing technique
-and lure explanation. Shared coaching adds adjustments for the lure's fishing
-method, with conditional suggestions for cool water, muddy water and wind where
-applicable. The lure list continues to use the original filtered recommendations.
-The existing rules module remains responsible for season and bait filtering;
-this update does not expand its interpretation of gear restrictions.
+The original selected technique is retained as the lead instruction. Additional
+presentation and depth-control guidance covers the existing lure families and
+fishing methods, including casting, vertical jigging, trolling, floats and bait
+rigs. No measured depth, fish position, weather observation or outcome is inferred.
 
-## Reference material consulted
+Complete condition selections use the existing lure explanation. Partial selections
+show one only when it is consistent across matching occurrences of that lure and
+technique. No conditions are invented for a general recommendation.
 
-These explain general tackle and presentation principles. Editorial starting-size
-ranges are not claims that a source mandates one setup for a lake or condition.
+Sizes remain broad editorial starting options rather than required purchases or
+manufacturer specifications. This is FFO guidance, not Ministry-approved advice.
+The existing rules module continues to handle season and bait filtering.
+
+## References consulted
 
 - Ontario, Learn to Fish — Digital: https://www.ontario.ca/page/learn-fish-digital
 - Indiana DNR, Fishing Equipment Tips: https://www.in.gov/dnr/fish-and-wildlife/education-programs/learn-to-fish/fishing-tips-and-videos/fishing-tips-equipment/
 - Freshwater Fisheries Society of BC, How to Fish for Trout with Lures: https://www.gofishbc.com/learn/fishing-tips/lake-fishing/how-to-fish-for-trout-with-lures
 - Rapala Canada, Best Rapala Baits for Beginner Anglers: https://www.rapala.ca/ca_en/blog/best-rapala-baits-for-beginner-anglers
+- Rapala Canada, When and How to Fish the Best Rapala Jigging Baits: https://www.rapala.ca/ca_en/blog/when-and-how-to-fish-the-best-rapala-jigging-baits
+- Z-Man, Top 9+ ChatterBait Commandments: https://zmanfishing.com/blogs/news/top-9-chatterbait%C2%AE-commandments
+- Z-Man, Unlocking the Full Potential of a ChatterBait: https://zmanfishing.com/blogs/news/fishing-a-chatterbait%C2%AE-differently
 
-## Validation
+## Verification
 
-All 900 species/condition selections (including unspecified conditions) retain the
-original recommendation output. Checked all 1,280 recommendation entries across
-20 species, resolving 171 lure names to 58 existing images and complete profiles.
-
-DOM integration checks passed for opening, closing and exclusive accordions,
-a single original image enlarging and shrinking, no repeated bait cards or image
-panel, coaching cycling, condition updates, refresh, species switching, close
-focus, actual closed-season suppression, bait-filtered options and escaped content.
-Browser visual verification was unavailable in
-this environment, so no claim of browser or device layout validation is made.
+All 900 species/condition selections retain the original recommendation output.
+All 1,280 recommendation entries across 20 species resolve to existing images,
+size/rigging profiles and fuller fishing instructions. DOM checks passed for the
+stacked boxes, conditional explanations, coach removal, image reuse/enlargement,
+exclusive selection, conditions, refresh, focus, season/bait filters and escaping.
+Browser visual verification was unavailable; no device layout test is claimed.

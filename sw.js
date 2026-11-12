@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v121-tackle-card';
+const CACHE_NAME = 'fish-finder-v123-lure-details';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

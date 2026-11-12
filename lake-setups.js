@@ -51,33 +51,38 @@ window.LakeSetups = (() => {
       position:'<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z"/><circle cx="12" cy="10" r="2"/>',
       setup:'<path d="M4 6h16M4 18h16M8 3v6m8 6v6"/>',
       chevron:'<path d="m7 10 5 5 5-5"/>',
-      next:'<path d="M4 12h16m-6-6 6 6-6 6"/>'
+      reason:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>'
     };
     return `<svg class="setup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.setup}</svg>`;
   }
 
-  function coachTipHTML(lure, state, step = 0) {
-    const tips = TackleCoach.adviceFor(lure, state.fish, state.conditions);
-    const current = tips[step % tips.length];
-    return `<div class="setup-coach-tip" aria-live="polite" aria-atomic="true"><span class="setup-coach-icon">${icon(current.icon)}</span><div><h6>${escape(current.title)}</h6><p>${escape(current.text)}</p><p class="setup-coach-why"><strong>Why:</strong> ${escape(current.why)}</p></div></div>`;
+  function explanationFor(lure, state, rec) {
+    if (rec.specific) return lure.reason || '';
+    if (!Object.values(state.conditions).some(Boolean)) return '';
+    // Unspecified conditions must not introduce a contradictory explanation.
+    const examples = matchingRecommendations(state.fish, state.conditions)
+      .flatMap(item => item.lures || [])
+      .filter(item => item.name === lure.name && item.technique === lure.technique);
+    const reasons = new Set(examples.map(item => item.reason || ''));
+    return examples.length && reasons.size === 1 ? [...reasons][0] : '';
+  }
+
+  function detailBox(title, symbol, body, extraClass = '') {
+    return `<section class="setup-detail-box ${extraClass}"><h6>${icon(symbol)}<span>${escape(title)}</span></h6>${body}</section>`;
   }
 
   function lureHTML(lure, index, state, rec) {
     const profile = TackleCoach.profileFor(lure, state.fish);
+    const fishing = TackleCoach.fishingDetailsFor(lure, state.fish);
     const image = profile.image;
-    const conditionLabels = Object.entries(state.conditions).filter(([,v]) => v).map(([k,v]) => groups[k][v]?.name).filter(Boolean);
+    const explanation = explanationFor(lure, state, rec);
     return `<details class="setup-lure" data-setup-lure="${index}" data-lure-name="${escape(lure.name)}" name="setup-lures-${escape(state.id)}"${state.openLure === lure.name ? ' open' : ''}>
-      <summary><span class="setup-lure-thumb">${image ? `<img src="${escape(image)}" alt="" loading="lazy">` : icon('setup')}</span><span class="setup-lure-summary"><span class="setup-lure-name">${escape(lure.name)}</span><span class="setup-lure-technique">${escape(lure.technique)}</span><span class="setup-lure-size"><span>${icon('size')} Starting size</span><span>${escape(profile.size)}</span></span></span>${icon('chevron')}</summary>
-      <div class="setup-lure-body">
-        <dl class="setup-lure-facts"><div><dt>${icon('setup')} Rigging</dt><dd>${escape(profile.rigging)}</dd></div></dl>
-        <h6>How to fish it</h6><p>${escape(lure.technique)}</p>
-        ${lure.reason && rec.specific ? `<p class="setup-lure-reason"><strong>Why this option:</strong> ${escape(lure.reason)}</p>` : ''}
-        <p class="setup-size-note">Use a similar size you own; stay within your rod’s lure rating.</p>
-        <details class="setup-coach"><summary>${icon('retrieve')}<span>Not getting bites?</span>${icon('chevron')}</summary>
-          ${conditionLabels.length ? `<div class="setup-coach-context">${conditionLabels.map(label=>`<span>${escape(label)}</span>`).join('')}</div>` : ''}
-          <div class="setup-coach-result">${coachTipHTML(lure, state)}</div>
-          <div class="setup-coach-controls"><span>Try one adjustment at a time.</span><button type="button" data-setup-coach-next="${index}" data-coach-step="0">Another adjustment ${icon('next')}</button></div>
-        </details>
+      <summary><span class="setup-lure-thumb">${image ? `<img src="${escape(image)}" alt="" loading="lazy">` : icon('setup')}</span><span class="setup-lure-summary"><span class="setup-lure-name">${escape(lure.name)}</span><span class="setup-lure-technique">${escape(lure.technique)}</span></span>${icon('chevron')}</summary>
+      <div class="setup-lure-body setup-detail-stack">
+        ${detailBox('Size & weight','size',`<p>${escape(profile.size)}</p>`)}
+        ${detailBox('Rigging','setup',`<p>${escape(profile.rigging)}</p>`)}
+        ${detailBox('How to fish it','retrieve',`${lure.technique ? `<p class="setup-detail-lead">${escape(lure.technique)}</p>` : ''}<p>${escape(fishing.presentation)}</p><p>${escape(fishing.depth)}</p>`,'setup-detail-method')}
+        ${explanation ? detailBox('Why this lure','reason',`<p>${escape(explanation)}</p>`,'setup-detail-reason') : ''}
       </div></details>`;
   }
 
@@ -86,7 +91,6 @@ window.LakeSetups = (() => {
     const rule = window.FishingRules?.forSpecies(state.lake, state.fish) || {html:'',blocked:false,allow:()=>true};
     if(rule.blocked) return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)}</h4><button type="button" data-setup-action="close" aria-label="Close recommendations">✕</button></div>${rule.html}</div>`;
     const rec = getRecommendation(state.fish, state.conditions, rule.allow);
-    state.recommendation = rec;
     if (!rec.lures.some(lure => lure.name === state.openLure)) state.openLure = null;
     const selected = Object.entries(state.conditions).filter(([,value]) => value).map(([key,value]) => groups[key][value].name);
     const intro = rec.specific ? `For ${selected.join(' · ').toLowerCase()}.` :
@@ -125,15 +129,6 @@ window.LakeSetups = (() => {
     if (!root) return;
     const state = contexts.get(root.dataset.setupContext);
     if (!state) return;
-    const coachNext = event.target.closest('[data-setup-coach-next]');
-    if (coachNext) {
-      const lure = state.recommendation?.lures[Number(coachNext.dataset.setupCoachNext)];
-      if (!lure) return;
-      const step = Number(coachNext.dataset.coachStep || 0) + 1;
-      coachNext.dataset.coachStep = String(step);
-      coachNext.closest('.setup-coach').querySelector('.setup-coach-result').innerHTML = coachTipHTML(lure, state, step);
-      return;
-    }
     const fishButton = event.target.closest('[data-setup-fish]');
     if (fishButton && state.allowed[fishButton.dataset.setupFish]) {
       if (state.fish !== fishButton.dataset.setupFish) state.openLure = null;
