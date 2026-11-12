@@ -52,10 +52,11 @@ window.FishingRules = (() => {
   function notices(l){return records(l.sanctuaryIds);}
   function confirmedSanctuaries(l){return records(l.wholeSanctuaryIds);}
   function closedWater(l){return confirmedSanctuaries(l).some(r=>current(r)&&seasonStatus(r.sanctuary)===false);}
-  function zoneLink(zone, label = 'Fisheries zone ' + zone) {
+  function zoneLink(zone, label = 'Fisheries zone ' + zone, pill = false) {
     if(!/^(?:[1-9]|1[0-9]|20)$/.test(zone)) return '';
-    return `<a href="https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-${zone}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
+    return `<a${pill ? ' class="rule-zone-pill" aria-label="Official fishing regulations for fisheries management zone '+zone+'"' : ''} href="https://www.ontario.ca/document/ontario-fishing-regulations-summary/fisheries-management-zone-${zone}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
   }
+  function zonePills(lake) {return zones(lake).map(zone=>zoneLink(zone,'FMZ '+zone,true)).join(' ');}
   const licencePhrase=/\b(?:sport\s*fishing|sportfishing|sport|conservation(?:\s+fishing)?)\s+licen[cs]e\b/i;
   function residencyText(type) {
     const match=String(type||'').match(licencePhrase);
@@ -119,7 +120,7 @@ window.FishingRules = (() => {
     return {licence, label, wording:label === 'Daily catch' ? value.replace(/^(\d+) in one day$/i, '$1') : value};
   }
 
-  function limitGroups(rules, local = false) {
+  function limitGroups(rules, local = false, showZone = false) {
     const groups = new Map();
     for (const rule of rules) {
       const entry = limitEntry(rule);
@@ -132,6 +133,9 @@ window.FishingRules = (() => {
       const {rule} = entries[0];
       const variedSeasons = new Set(entries.map(({rule:r}) => r.season)).size > 1;
       const commonSize = entries.every(({rule:r}) => r.sizeLimit === rule.sizeLimit) ? rule.sizeLimit : '';
+      const labels = [...new Set(entries.map(entry=>entry.label))];
+      const sharedLabel = labels.length===1 ? labels[0] : '';
+      const groupName = String(rule.species || 'All species').replace(/^Largemouth and Smallmouth Bass or any combination$/i,'Largemouth + Smallmouth combined');
       const columns = [['S','Sport licence'], ['C','Conservation licence']].map(([code,name]) => {
         const rows = new Set();
         const licenceEntries = entries.filter(item => item.licence === code)
@@ -140,26 +144,26 @@ window.FishingRules = (() => {
           const {rule:r, label, wording} = entry;
           const season = r.season && !/^refer to\b/i.test(r.season) && (local || variedSeasons) ? r.season : '';
           const conditions = [season, !commonSize && r.sizeLimit, r.general].filter(Boolean);
-          rows.add(`<div><strong>${label}:</strong> ${esc(wording)}${conditions.map(text => `<small>${esc(text)}</small>`).join('')}</div>`);
+          rows.add(`<div>${sharedLabel ? '' : '<strong>'+esc(label)+':</strong> '}<span class="catch-limit-value">${esc(wording)}</span>${conditions.map(text => `<small>${esc(text)}</small>`).join('')}</div>`);
         }
         return `<div><dt>${name}</dt><dd>${Array.from(rows).join('') || 'See official rules'}</dd></div>`;
       }).join('');
-      return `<div class="catch-limit-group"><p><strong>${esc(rule.species || 'All species')}</strong> · FMZ ${esc(rule.zone)}${rule.kind === 'nonCanadian' ? ' · Non-Canadian residents' : ''}</p>
+      return `<div class="catch-limit-group"><p class="catch-limit-caption"><span>${esc(sharedLabel || 'Limits')}</span><span aria-hidden="true">·</span><strong>${esc(groupName)}</strong>${showZone ? ' · FMZ '+esc(rule.zone) : ''}${rule.kind === 'nonCanadian' ? ' · Non-Canadian residents' : ''}</p>
         ${local && rule.description ? '<p class="rule-caution">Applies only to the listed area. <button type="button" class="rules-text-button" data-rules-open="local">View exact area</button></p>' : ''}
         <dl class="catch-limit-licences">${columns}</dl>${commonSize ? `<p>${esc(commonSize)}</p>` : ''}</div>`;
     }).join('');
   }
 
   function catchLimits(zoneRules, local, blocked, uncertain) {
-    const title = '<h5>Catch and possession limits</h5>';
-    if (blocked) return `<section class="catch-limits">${title}<p>Fishing is closed for this selection on the chosen date.</p></section>`;
-    const standard = limitGroups(zoneRules);
-    const exceptions = limitGroups(local, true);
+    if (blocked) return '<section class="catch-limits" aria-label="Fishing limits"><p>Fishing is closed for this selection on the chosen date.</p></section>';
+    const showZone = new Set([...zoneRules,...local].map(rule=>String(rule.zone||'')).filter(Boolean)).size>1;
+    const standard = limitGroups(zoneRules,false,showZone);
+    const exceptions = limitGroups(local,true,showZone);
     const localChanges = local.some(r => r.limit && !/^refer to\b/i.test(r.limit) || r.sizeLimit || r.general || r.tag || r.season && !/^refer to\b/i.test(r.season));
     const reference = localChanges || uncertain;
     const baseline = standard ? (reference ? `<details><summary>Zone-wide limits for reference</summary>${standard}</details>` : standard)
       : '<p>No zone-wide limit is listed for this species in the app’s data. Check the official regulations.</p>';
-    return `<section class="catch-limits">${title}
+    return `<section class="catch-limits" aria-label="Fishing limits">
       ${localChanges ? '<p><strong>Lake-specific provincial rules may change these limits.</strong> Confirm the exact area and dates in the official regulations.</p>' : ''}
       ${!localChanges && uncertain ? '<p>Check the exact zone and listed closures for where you plan to fish.</p>' : ''}
       ${exceptions}${baseline}
@@ -253,7 +257,7 @@ window.FishingRules = (() => {
   });
   function forSpecies(l,fish) {
     if(!l)return {html:'',blocked:false,allow:()=>true};
-    if(!data||!current(data))return {html:`<div class="species-rules"><p>${esc(dateLabel())}</p><strong>Check the official rules for this date.</strong><p>Catch limits, seasons and bait restrictions are unavailable for this date in the app’s data.</p><p>${officialGuide}</p></div>`,blocked:false,allow:()=>true};
+    if(!data||!current(data))return {html:`<div class="species-rules"><div class="rule-status-line">${zonePills(l)}<span class="rule-date">${esc(dateLabel())}</span></div><strong>Check the official rules for this date.</strong><p>Catch limits, seasons and bait restrictions are unavailable for this date in the app’s data.</p><p>${officialGuide}</p></div>`,blocked:false,allow:()=>true};
     const zr=zones(l).flatMap(z=>records(data.zoneSeasons[z])).filter(r=>current(r)&&matches(r.species,fish));
     const local=records(l.regulationIds).filter(r=>current(r)&&matches(r.species,fish));
     const scoped=local.filter(r=>r.kind!=='nonCanadian'&&r.season&&!/refer to/i.test(r.season));
@@ -278,7 +282,7 @@ window.FishingRules = (() => {
       if(anyBaitRestriction&&(natural.test(s)||naturalWorm(lure.name)||fishbait.test(s)||/powerbait|scented bait|pack bait|stink bait|with bait|boilie/i.test(s)))return false;
       if(liveBan&&/\blive\b/i.test(s))return false;
       return true;};
-    return {blocked,allow,html:`<div class="species-rules"><div class="rule-status-line"><strong class="rule-status ${blocked?'closed':open?'open':'check'}">${title}</strong><p>${esc(dateLabel())}${zones(l).map(zone => zoneLink(zone)).filter(Boolean).map((link, i) => (i ? ' / ' : ' · ') + link).join('')}</p></div>${catchLimits(zr,local,blocked,uncertain||scopeNeedsReview)}${Array.from(new Set(local.filter(r=>r.sizeLimit&&!limitEntry(r)).map(r=>r.sizeLimit))).map(size=>`<p class="rule-caution"><strong>Size:</strong> ${esc(size)} · <button type="button" class="rules-text-button" data-rules-open="local">Check area</button></p>`).join('')}${blocked?'<p>Bait and tackle suggestions are hidden for this date. Choose another date to plan a trip.</p>':''}${anyBaitRestriction?'<p class="rule-caution">Bait restrictions are listed. Natural bait suggestions are hidden conservatively, including where the rule covers only a section, season, species or method. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button> before choosing your tackle.</p>':liveBan?'<p>Live baitfish suggestions are hidden for this mapped location. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button>.</p>':''}${baitRows.some(r=>r.gear)?'<p class="rule-caution">Gear restrictions are listed. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button>.</p>':''}</div>`};
+    return {blocked,allow,html:`<div class="species-rules"><div class="rule-status-line"><strong class="rule-status ${blocked?'closed':open?'open':'check'}">${title}</strong>${zonePills(l)}<span class="rule-date">${esc(dateLabel())}</span></div>${catchLimits(zr,local,blocked,uncertain||scopeNeedsReview)}${Array.from(new Set(local.filter(r=>r.sizeLimit&&!limitEntry(r)).map(r=>r.sizeLimit))).map(size=>`<p class="rule-caution"><strong>Size:</strong> ${esc(size)} · <button type="button" class="rules-text-button" data-rules-open="local">Check area</button></p>`).join('')}${blocked?'<p>Bait and tackle suggestions are hidden for this date. Choose another date to plan a trip.</p>':''}${anyBaitRestriction?'<p class="rule-caution">Bait restrictions are listed. Natural bait suggestions are hidden conservatively, including where the rule covers only a section, season, species or method. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button> before choosing your tackle.</p>':liveBan?'<p>Live baitfish suggestions are hidden for this mapped location. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button>.</p>':''}${baitRows.some(r=>r.gear)?'<p class="rule-caution">Gear restrictions are listed. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button>.</p>':''}</div>`};
   }
   function render(id,l,includeRecords=false){contexts.set(id,l);if(includeRecords)recordContexts.add(id);else recordContexts.delete(id);return `<section class="lake-section lake-rules" data-rules-context="${esc(id)}"><div class="rules-body">${overview(l,includeRecords)}</div></section>`;}
   function setDate(value) {
@@ -297,5 +301,5 @@ window.FishingRules = (() => {
     setDate(event.target.value);
   });
   function badge(l) { return data && current(data) && closedWater(l) ? '<span class="lake-closure-badge">No fishing · '+esc(date)+'</span>' : ''; }
-  return {init:d=>{data=d;},badge,render,forSpecies,seasonStatus,whole,matches,closedWater};
+  return {init:d=>{data=d;},badge,render,forSpecies,seasonStatus,whole,matches,closedWater,zonePills};
 })();

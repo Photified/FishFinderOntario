@@ -1711,20 +1711,12 @@
           
           const stockYears = isSelected && lake.isStocked ? stockingByYear(lake.stockingInfo) : [];
           const [latestStock, ...earlierStock] = stockYears;
-          const statsArray = [];
-          if (lake.fmz) statsArray.push(`<span class="stat-item">📍 Zone ${LakeSetups.escape(lake.fmz)}</span>`);
-          if (['approximate','needs_review'].includes(lake.coordinateStatus)) statsArray.push('<span class="stat-item" title="Exact waterbody location not verified">Approx. location</span>');
-          if (lake.waterbodyType) {
-            let type = LakeSetups.escape(lake.waterbodyType);
-            statsArray.push(`<span class="stat-item">${type === 'River' ? '💧' : '🌊'} ${type}</span>`);
-          }
-          if (depthStr) statsArray.push(`<span class="stat-item">⚓ ${depthStr} deep</span>`);
-          if (areaStr) statsArray.push(`<span class="stat-item">🗺️ ${areaStr}</span>`);
+          const physicalFacts = [];
+          if (depthStr) physicalFacts.push(['Maximum depth',depthStr]);
+          if (areaStr) physicalFacts.push(['Surface area',areaStr]);
           const clarityMetres = Number(lake.secchiDepth);
-          if (Number.isFinite(clarityMetres) && clarityMetres > 0) statsArray.push(`<span class="stat-item">Water clarity: ${clarityMetres.toFixed(1).replace(/\.0$/, '')} m</span>`);
-          
-          if (latestStock && latestStock[0] !== 'Year unknown') statsArray.push(`<span class="stat-item">Last stocked: ${latestStock[0]}</span>`);
-          const statsTextHTML = statsArray.length ? `<div class="lake-stats-grid">${statsArray.join('')}</div>` : '';
+          if (Number.isFinite(clarityMetres) && clarityMetres > 0) physicalFacts.push(['Recorded water clarity',`${clarityMetres.toFixed(1).replace(/\.0$/, '')} m`]);
+          const factsHTML = `${['approximate','needs_review'].includes(lake.coordinateStatus) ? '<p class="lake-location-note">Approximate location · Exact waterbody location not verified.</p>' : ''}${physicalFacts.length ? `<dl class="lake-physical-facts">${physicalFacts.map(([label,value])=>`<div><dt>${LakeSetups.escape(label)}</dt><dd>${LakeSetups.escape(value)}</dd></div>`).join('')}</dl>` : ''}`;
           const stockingContentHTML = latestStock
             ? stockingYearHTML(latestStock) + (earlierStock.length ? `<details class="lake-disclosure"><summary>View earlier years</summary>${earlierStock.map(stockingYearHTML).join('')}</details>` : '')
             : '';
@@ -1754,9 +1746,9 @@
                 </div>
               </div>
               <div class="lake-info-expanded" ${isSelected ? '' : 'hidden'}>
-                ${isSelected ? `${statsTextHTML}
+                ${isSelected ? `
                 <section class="lake-section lake-fish-section">
-                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake, preferredFish, {overviewHTML: FishingRules.render(uniqueId, lake, true), recordedFishHTML, stockingHTML: stockingContentHTML})}
+                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake, preferredFish, {factsHTML, overviewHTML: FishingRules.render(uniqueId, lake, true), recordedFishHTML, stockingHTML: stockingContentHTML})}
                 </section>
                 <section class="lake-section">
                   ${customNote ? `<div class="lake-note-display">${LakeSetups.escape(customNote)}</div>` : ''}

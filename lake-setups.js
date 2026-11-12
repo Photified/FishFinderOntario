@@ -191,16 +191,16 @@ window.LakeSetups = (() => {
   }
 
   function speciesInformation(state) {
-    if (!state.fish || !state.allowed[state.fish]) return '';
+    if (!state.fish || !state.allowed[state.fish]) return window.FishingRules?.zonePills(state.lake) || '';
     const html = window.FishingRules?.forSpecies(state.lake, state.fish).html || '';
-    return html ? `<h5 class="lake-season-heading">${escape(state.allowed[state.fish].name)} season and limits</h5>${html}` : '';
+    return html ? `<h5 class="lake-season-heading">${escape(state.allowed[state.fish].name)}</h5>${html}` : '';
   }
 
   function lakeInformation(state) {
     if (!state.lake && !state.records) return '';
     const records = state.records || {};
     return `<section class="setup-lake-information" aria-label="Lake information"><h4>Lake information</h4>
-      ${records.overviewHTML || ''}<div class="setup-lake-season">${speciesInformation(state)}</div></section>`;
+      ${records.factsHTML || ''}${records.overviewHTML || ''}<div class="setup-lake-season">${speciesInformation(state)}</div></section>`;
   }
 
   let recordsDialog = null, recordsTrigger = null;

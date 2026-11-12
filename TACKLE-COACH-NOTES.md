@@ -44,7 +44,7 @@ an illustrative retrieve path rather than a simulation of each moving component.
 - `tackle-animation.js`: reusable SVG scenes and unchanged PNG sprites for all 18 techniques.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
 - `fishing-rules.js`: renders the four lake-information buttons and retains them on date changes.
-- `sw.js`: cache version 132 to refresh these assets on existing installations.
+- `sw.js`: cache version 133 to refresh these assets on existing installations.
 - Original lure PNGs remain in `images/lures/`, with no pixel edits or new image assets.
 
 Existing script and stylesheet filenames are retained.
@@ -73,14 +73,40 @@ playback. Image loading failure leaves the written instructions available; Play
 retries the original image. Titles, three step labels and cues remain HTML text.
 Surface zig-zag and glide demonstrations are labelled as top views.
 
-For the visual-conditions update, replace `lake-setups.js`, `tackle-coach.css`
-and `sw.js` in the app's root folder. No new files or images are needed.
+For the compact-limits update, replace `index.html`, `lake-setups.js`,
+`fishing-rules.js`, `tackle-coach.css` and `sw.js` in the app's root folder.
+No new files or images are needed.
 If PNG animation support is not already installed, use the complete app archive,
 including its `index.html` and `tackle-animation.js`.
 There are no image uploads for this update. The old `images/techniques/` GIF and
 poster folder is no longer referenced and may be removed from an existing install.
 The existing `images/lures/` folder is unchanged. The service worker includes the
 new script and continues caching original lure images on demand.
+
+## Compact lake rules summary
+
+The old top pill row is removed. Maximum depth, surface area and recorded water
+clarity remain as labelled facts inside Lake information when available, with the
+same metric/imperial conversions. Approximate-location notices are retained there.
+Waterbody type is no longer repeated beside a named river/lake, and stocking years
+remain in the Stocking records modal.
+
+The selected-species heading contains the fish name only. Season status, a
+clickable FMZ pill and the chosen date share a wrapping row. The pill opens the
+same official zone page as the previous link, in a new tab. With no species
+selected, the zone pill remains available. No zone is invented when none is known.
+
+The limit type appears once above the Sport and Conservation licence boxes when
+all rows in the group share that type. Licence boxes then show the values and
+any attached conditions, rather than repeating the limit type. Mixed daily catch
+and possession limits retain their separate labels. The source regulation group
+is retained, with the combined bass label shortened to Largemouth + Smallmouth
+combined. Shared size limits, area cautions, residency, seasonal conditions and
+aggregate trout/salmon notes remain intact.
+
+Single-zone cards omit the repeated zone suffix from limit group captions. Where
+records cover different zones, the group captions keep their zone labels to avoid
+mixing the scope of different limits. The full rules modal is unchanged.
 
 ## Visual conditions picker
 
@@ -180,3 +206,10 @@ controls, focus return, per-lake isolation, the general advice view, unchanged
 choice preservation and short-screen action visibility. The original 900
 recommendation selections, 1,280 source entries, tip deduplication and PNG playback
 remain covered by the existing checks.
+
+Compact-rule comparison checks cover 2,460 dated species/zone/local-rule scenarios
+and 1,976 displayed limit groups. Licence values, conditions, common size notes,
+aggregate notes, warnings, blocked states and bait filters match the prior version.
+Browser checks cover Bluegill/Sunfish, combined bass scope, single/multiple zones,
+clickable/keyboard-accessible pills, dates, modal access, unknown selections,
+physical facts and unit conversions at 320, 390, 768, 1280 and 1440 px in both themes.

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v132-visual-conditions';
+const CACHE_NAME = 'fish-finder-v133-compact-lake-limits';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

@@ -2,15 +2,31 @@
 .lake-setups {--tc-line:#2b3e50;--tc-panel:#192a39;--tc-ink:#e2e8f0;--tc-muted:#b6c6d6;--tc-accent:#7dd3fc;--tc-focus:#38bdf8;}
 [data-theme="light"] .lake-setups {--tc-line:#dce3eb;--tc-panel:#f5f7fa;--tc-ink:#252a30;--tc-muted:#53616e;--tc-accent:#315f9b;--tc-focus:#3977bc;}
 .setup-lake-information {padding:14px 16px;background:var(--tc-panel);border:1px solid var(--tc-line);border-radius:8px;color:var(--tc-ink);}
+.lake-info-expanded>.lake-fish-section {border-top:0;padding-top:0;}
 .setup-lake-information>h4,.setup-tackle-toolbar>.setup-tackle-title {margin:0 0 12px;font-size:.95rem;font-weight:700;color:var(--tc-ink);}
 .setup-lake-information .lake-section.lake-rules {padding:0;border:0;}
 .setup-lake-information .rules-actions {margin-bottom:0;}
 .setup-lake-season:not(:empty) {margin-top:14px;padding-top:14px;border-top:1px solid var(--tc-line);}
 .setup-lake-information .lake-season-heading {margin:0 0 10px;font-size:.85rem;font-weight:600;line-height:1.5;}
 .setup-lake-information .species-rules {padding:0;margin:0;border:0;background:transparent;}
+.setup-lake-information .lake-physical-facts {display:flex;flex-wrap:wrap;gap:10px 24px;margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid var(--tc-line);font-size:.78rem;}
+.lake-physical-facts>div {min-width:0;}
+.lake-physical-facts dt {margin:0 0 3px;color:var(--tc-muted);}
+.lake-physical-facts dd {margin:0;font-weight:600;color:var(--tc-ink);}
+.lake-location-note {margin:0 0 12px;font-size:.8rem;line-height:1.5;color:var(--tc-muted);}
 .species-rules .rule-status-line {display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-bottom:10px;min-width:0;}
 .species-rules .rule-status-line>p {margin:0;min-width:0;}
 .species-rules .rule-status-line>.rule-status {max-width:100%;box-sizing:border-box;}
+.setup-lake-information a.rule-zone-pill {display:inline-flex;align-items:center;box-sizing:border-box;min-height:32px;padding:5px 10px;border:1px solid var(--rules-button-border);border-radius:999px;background:var(--rules-button-bg);color:var(--rules-button-text);font-size:.78rem;font-weight:600;line-height:1.4;text-decoration:none;white-space:nowrap;}
+.setup-lake-information a.rule-zone-pill:hover {text-decoration:underline;}
+.setup-lake-information a.rule-zone-pill:focus-visible {outline:3px solid var(--tc-focus);outline-offset:2px;}
+.species-rules .rule-date {font-size:.8rem;line-height:1.5;color:var(--tc-muted);}
+.species-rules .catch-limits {padding:0;border-top:0;}
+.species-rules .catch-limit-caption {display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 6px;margin:10px 0 8px;line-height:1.5;}
+.species-rules .catch-limit-licences {margin:0;}
+.catch-limit-value {font-size:1rem;font-weight:600;line-height:1.45;}
+.catch-limit-group+.catch-limit-group {margin-top:14px;}
+@media(pointer:coarse) {.setup-lake-information a.rule-zone-pill {min-height:44px;}}
 .lake-records-dialog {box-sizing:border-box;width:min(700px,calc(100% - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);padding:0;background:var(--card-bg);color:var(--text-main);overflow:auto;}
 .lake-records-dialog .rules-dialog-header {top:0;}
 .lake-records-dialog .rules-dialog-meta {margin-bottom:0;overflow-wrap:anywhere;}
