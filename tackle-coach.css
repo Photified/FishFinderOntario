@@ -10,14 +10,18 @@
 .setup-lure[open]>summary>.setup-icon {transform:rotate(180deg);}
 .setup-lure-thumb {display:grid;place-items:center;min-width:0;}
 .setup-lure .setup-lure-thumb img {width:56px;height:56px;object-fit:contain;border-radius:6px;background:#fff;}
+.setup-content .setup-lure[open]>summary {grid-template-columns:180px minmax(0,1fr) 18px;padding:16px 0;}
+.setup-lure[open] .setup-lure-thumb img {width:180px;height:128px;}
 .setup-lure-summary {display:block;min-width:0;}
 .setup-lure-name {display:block;font-size:.88rem;font-weight:600;line-height:1.4;}
 .setup-lure-technique {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:.78rem;line-height:1.5;color:var(--tc-muted);margin-top:3px;}
-.setup-lure-hint {display:block;color:var(--tc-accent);font-size:.73rem;margin-top:4px;}
-.setup-lure:not([open]) .setup-when-open,.setup-lure[open] .setup-when-closed {display:none;}
+.setup-lure-size {display:none;margin-top:10px;font-size:.8rem;line-height:1.5;color:var(--tc-muted);}
+.setup-lure-size>span {display:block;}
+.setup-lure-size>span:first-child {display:flex;gap:6px;align-items:center;font-size:.73rem;color:var(--tc-accent);margin-bottom:3px;}
+.setup-lure-size .setup-icon {width:15px;height:15px;}
+.setup-lure[open] .setup-lure-size {display:block;}
+.setup-lure[open] .setup-lure-technique {display:none;}
 .setup-lure-body {padding:0 0 14px;}
-.setup-lure-art {display:grid;place-items:center;background:#fff;border:1px solid var(--tc-line);border-radius:8px;margin:0 0 14px;}
-.setup-lure .setup-lure-art img {width:100%;max-width:270px;height:180px;object-fit:contain;border-radius:0;padding:10px;box-sizing:border-box;}
 .setup-lure-body h6 {margin:12px 0 5px;font-size:.82rem;font-weight:600;color:var(--tc-ink);}
 .setup-lure-facts {margin:0;display:grid;gap:12px;}
 .setup-lure-facts>div {min-width:0;}
@@ -39,13 +43,9 @@
 .setup-coach-controls {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;margin:6px 0 10px;}
 .setup-coach-controls>span {font-size:.7rem;color:var(--tc-muted);}
 .setup-coach-controls button {display:inline-flex;align-items:center;gap:5px;padding:7px 0;min-height:44px;border:0;background:transparent;color:var(--tc-accent);font:inherit;font-size:.76rem;font-weight:600;cursor:pointer;}
-.setup-coach-alternative {border-top:1px solid var(--tc-line);padding:10px 0 12px;}
-.setup-coach-alternative>span {display:block;color:var(--tc-muted);font-size:.73rem;margin-bottom:6px;}
-.setup-coach-alternative button {display:flex;align-items:center;gap:8px;width:100%;text-align:left;min-height:48px;padding:7px 10px;border:1px solid var(--tc-line);border-radius:6px;background:var(--card-bg);color:var(--tc-accent);font:inherit;font-size:.8rem;cursor:pointer;}
-.setup-coach-alternative button>span {flex:1;min-width:0;overflow-wrap:anywhere;}
-.setup-lure .setup-coach-alternative img {width:40px;height:36px;object-fit:contain;border-radius:4px;background:#fff;}
 .setup-content .setup-color-section {padding:12px 0 14px;border-top:0;}
 .setup-lure summary:focus-visible,.setup-coach button:focus-visible {outline:3px solid var(--tc-focus);outline-offset:3px;}
-@media(min-width:700px) {.setup-lure-facts {grid-template-columns:minmax(0,1fr) minmax(0,2fr);}}
+@media(max-width:520px) {.setup-content .setup-lure[open]>summary {grid-template-columns:112px minmax(0,1fr) 16px;gap:10px;}.setup-lure[open] .setup-lure-thumb img {width:112px;height:100px;}}
 @media(max-width:380px) {.setup-content .setup-lure>summary {grid-template-columns:46px minmax(0,1fr) 16px;gap:8px;}.setup-lure .setup-lure-thumb img {width:46px;height:50px;}.setup-content .setup-coach {padding:0 9px;}.setup-coach-controls {align-items:flex-start;flex-direction:column;}}
+@media(max-width:380px) {.setup-content .setup-lure[open]>summary {grid-template-columns:96px minmax(0,1fr) 16px;gap:8px;}.setup-lure[open] .setup-lure-thumb img {width:96px;height:92px;}}
 @media(prefers-reduced-motion:reduce) {.setup-lure>summary>.setup-icon {transition:none;}}

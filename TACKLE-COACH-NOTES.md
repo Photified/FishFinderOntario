@@ -1,18 +1,19 @@
 # Smart Tackle Box update
 
-Each lure opens an accordion with a larger existing image, starting size or weight,
-rigging guidance, the current technique, and an optional “Not getting bites?” coach.
+Selecting a lure enlarges its original image in place, with the starting size or
+weight alongside it. Rigging, technique and optional “Not getting bites?” coaching
+open below. Each lure has only one image. There is no separate image panel.
 One lure is expanded per waterbody card. Suggested colours remain visible above
-the lure options. Coaching cycles through one adjustment at a time and links to
-another currently displayed, permitted recommendation when available.
+the lure options. Coaching cycles through one adjustment at a time. Other baits
+remain available as the next lure rows; there is no repeated alternative bait card.
 
 ## Files
 
-- `lake-setups.js`: accordion rendering, coaching controls and alternative navigation.
+- `lake-setups.js`: lure rendering and coaching controls.
 - `tackle-coach.js`: shared lure profiles and method-based coaching.
 - `tackle-coach.css`: responsive accordion and coaching styling for both themes.
 - `index.html`: loads the two new assets.
-- `sw.js`: cache version 120, with both new assets cached.
+- `sw.js`: cache version 121, with both new assets cached.
 
 ## Advice and scope
 
@@ -26,7 +27,7 @@ The original recommendation selection, colours, species, rules data and filterin
 are unchanged. A selected condition combination supplies the existing technique
 and lure explanation. Shared coaching adds adjustments for the lure's fishing
 method, with conditional suggestions for cool water, muddy water and wind where
-applicable. Alternatives only link to the already-filtered recommendations.
+applicable. The lure list continues to use the original filtered recommendations.
 The existing rules module remains responsible for season and bait filtering;
 this update does not expand its interpretation of gear restrictions.
 
@@ -47,7 +48,8 @@ original recommendation output. Checked all 1,280 recommendation entries across
 20 species, resolving 171 lure names to 58 existing images and complete profiles.
 
 DOM integration checks passed for opening, closing and exclusive accordions,
-coaching cycling, alternative selection and focus, condition updates, refresh,
-species switching, close focus, actual closed-season suppression, bait-filtered
-alternatives and escaped content. Browser visual verification was unavailable in
+a single original image enlarging and shrinking, no repeated bait cards or image
+panel, coaching cycling, condition updates, refresh, species switching, close
+focus, actual closed-season suppression, bait-filtered options and escaped content.
+Browser visual verification was unavailable in
 this environment, so no claim of browser or device layout validation is made.

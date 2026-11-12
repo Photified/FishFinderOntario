@@ -65,23 +65,18 @@ window.LakeSetups = (() => {
   function lureHTML(lure, index, state, rec) {
     const profile = TackleCoach.profileFor(lure, state.fish);
     const image = profile.image;
-    const alternativeIndex = rec.lures.findIndex((other, i) => i !== index && TackleCoach.imageFor(other) !== image);
-    const alternative = rec.lures[alternativeIndex];
-    const alternativeImage = alternative && TackleCoach.imageFor(alternative);
     const conditionLabels = Object.entries(state.conditions).filter(([,v]) => v).map(([k,v]) => groups[k][v]?.name).filter(Boolean);
     return `<details class="setup-lure" data-setup-lure="${index}" data-lure-name="${escape(lure.name)}" name="setup-lures-${escape(state.id)}"${state.openLure === lure.name ? ' open' : ''}>
-      <summary><span class="setup-lure-thumb">${image ? `<img src="${escape(image)}" alt="" loading="lazy">` : icon('setup')}</span><span class="setup-lure-summary"><span class="setup-lure-name">${escape(lure.name)}</span><span class="setup-lure-technique">${escape(lure.technique)}</span><span class="setup-lure-hint"><span class="setup-when-closed">View setup & coaching</span><span class="setup-when-open">Hide details</span></span></span>${icon('chevron')}</summary>
+      <summary><span class="setup-lure-thumb">${image ? `<img src="${escape(image)}" alt="" loading="lazy">` : icon('setup')}</span><span class="setup-lure-summary"><span class="setup-lure-name">${escape(lure.name)}</span><span class="setup-lure-technique">${escape(lure.technique)}</span><span class="setup-lure-size"><span>${icon('size')} Starting size</span><span>${escape(profile.size)}</span></span></span>${icon('chevron')}</summary>
       <div class="setup-lure-body">
-        ${image ? `<div class="setup-lure-art"><img src="${escape(image)}" alt="${escape(lure.name)}" loading="lazy"></div>` : ''}
-        <dl class="setup-lure-facts"><div><dt>${icon('size')} Starting size</dt><dd>${escape(profile.size)}</dd></div><div><dt>${icon('setup')} Rigging</dt><dd>${escape(profile.rigging)}</dd></div></dl>
+        <dl class="setup-lure-facts"><div><dt>${icon('setup')} Rigging</dt><dd>${escape(profile.rigging)}</dd></div></dl>
         <h6>How to fish it</h6><p>${escape(lure.technique)}</p>
         ${lure.reason && rec.specific ? `<p class="setup-lure-reason"><strong>Why this option:</strong> ${escape(lure.reason)}</p>` : ''}
-        <p class="setup-size-note">A starting point, not an exact requirement. Use a similar option you own and match the weight to your rod and conditions.</p>
+        <p class="setup-size-note">Use a similar size you own; stay within your rod’s lure rating.</p>
         <details class="setup-coach"><summary>${icon('retrieve')}<span>Not getting bites?</span>${icon('chevron')}</summary>
           ${conditionLabels.length ? `<div class="setup-coach-context">${conditionLabels.map(label=>`<span>${escape(label)}</span>`).join('')}</div>` : ''}
           <div class="setup-coach-result">${coachTipHTML(lure, state)}</div>
           <div class="setup-coach-controls"><span>Try one adjustment at a time.</span><button type="button" data-setup-coach-next="${index}" data-coach-step="0">Another adjustment ${icon('next')}</button></div>
-          ${alternative ? `<div class="setup-coach-alternative"><span>Have another option?</span><button type="button" data-setup-alternative="${alternativeIndex}">${alternativeImage ? `<img src="${escape(alternativeImage)}" alt="" loading="lazy">` : ''}<span>${escape(alternative.name)}</span>${icon('next')}</button></div>` : ''}
         </details>
       </div></details>`;
   }
@@ -137,18 +132,6 @@ window.LakeSetups = (() => {
       const step = Number(coachNext.dataset.coachStep || 0) + 1;
       coachNext.dataset.coachStep = String(step);
       coachNext.closest('.setup-coach').querySelector('.setup-coach-result').innerHTML = coachTipHTML(lure, state, step);
-      return;
-    }
-    const alternative = event.target.closest('[data-setup-alternative]');
-    if (alternative) {
-      const target = root.querySelector(`[data-setup-lure="${Number(alternative.dataset.setupAlternative)}"]`);
-      if (target) {
-        root.querySelectorAll('.setup-lure[open]').forEach(item => {if (item !== target) item.open = false;});
-        target.open = true;
-        state.openLure = target.dataset.lureName;
-        target.querySelector('summary').focus({preventScroll:true});
-        target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'nearest'});
-      }
       return;
     }
     const fishButton = event.target.closest('[data-setup-fish]');
