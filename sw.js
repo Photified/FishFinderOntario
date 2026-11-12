@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v126-lake-information';
+const CACHE_NAME = 'fish-finder-v128-compact-season-row';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

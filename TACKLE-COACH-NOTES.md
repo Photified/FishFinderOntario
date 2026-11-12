@@ -7,6 +7,9 @@ cards under 520 px. Stocking history retains its latest-year and earlier-years
 content. These records remain accessible when no species is selected, the season
 is closed, or no tackle recommendations are available.
 
+The duplicate View full rules link has been removed; the two rules buttons at
+the top of Lake information remain available.
+
 Smart Tackle Box is a separate section below, with its species selector, colours,
 lures and setup details. Species selection and fishing-date changes update the
 season and limits above without resetting the records disclosures. Closing tackle
@@ -31,7 +34,8 @@ now includes a representative technique animation, labelled as an example.
 - `lake-setups.js`: grouped lake information, lure layout and visible-card playback.
 - `tackle-coach.js`: lure instructions, technique mapping and timed step labels.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
-- `sw.js`: cache version 126 to refresh these assets on existing installations.
+- `fishing-rules.js`: removes the duplicate View full rules link.
+- `sw.js`: cache version 128 to refresh these assets on existing installations.
 - `images/techniques/gifs/`: 18 animated technique diagrams.
 - `images/techniques/posters/`: 18 matching static technique diagrams.
 
@@ -51,6 +55,10 @@ The existing service worker caches requested image assets for repeat visits.
 Titles, three step labels and the current cue are HTML text so they remain readable
 in narrow cards. Representative diagrams explain technique, not the exact action
 of every lure model. Existing written instructions remain alongside or below.
+
+The compact-season-row update requires replacing `fishing-rules.js`,
+`tackle-coach.css` and `sw.js`. The status, date and zone link share a row when
+space allows and wrap on narrow cards.
 
 For the lake-information grouping update, replace `index.html`, `lake-setups.js`,
 `tackle-coach.css` and `sw.js` together in the app's root folder. If technique
