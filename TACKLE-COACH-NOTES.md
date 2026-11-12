@@ -1,18 +1,19 @@
 # Lake information and selected lure details
 
 The lake-information box groups the lake rules buttons, selected-species season
-and limits, recorded fish, and stocking history. Recorded fish and stocking
-records are collapsed disclosures, side by side in wide cards and stacked in
-cards under 520 px. Stocking history retains its latest-year and earlier-years
-content. These records remain accessible when no species is selected, the season
-is closed, or no tackle recommendations are available.
+and limits, recorded fish, and stocking history. The top contains four matching
+blue buttons in a two-by-two grid: Lake-specific rules, Fishing rules, Recorded
+fish and Stocking records. Record buttons open native modal dialogs without
+expanding the card. Stocking history shows all recorded years in the modal.
+These records remain accessible when no species is selected, the season is
+closed, or no tackle recommendations are available.
 
 The duplicate View full rules link has been removed; the two rules buttons at
 the top of Lake information remain available.
 
 Smart Tackle Box is a separate section below, with its species selector, colours,
 lures and setup details. Species selection and fishing-date changes update the
-season and limits above without resetting the records disclosures. Closing tackle
+season and limits above while keeping all four buttons available. Closing tackle
 recommendations clears the selected-species summary while keeping lake records.
 
 Selecting a lure reveals a large original image on the left, with Size & weight,
@@ -31,11 +32,11 @@ now includes a representative technique animation, labelled as an example.
 ## Updated app files
 
 - `index.html`: passes the existing lake rules and records into the grouped layout.
-- `lake-setups.js`: grouped lake information, lure layout and visible-card playback.
+- `lake-setups.js`: grouped lake information, record modals and lure playback.
 - `tackle-coach.js`: lure instructions, technique mapping and timed step labels.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
-- `fishing-rules.js`: removes the duplicate View full rules link.
-- `sw.js`: cache version 128 to refresh these assets on existing installations.
+- `fishing-rules.js`: renders the four lake-information buttons and retains them on date changes.
+- `sw.js`: cache version 129 to refresh these assets on existing installations.
 - `images/techniques/gifs/`: 18 animated technique diagrams.
 - `images/techniques/posters/`: 18 matching static technique diagrams.
 
@@ -56,12 +57,10 @@ Titles, three step labels and the current cue are HTML text so they remain reada
 in narrow cards. Representative diagrams explain technique, not the exact action
 of every lure model. Existing written instructions remain alongside or below.
 
-The compact-season-row update requires replacing `fishing-rules.js`,
-`tackle-coach.css` and `sw.js`. The status, date and zone link share a row when
-space allows and wrap on narrow cards.
-
-For the lake-information grouping update, replace `index.html`, `lake-setups.js`,
-`tackle-coach.css` and `sw.js` together in the app's root folder. If technique
+For the record-modal update, replace `index.html`, `lake-setups.js`,
+`fishing-rules.js`, `tackle-coach.css` and `sw.js` together in the app's root
+folder. The status, date and zone link share a row when space allows and wrap
+on narrow cards. If technique
 animations have not yet been installed, also replace `tackle-coach.js` and add
 `techniques/` inside the existing `images/` folder, retaining both `gifs/` and
 `posters/` subfolders and their names.
@@ -115,7 +114,9 @@ fallback/retry and no horizontal overflow at all ten configurations above.
 
 Lake-grouping browser checks passed in light and dark themes at 320, 390, 1280
 and 1440 px. Checks use the app's actual lake-card renderer and rule data, covering
-record placement, side-by-side/stacked disclosures, retained open state, earlier
-stocking years, species switching/closing, the rules dialog, season/date refresh,
-unavailable records and no available advisor species. Recommendation checks still
+the four-button grid, native record modals, stable card position, complete stocking
+history, species switching/closing, the rules dialog, season/date refresh,
+unavailable records and no available advisor species. Modal checks include close
+buttons, Escape, keyboard focus, focus return, scrollable long histories, correct
+records after changing lakes and no horizontal overflow. Recommendation checks still
 match all 900 original species/condition selections and all 1,280 lure entries.

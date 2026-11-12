@@ -1755,7 +1755,7 @@
               <div class="lake-info-expanded" ${isSelected ? '' : 'hidden'}>
                 ${isSelected ? `${statsTextHTML}
                 <section class="lake-section lake-fish-section">
-                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake, preferredFish, {overviewHTML: FishingRules.render(uniqueId, lake), recordedFishHTML, stockingHTML: stockingContentHTML})}
+                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake, preferredFish, {overviewHTML: FishingRules.render(uniqueId, lake, true), recordedFishHTML, stockingHTML: stockingContentHTML})}
                 </section>
                 <section class="lake-section">
                   ${customNote ? `<div class="lake-note-display">${LakeSetups.escape(customNote)}</div>` : ''}

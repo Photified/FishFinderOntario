@@ -168,11 +168,13 @@ window.FishingRules = (() => {
   }
 
   const ruleButtons = '<button type="button" data-rules-open="local">Lake-specific rules</button><button type="button" data-rules-open="fishing">Fishing rules</button>';
-  function overview(l) {
+  const recordContexts = new Set();
+  const recordButtons = '<button type="button" data-lake-records="fish" aria-haspopup="dialog" aria-controls="lakeRecordsDialog">Recorded fish</button><button type="button" data-lake-records="stocking" aria-haspopup="dialog" aria-controls="lakeRecordsDialog">Stocking records</button>';
+  function overview(l, includeRecords = false) {
     const available=data&&current(data), sanct=notices(l), bmz=l.bmz||[];
     const warning=!available?'Rules need checking':closedWater(l)?'No fishing on this date':sanct.length?'Sanctuary notices to check':'';
     return `${warning?`<p><strong class="rule-status ${available&&closedWater(l)?'closed':'check'}">${warning}</strong></p>`:''}
-      <div class="rules-actions" role="group" aria-label="Waterbody rules">${ruleButtons.replaceAll('data-rules-open', 'aria-haspopup="dialog" data-rules-open')}</div>
+      <div class="rules-actions" role="group" aria-label="Waterbody information">${ruleButtons.replaceAll('data-rules-open', 'aria-haspopup="dialog" data-rules-open')}${includeRecords ? recordButtons : ''}</div>
       ${!available?'<p class="rule-caution">'+(data?'Included rules cover 2026. Check the current official guide for this date.':'Rules could not be loaded. Check the official guide before fishing.')+'</p>':''}
       ${bmz.some(s=>/no use/i.test(s))?'<p class="rule-caution">No use or possession of live baitfish at the mapped point. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button>.</p>':''}`;
   }
@@ -278,12 +280,12 @@ window.FishingRules = (() => {
       return true;};
     return {blocked,allow,html:`<div class="species-rules"><div class="rule-status-line"><strong class="rule-status ${blocked?'closed':open?'open':'check'}">${title}</strong><p>${esc(dateLabel())}${zones(l).map(zone => zoneLink(zone)).filter(Boolean).map((link, i) => (i ? ' / ' : ' · ') + link).join('')}</p></div>${catchLimits(zr,local,blocked,uncertain||scopeNeedsReview)}${Array.from(new Set(local.filter(r=>r.sizeLimit&&!limitEntry(r)).map(r=>r.sizeLimit))).map(size=>`<p class="rule-caution"><strong>Size:</strong> ${esc(size)} · <button type="button" class="rules-text-button" data-rules-open="local">Check area</button></p>`).join('')}${blocked?'<p>Bait and tackle suggestions are hidden for this date. Choose another date to plan a trip.</p>':''}${anyBaitRestriction?'<p class="rule-caution">Bait restrictions are listed. Natural bait suggestions are hidden conservatively, including where the rule covers only a section, season, species or method. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button> before choosing your tackle.</p>':liveBan?'<p>Live baitfish suggestions are hidden for this mapped location. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button>.</p>':''}${baitRows.some(r=>r.gear)?'<p class="rule-caution">Gear restrictions are listed. <button type="button" class="rules-text-button" data-rules-open="bait">View restriction</button>.</p>':''}</div>`};
   }
-  function render(id,l){contexts.set(id,l);return `<section class="lake-section lake-rules" data-rules-context="${esc(id)}"><div class="rules-body">${overview(l)}</div></section>`;}
+  function render(id,l,includeRecords=false){contexts.set(id,l);if(includeRecords)recordContexts.add(id);else recordContexts.delete(id);return `<section class="lake-section lake-rules" data-rules-context="${esc(id)}"><div class="rules-body">${overview(l,includeRecords)}</div></section>`;}
   function setDate(value) {
     date=value;
     document.querySelectorAll('[data-rules-context]').forEach(root=>{
       const lake=contexts.get(root.dataset.rulesContext);
-      root.querySelector('.rules-body').innerHTML=overview(lake);
+      root.querySelector('.rules-body').innerHTML=overview(lake,recordContexts.has(root.dataset.rulesContext));
       const flag=root.closest('.lake-card')?.querySelector('.fishing-badge');
       if(flag)flag.innerHTML=badge(lake);
     });

@@ -224,11 +224,44 @@ window.LakeSetups = (() => {
     if (!state.lake && !state.records) return '';
     const records = state.records || {};
     return `<section class="setup-lake-information" aria-label="Lake information"><h4>Lake information</h4>
-      ${records.overviewHTML || ''}<div class="setup-lake-season">${speciesInformation(state)}</div>
-      ${records.recordedFishHTML || records.stockingHTML ? `<div class="lake-records">
-        <details class="lake-disclosure lake-record-disclosure"><summary>View recorded fish</summary>${records.recordedFishHTML || '<p class="record-note">Species records unavailable.</p>'}</details>
-        <details class="lake-disclosure lake-record-disclosure"><summary>Stocking records</summary>${records.stockingHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'}</details>
-      </div>` : ''}</section>`;
+      ${records.overviewHTML || ''}<div class="setup-lake-season">${speciesInformation(state)}</div></section>`;
+  }
+
+  let recordsDialog = null, recordsTrigger = null;
+  function openRecordDialog(state, trigger) {
+    if (!recordsDialog) {
+      recordsDialog = document.createElement('dialog');
+      recordsDialog.id = 'lakeRecordsDialog';
+      recordsDialog.className = 'simple-dialog lake-records-dialog';
+      recordsDialog.setAttribute('aria-labelledby', 'lakeRecordsTitle');
+      recordsDialog.setAttribute('aria-describedby', 'lakeRecordsLake');
+      recordsDialog.innerHTML = '<div class="rules-dialog-header"><div class="dialog-heading"><h2 id="lakeRecordsTitle"></h2><button type="button" data-records-close aria-label="Close records">✕</button></div><p id="lakeRecordsLake" class="rules-dialog-meta"></p></div><div class="lake-records-content"></div>';
+      recordsDialog.addEventListener('click', event => {if (event.target.closest('[data-records-close]')) recordsDialog.close();});
+      recordsDialog.addEventListener('keydown', event => {
+        if (event.key !== 'Tab') return;
+        const controls = [...recordsDialog.querySelectorAll('button,a[href],input,select,textarea,[tabindex]')].filter(node => !node.disabled && node.tabIndex >= 0 && node.getClientRects().length);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (first && ((!event.shiftKey && document.activeElement === last) || (event.shiftKey && document.activeElement === first))) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        }
+      });
+      recordsDialog.addEventListener('close', () => {if (recordsTrigger?.isConnected) recordsTrigger.focus({preventScroll:true});});
+      document.body.append(recordsDialog);
+    }
+    const stocking = trigger.dataset.lakeRecords === 'stocking';
+    recordsDialog.querySelector('#lakeRecordsTitle').textContent = stocking ? 'Stocking records' : 'Recorded fish';
+    recordsDialog.querySelector('#lakeRecordsLake').textContent = state.lake?.name || 'Waterbody records';
+    const body = recordsDialog.querySelector('.lake-records-content');
+    body.innerHTML = stocking
+      ? state.records?.stockingHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'
+      : state.records?.recordedFishHTML || '<p class="record-note">Species records unavailable.</p>';
+    // The modal has room for the complete history, so earlier years need no disclosure.
+    body.querySelectorAll('.lake-disclosure').forEach(details => details.replaceWith(...[...details.children].filter(child => child.tagName !== 'SUMMARY')));
+    recordsTrigger = trigger;
+    recordsDialog.showModal();
+    recordsDialog.scrollTop = 0;
+    recordsDialog.querySelector('[data-records-close]').focus({preventScroll:true});
   }
 
   function update(root, state) {
@@ -275,6 +308,8 @@ window.LakeSetups = (() => {
     if (!root) return;
     const state = contexts.get(root.dataset.setupContext);
     if (!state) return;
+    const recordButton = event.target.closest('[data-lake-records]');
+    if (recordButton) {openRecordDialog(state, recordButton);return;}
     const demoButton = event.target.closest('[data-demo-toggle]');
     if (demoButton) {
       const figure = demoButton.closest('.setup-animation');

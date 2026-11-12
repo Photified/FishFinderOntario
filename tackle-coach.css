@@ -11,17 +11,20 @@
 .species-rules .rule-status-line {display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-bottom:10px;min-width:0;}
 .species-rules .rule-status-line>p {margin:0;min-width:0;}
 .species-rules .rule-status-line>.rule-status {max-width:100%;box-sizing:border-box;}
-.lake-records {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--tc-line);align-items:start;}
-.lake-record-disclosure {min-width:0;padding:0 12px;background:var(--card-bg);border:1px solid var(--tc-line);border-radius:6px;}
-.lake-record-disclosure>summary {padding:10px 0;box-sizing:border-box;line-height:1.5;overflow-wrap:anywhere;}
-.lake-record-disclosure[open] {padding-bottom:10px;}
-.lake-record-disclosure .record-note {line-height:1.5;overflow-wrap:anywhere;}
-.lake-record-disclosure .recorded-fish-list {columns:1;}
-.lake-record-disclosure>summary:focus-visible {outline:2px solid var(--tc-focus);outline-offset:3px;border-radius:3px;}
+.lake-records-dialog {box-sizing:border-box;width:min(700px,calc(100% - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);padding:0;background:var(--card-bg);color:var(--text-main);overflow:auto;}
+.lake-records-dialog .rules-dialog-header {top:0;}
+.lake-records-dialog .rules-dialog-meta {margin-bottom:0;overflow-wrap:anywhere;}
+.lake-records-content {padding:16px 20px 20px;font-size:.85rem;line-height:1.6;overflow-wrap:anywhere;}
+.lake-records-content .recorded-fish-list {columns:1;margin:0;padding-left:20px;}
+.lake-records-content .stocking-year {max-width:none;margin:0;padding:12px 0;border-bottom:1px solid var(--popup-border);}
+.lake-records-content .stocking-year:first-child {padding-top:0;}
+.lake-records-content .stocking-year:last-child {padding-bottom:0;border-bottom:0;}
+.lake-records-content .stocking-year h5 {margin:0 0 6px;font-size:.85rem;}
+.lake-records-content .stocking-rows li {gap:16px;}
+@media(max-width:480px) {.lake-records-content {padding:12px;}}
 .setup-tackle-section {margin-top:20px;}
 .lake-setups {container-type:inline-size;container-name:lake-setup;}
-@container lake-setup (max-width:520px) {.lake-records {grid-template-columns:minmax(0,1fr);}.setup-lake-information {padding:12px;}}
-@supports not (container-type:inline-size) {.lake-records {grid-template-columns:minmax(0,1fr);}}
+@container lake-setup (max-width:520px) {.setup-lake-information {padding:12px;}}
 .setup-lure-options {container-type:inline-size;container-name:lure-options;}
 .setup-icon {width:18px;height:18px;flex:none;vertical-align:middle;}
 .setup-content .setup-lure {display:block;padding:0;margin:0;border-top:1px solid var(--tc-line);scroll-margin-top:90px;}
