@@ -44,9 +44,9 @@ an illustrative retrieve path rather than a simulation of each moving component.
 - `tackle-animation.js`: reusable SVG scenes and unchanged PNG sprites for all 18 techniques.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
 - `fishing-rules.js`: renders the four lake-information buttons and retains them on date changes.
-- `logbook.js`: dated entries, editable setup snapshots, conditions and lake/species filters.
+- `logbook.js`: quick notes, one-tap setup saves, removable context and lake navigation.
 - `logbook.css`: responsive logbook cards and editor in both themes.
-- `sw.js`: cache version 134 to refresh these assets on existing installations.
+- `sw.js`: cache version 135 to refresh these assets on existing installations.
 - Original lure PNGs remain in `images/lures/`, with no pixel edits or new image assets.
 
 Existing script and stylesheet filenames are retained.
@@ -75,8 +75,8 @@ playback. Image loading failure leaves the written instructions available; Play
 retries the original image. Titles, three step labels and cues remain HTML text.
 Surface zig-zag and glide demonstrations are labelled as top views.
 
-For the fishing-logbook update, replace `index.html`, `lake-setups.js` and `sw.js`
-in the app's root folder. Add `logbook.js` and `logbook.css` beside `index.html`.
+For the quick-notes update, replace `index.html`, `lake-setups.js`, `sw.js`,
+`logbook.js` and `logbook.css` in the app's root folder beside `index.html`.
 No new images are needed.
 If PNG animation support is not already installed, use the complete app archive,
 including its `index.html` and `tackle-animation.js`.
@@ -85,27 +85,31 @@ poster folder is no longer referenced and may be removed from an existing instal
 The existing `images/lures/` folder is unchanged. The service worker includes the
 new script and continues caching original lure images on demand.
 
-## Fishing logbook
+## Quick notes
 
-The lake card now has Add entry, a preview of the latest dated entry and View all
-entries. Log this setup in an expanded lure prefills its setup and the selected
-conditions. Review these fields to record the equipment actually used; suggested
-colours are placeholders until the angler enters their actual colour. Dates default
-to the local day and can be changed. Time, target species, setup, conditions, notes
-and result are optional. Entries can be edited and deleted individually.
+Notes is always available beside Saved spots in the main toolbar. Tap a saved
+note to open its lake card, centre the map and reveal that specific note, even
+when a newer note exists. Current search, fish and Saved spots filters are cleared
+when navigating to a note. If its lake is unavailable, the note remains saved.
 
-Saved spots includes a Fishing logbook button for viewing all entries, newest trip
-date first, with lake and target-species filters. Long lists load 20 entries at a
-time. Each lake's own view starts with that lake selected. Entries remain available
-when a lake is removed from Saved spots.
+Add note opens one text box and Save. The lake and local date are automatic.
+Selected fish, lure and known conditions appear as visual chips. Every chip has
+an accessible one-tap remove button. Removing the lure also removes its attached
+size, rod, line and retrieve snapshot. There are no setup fields, date/time pickers,
+result questions or required context selections.
 
-The new logbook starts empty. Previous single notes are not imported or shown.
-Favourites are preserved. Entries use the independent `ffoLogbookV1` browser store;
-there is no account or cloud synchronisation. Clearing saved app data also removes
-logbook entries. Setup and condition strings are saved as snapshots, so later
-recommendation changes do not change previous entries. Cancel and Escape discard
-an unsaved draft. Storage errors retain the draft and do not overwrite the existing
-store. Opening the logbook pauses lure playback.
+Save this setup in an expanded lure saves immediately, without a form. The
+confirmation offers Add note to optionally add text or remove unwanted context.
+Saved setups are labelled as saved, rather than asserting they were actually used.
+Notes have Edit and Delete actions; Delete works immediately and offers Undo.
+Long lists load 20 at a time and offer a lake filter when multiple lakes are present.
+
+The independent `ffoLogbookV1` browser store is retained. Previous single legacy
+notes are not imported. New notes and saved setups are independent of favourites.
+Setup and condition strings are snapshots; later recommendation changes do not
+change previous notes. Cancel via Close or Escape discards an unsaved draft.
+Storage errors keep the text in the editor and preserve existing data. Clearing
+saved app data also removes notes. No accounts, cloud sync or new images are added.
 
 ## Compact lake rules summary
 
@@ -238,11 +242,10 @@ Browser checks cover Bluegill/Sunfish, combined bass scope, single/multiple zone
 clickable/keyboard-accessible pills, dates, modal access, unknown selections,
 physical facts and unit conversions at 320, 390, 768, 1280 and 1440 px in both themes.
 
-Logbook Chromium checks cover 320, 390, 1280 and 1440 px in light and dark themes:
-empty initial history despite old notes, setup prefilling, editable conditions,
-independent snapshots, multiple lakes, date ordering, lake/species filters,
-edit/cancel/delete, reload persistence, favourite removal, Escape and dialog bounds.
-Additional checks cover unavailable/full storage, unreadable stores and escaped
-note text. The existing PNG animation checks still pass at all five viewport sizes
-in both themes. These checks use the real lake renderer with map services stubbed;
-they do not represent physical-device or cross-browser testing.
+Quick-note Chromium checks cover desktop and mobile widths in both themes:
+one text box, one-tap setup saving, removable context, immutable snapshots,
+navigation to the correct lake and older note, filter reset, editing,
+one-tap delete/Undo, persistence, empty-note handling, safe text rendering,
+storage failures, pagination, keyboard focus and modal bounds. Tests use the
+real card renderer, selection function and note-navigation callback with map
+services stubbed. These are browser checks, not physical-device testing.

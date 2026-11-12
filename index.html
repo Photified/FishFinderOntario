@@ -644,10 +644,9 @@
     </div>
       </div>
       <div class="desktop-map-controls">
-<div class="map-toolbar">      <button id="locateMeBtn" class="locate-btn" type="button" aria-label="Use my location" title="Use my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>My location</span></button>      <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg><span>Saved spots</span></button><button id="openMapOptions" type="button"><span>Map layers</span><span id="mapLayerCount" hidden></span></button></div>
+<div class="map-toolbar">      <button id="locateMeBtn" class="locate-btn" type="button" aria-label="Use my location" title="Use my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>My location</span></button>      <button id="viewFavoritesBtn" type="button" class="fav-toggle-btn" aria-label="Saved spots only" aria-pressed="false" title="Show saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L2.9 9.6l6.3-.9Z"/></svg><span>Saved spots</span></button><button id="openNotesBtn" type="button" data-logbook-all aria-label="Notes" title="View all notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Notes</span><span data-logbook-count hidden>0</span></button><button id="openMapOptions" type="button"><span>Map layers</span><span id="mapLayerCount" hidden></span></button></div>
 
 
-    <div id="savedLogbookTools" class="saved-logbook-tools" hidden><button type="button" data-logbook-all>Fishing logbook <span data-logbook-count>0</span></button></div>
     <div class="map-layer-controls" role="group" aria-label="Browse waterbodies, boat launches or shore access">
       <button type="button" data-map-layer="waters" aria-pressed="true"><span class="legend-dot pin-blue"></span>Waterbodies</button>
       <button type="button" data-map-layer="launch" aria-pressed="false"><span class="access-layer-icon"></span>Boat launches</button>
@@ -1073,6 +1072,22 @@
         });
         if(scroll) document.getElementById('backResultsBtn').scrollIntoView({behavior:'smooth',block:'start'});
       }
+      // Notes navigate by stable lake identity, independently of current filters.
+      window.FFOLogbook?.connect({openLake(entry) {
+        const lake = lakesData.find(lake => getLakeId(lake) === entry.lakeId);
+        if (!lake || !Number.isFinite(lake.lat) || !Number.isFinite(lake.lon)) return false;
+        clearTimeout(searchTimer); searchRequest++; closeSuggestions();
+        lakeSearchInput.value = ''; areaCenter = null; favoritesOnly = false;
+        const savedButton = document.getElementById('viewFavoritesBtn');
+        savedButton.classList.remove('active'); savedButton.setAttribute('aria-pressed','false'); savedButton.title = 'Show saved spots';
+        fishSlider.querySelectorAll('[data-species]').forEach(button => button.classList.toggle('active',button.dataset.species === 'all'));
+        accessUI?.showWaters(); findClosestLakes('all');
+        refreshingMap = true;
+        map.setView([lake.lat,lake.lon],Math.max(12,map.getZoom()),{animate:false});
+        refreshingMap = false;
+        updateSelection(getLakeId(lake),{reveal:false});
+        return true;
+      }});
       document.getElementById('backResultsBtn').addEventListener('click', () => {
         updateSelection(null); map.closePopup(); window.scrollTo({top:resultsScroll,behavior:'smooth'});
       });
@@ -1473,7 +1488,6 @@
         return fishSpeciesList.find(f => f.id === currentActiveSpecies)?.name.toLowerCase() || '';
       }
       function findClosestLakes(speciesId) {
-        document.getElementById('savedLogbookTools').hidden = !favoritesOnly;
         currentActiveSpecies = speciesId;
         selectedLakeId = null;
         document.getElementById('view-map').classList.remove('spot-selected');
