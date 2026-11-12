@@ -18,9 +18,14 @@ recommendations clears the selected-species summary while keeping lake records.
 
 Selecting a lure reveals a large original image on the left, with Size & weight,
 Rigging, Rod and Line boxes on the right when the lake card has enough width.
-How to fish it spans the full width underneath, followed by Why this lure when an
-explanation is available. The separate Gear section has been removed. Existing
-location advice and extra tips remain available inside How to fish it.
+How to fish it spans the full width underneath, followed by a fuller Why this lure explanation. The separate Gear section has been removed. Existing
+location advice and extra tips are visible by default as stacked boxes inside
+How to fish it, beside the animation on wide cards and below it on narrow cards.
+Retrieve, depth, location and extra advice share sentence-level deduplication,
+including matching repeated sentences under different headings. Closely matching
+sentences and repeated topic headings are consolidated without changing the
+underlying recommendation data. Rigging sentences are also considered so an
+identical instruction is not repeated in the fishing tips.
 
 The layout responds to the lake-card width through container queries. Cards under
 620 px stack the image above the detail boxes; rod and line stack individually
@@ -39,7 +44,7 @@ an illustrative retrieve path rather than a simulation of each moving component.
 - `tackle-animation.js`: reusable SVG scenes and unchanged PNG sprites for all 18 techniques.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
 - `fishing-rules.js`: renders the four lake-information buttons and retains them on date changes.
-- `sw.js`: cache version 130 to refresh these assets on existing installations.
+- `sw.js`: cache version 131 to refresh these assets on existing installations.
 - Original lure PNGs remain in `images/lures/`, with no pixel edits or new image assets.
 
 Existing script and stylesheet filenames are retained.
@@ -68,8 +73,10 @@ playback. Image loading failure leaves the written instructions available; Play
 retries the original image. Titles, three step labels and cues remain HTML text.
 Surface zig-zag and glide demonstrations are labelled as top views.
 
-Replace `index.html`, `lake-setups.js`, `tackle-coach.js`, `tackle-coach.css` and
-`sw.js` in the app's root folder. Add the new `tackle-animation.js` beside them.
+For the stacked-tip update, replace `lake-setups.js`, `tackle-coach.js`,
+`tackle-coach.css` and `sw.js` in the app's root folder. No new files are needed.
+If PNG animation support is not already installed, use the complete app archive,
+including its `index.html` and `tackle-animation.js`.
 There are no image uploads for this update. The old `images/techniques/` GIF and
 poster folder is no longer referenced and may be removed from an existing install.
 The existing `images/lures/` folder is unchanged. The service worker includes the
@@ -82,15 +89,22 @@ presentation and depth-control guidance covers the existing lure families and
 fishing methods, including casting, vertical jigging, trolling, floats and bait
 rigs. No measured depth, fish position, weather observation or outcome is inferred.
 
-Complete condition selections use the existing lure explanation. Partial selections
-show one only when it is consistent across matching occurrences of that lure and
-technique. No conditions are invented for a general recommendation.
+Why this lure now describes the selected lure’s physical appeal, presentation
+role and practical limits in a full paragraph, even without conditions. A second
+paragraph connects relevant selected clarity, temperature or weather settings to
+that role. Missing settings do not introduce assumed conditions. These explanations
+replace the short reason fragments; the recommendation rankings are unchanged.
 
 Sizes remain broad editorial starting options rather than required purchases or
 manufacturer specifications. This is FFO guidance, not Ministry-approved advice.
 The existing rules module continues to handle season and bait filtering.
 
 ## References consulted
+
+- Indiana DNR, Fishing Tips When & Where: https://www.in.gov/dnr/fish-and-wildlife/education-programs/learn-to-fish/fishing-tips-and-videos/fishing-tips-when-and-where
+- Texas Parks & Wildlife, Rigging Up, Not Wigging Out: https://tpwd.texas.gov/publications/pwdpubs/media/fishing_rigs.pdf
+- Freshwater Fisheries Society of BC, Beginner’s Guide to Fishing Rods + Tackle: https://www.gofishbc.com/learn/fishing-tips/lake-fishing/beginners-guide-to-fishing-rods-tackle
+- Rapala Canada, How to Master the X-Rap Haku: https://www.rapala.ca/ca_en/blog/how-to-master-the-x-rap-haku
 
 - Ontario, Learn to Fish — Digital: https://www.ontario.ca/page/learn-fish-digital
 - Indiana DNR, Fishing Equipment Tips: https://www.in.gov/dnr/fish-and-wildlife/education-programs/learn-to-fish/fishing-tips-and-videos/fishing-tips-equipment/
@@ -105,7 +119,7 @@ The existing rules module continues to handle season and bait filtering.
 All 900 species/condition selections retain the original recommendation output.
 All 1,280 recommendation entries across 20 species resolve to existing images,
 size/rigging profiles and fuller fishing instructions. DOM checks passed for the
-stacked boxes, conditional explanations, coach removal, image reuse/enlargement,
+stacked boxes, lure-specific explanations, coach removal, image reuse/enlargement,
 exclusive selection, conditions, refresh, focus, season/bait filters and escaping.
 Chromium 153 render checks passed at viewport widths 320, 390, 768, 1280 and
 1440 px in light and dark themes (10 configurations), including mobile touch
@@ -131,3 +145,10 @@ unavailable records and no available advisor species. Modal checks include close
 buttons, Escape, keyboard focus, focus return, scrollable long histories, correct
 records after changing lakes and no horizontal overflow. Recommendation checks still
 match all 900 original species/condition selections and all 1,280 lure entries.
+
+Tip-content checks cover 900 complete/partial condition selections and 3,020
+displayed lure entries, including all 58 existing lure images. No exact duplicate
+sentences remain inside the generated tip stacks; 216 duplicate tip boxes are
+removed across those selections. The reported clearer-water duplicate is covered
+explicitly, while distinct follow-up advice is retained. Layout checks verify
+default-visible tip boxes, desktop columns/mobile stacks and expanded explanations.

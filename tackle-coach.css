@@ -55,9 +55,6 @@
 .setup-lure .setup-detail-box p {margin:0;font-size:.82rem;line-height:1.6;color:var(--tc-muted);overflow-wrap:anywhere;}
 .setup-lure .setup-detail-box p+p {margin-top:8px;}
 .setup-lure .setup-detail-box .setup-detail-lead {font-weight:500;color:var(--tc-ink);}
-.setup-content .setup-method-notes {border-color:var(--tc-line);margin-top:12px;}
-.setup-content .setup-method-notes summary {color:var(--tc-accent);font-size:.78rem;padding:10px 0;}
-.setup-lure .setup-method-notes h6 {margin-top:12px;}
 .setup-content .setup-color-section {padding:12px 0 14px;border-top:0;}
 .setup-lure summary:focus-visible {outline:3px solid var(--tc-focus);outline-offset:3px;}
 /* Native details stays a stacked disclosure in older engines. The enhanced grid
@@ -83,7 +80,9 @@
 @media(prefers-reduced-motion:reduce) {.setup-lure>summary>.setup-icon {transition:none;}}
 /* Shared technique demonstrations: a responsive scene with readable HTML labels. */
 .setup-method-layout {display:grid;gap:16px;min-width:0;}
-.setup-method-copy {min-width:0;}
+.setup-method-copy {display:grid;gap:10px;min-width:0;align-content:start;}
+.setup-fishing-tip {min-width:0;padding:12px 14px;border:1px solid var(--tc-line);border-radius:7px;background:var(--card-bg);}
+.setup-lure .setup-fishing-tip h6 {display:block;margin:0 0 7px;font-size:.8rem;line-height:1.45;color:var(--tc-ink);}
 .setup-animation {margin:0;min-width:0;width:100%;max-width:600px;justify-self:center;}
 .setup-animation-toolbar {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;color:var(--tc-ink);font-size:.8rem;font-weight:600;}
 .setup-animation-toolbar>span {min-width:0;overflow-wrap:anywhere;}
@@ -99,4 +98,4 @@
 .setup-lure .setup-detail-box .setup-animation-cue {min-height:3em;margin:8px 0 0;font-size:.76rem;line-height:1.5;color:var(--tc-muted);}
 .setup-animation-status {display:block;font-size:.76rem;line-height:1.5;color:var(--tc-muted);margin-top:8px;}
 .setup-animation-status:empty {display:none;}
-@container lure-options (min-width:780px) {.setup-method-layout.has-animation {grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;}}
+@container lure-options (min-width:780px) {.setup-method-layout.has-animation {grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;}.setup-method-layout.has-animation .setup-animation {position:sticky;top:86px;align-self:start;}}

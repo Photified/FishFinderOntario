@@ -58,17 +58,6 @@ window.LakeSetups = (() => {
     return `<svg class="setup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.setup}</svg>`;
   }
 
-  function explanationFor(lure, state, rec) {
-    if (rec.specific) return lure.reason || '';
-    if (!Object.values(state.conditions).some(Boolean)) return '';
-    // Unspecified conditions must not introduce a contradictory explanation.
-    const examples = matchingRecommendations(state.fish, state.conditions)
-      .flatMap(item => item.lures || [])
-      .filter(item => item.name === lure.name && item.technique === lure.technique);
-    const reasons = new Set(examples.map(item => item.reason || ''));
-    return examples.length && reasons.size === 1 ? [...reasons][0] : '';
-  }
-
   function detailBox(title, symbol, body, extraClass = '') {
     return `<section class="setup-detail-box ${extraClass}"><h6>${icon(symbol)}<span>${escape(title)}</span></h6>${body}</section>`;
   }
@@ -105,13 +94,13 @@ window.LakeSetups = (() => {
     if (reset) {current.controller.elapsed=1.8;current.controller.fresh=true;paintDiagram(current.figure,current.controller);}
   }
 
-  function playDiagram(figure) {
+  function playDiagram(figure, retry = false) {
     if (playingDiagram?.figure === figure) return;
     stopDiagram();
     if (!figure.isConnected || !figure.closest('.setup-lure')?.open) return;
     const controller = controllerFor(figure);
     if (!controller) return;
-    if (figure.dataset.animationError === 'true') controller.retry();
+    if (figure.dataset.animationError === 'true') {if (!retry) return;controller.retry();}
     if (controller.fresh) {controller.elapsed=0;controller.fresh=false;}
     const button = figure.querySelector('[data-demo-toggle]');
     const current = {figure,controller,button,frame:null,last:performance.now(),drawn:0};
@@ -181,13 +170,11 @@ window.LakeSetups = (() => {
 
   function lureHTML(lure, index, state, rec) {
     const profile = TackleCoach.profileFor(lure, state.fish);
-    const fishing = TackleCoach.fishingDetailsFor(lure, state.fish);
+    const tips = TackleCoach.fishingTipsFor(lure, state.fish, rec);
     const diagram = TackleCoach.diagramFor(lure, state.fish);
     const image = profile.image;
-    const explanation = explanationFor(lure, state, rec);
+    const explanation = TackleCoach.reasonDetailsFor(lure, state.fish, state.conditions);
     const gear = rec.gear || gearMap[state.fish] || {};
-    const fishingNotes = rec.location || rec.tips?.length
-      ? `<details class="setup-method-notes"><summary>More fishing tips</summary>${rec.location ? `<h6>${escape(rec.location.title)}</h6><p>${escape(rec.location.description)}</p>` : ''}${(rec.tips || []).map(tip=>`<h6>${escape(tip.title)}</h6><p>${escape(tip.description)}</p>`).join('')}</details>` : '';
     return `<details class="setup-lure" data-setup-lure="${index}" data-lure-name="${escape(lure.name)}" name="setup-lures-${escape(state.id)}"${state.openLure === lure.name ? ' open' : ''}>
       <summary><span class="setup-lure-thumb">${image ? `<img src="${escape(image)}" alt="" loading="lazy">` : icon('setup')}</span><span class="setup-lure-summary"><span class="setup-lure-name">${escape(lure.name)}</span><span class="setup-lure-technique">${escape(lure.technique)}</span></span>${icon('chevron')}</summary>
       <div class="setup-lure-body setup-detail-stack">
@@ -197,8 +184,8 @@ window.LakeSetups = (() => {
           ${detailBox('Rod','rod',`<p>${escape(gear.rod || 'Not specified')}</p>`,'setup-detail-rod')}
           ${detailBox('Line','line',`<p>${escape(gear.line || 'Not specified')}</p>`,'setup-detail-line')}
         </div>
-        ${detailBox('How to fish it','retrieve',`<div class="setup-method-layout${diagram ? ' has-animation' : ''}">${diagramHTML(diagram,profile,lure.name)}<div class="setup-method-copy">${lure.technique ? `<p class="setup-detail-lead">${escape(lure.technique)}</p>` : ''}<p>${escape(fishing.presentation)}</p><p>${escape(fishing.depth)}</p>${fishingNotes}</div></div>`,'setup-detail-method')}
-        ${explanation ? detailBox('Why this lure','reason',`<p>${escape(explanation)}</p>`,'setup-detail-reason') : ''}
+        ${detailBox('How to fish it','retrieve',`<div class="setup-method-layout${diagram ? ' has-animation' : ''}">${diagramHTML(diagram,profile,lure.name)}<div class="setup-method-copy">${tips.map(tip=>`<section class="setup-fishing-tip"><h6>${escape(tip.title)}</h6>${tip.lead ? `<p class="setup-detail-lead">${escape(tip.lead)}</p>` : ''}${tip.description ? `<p>${escape(tip.description)}</p>` : ''}</section>`).join('')}</div></div>`,'setup-detail-method')}
+        ${explanation.length ? detailBox('Why this lure','reason',explanation.map(paragraph=>`<p>${escape(paragraph)}</p>`).join(''),'setup-detail-reason') : ''}
       </div></details>`;
   }
 
@@ -302,7 +289,7 @@ window.LakeSetups = (() => {
     if (demoButton) {
       const figure = demoButton.closest('.setup-animation');
       if (playingDiagram?.figure === figure) {figure.dataset.userPaused = 'true';stopDiagram();}
-      else {figure.dataset.userPaused = 'false';playDiagram(figure);}
+      else {figure.dataset.userPaused = 'false';playDiagram(figure,true);}
       return;
     }
     const fishButton = event.target.closest('[data-setup-fish]');

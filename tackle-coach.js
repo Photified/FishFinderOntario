@@ -184,7 +184,7 @@ window.TackleCoach = (() => {
     }
   };
   const lurePresentation = {
-    chatterbait:'Begin reeling until you feel the blade pulsing, then maintain the retrieve described above. Hold the rod steadily and thread the trailer straight so the lure tracks cleanly; clear the blade if it catches weeds.',
+    chatterbait:'Begin reeling until you feel the blade pulsing, then maintain the recommended pace. Keep the rod steady; if the vibration changes unexpectedly, check for weeds interfering with the blade.',
     spinnerbait:'Reel at a controlled pace with the blades turning throughout the retrieve. Follow the edge of cover and let the skirt and trailer move freely rather than repeatedly jerking the lure.',
     swimbait:'Let the bait settle, then swim it at a pace that keeps the tail moving. Use the reel for most of the movement and keep the body tracking upright instead of rolling.',
     arig:'Cast smoothly and keep the arms and swimbaits separated. Retrieve as a small school, checking each bait for straight rigging or tangled hooks before the next cast.',
@@ -233,6 +233,124 @@ window.TackleCoach = (() => {
     }
     return {presentation, depth};
   }
+  // Compare sentences across retrieval, depth, location and extra advice before rendering.
+  const tipStopWords = new Set('a an the and or to of for in on at by with from that this it its is are be as your you when will can may should then use fish find try available'.split(' '));
+  function tipSignature(text) {
+    return String(text || '').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  }
+  function tipWords(text) {
+    return new Set(tipSignature(text).split(' ').map(word => ({cleanest:'clear',clearest:'clear',clearer:'clear',cleaner:'clear',clean:'clear',multiple:'repeat',repeated:'repeat',repetitive:'repeat',casts:'cast',slower:'slow',slowly:'slow'}[word] || word)).filter(word=>word&&!tipStopWords.has(word)));
+  }
+  function sameAdvice(a,b) {
+    if (tipSignature(a) === tipSignature(b)) return true;
+    const left=tipWords(a),right=tipWords(b);
+    if (Math.min(left.size,right.size)<4) return false;
+    const common=[...left].filter(word=>right.has(word)).length;
+    return common/left.size>=.82 && common/right.size>=.82;
+  }
+  function tipSentences(text) {
+    return String(text || '').trim().split(/(?<=[.!?])\s+(?=[A-Z"'])/).map(sentence=>sentence.trim()).filter(Boolean);
+  }
+  function tipTopic(title) {
+    const text=tipSignature(title);
+    if (/cleanest|clearest|clearer|cleaner/.test(text) && /water|inflow/.test(text)) return 'clear-water';
+    if (/warmest/.test(text) && /water/.test(text)) return 'warm-water';
+    if (/multiple|repeat|repetitive/.test(text) && /cast/.test(text)) return 'repeat-casts';
+    return [...tipWords(title)].sort().join(' ');
+  }
+  function fishingTipsFor(lure,fish,rec) {
+    const profile=profileFor(lure,fish),details=fishingDetailsFor(lure,fish);
+    const seen=tipSentences(profile.rigging),result=[];
+    const candidates=[
+      {title:'Retrieve',lead:lure.technique || '',description:details.presentation},
+      {title:'Depth control',description:details.depth},
+      ...(rec.location ? [rec.location] : []),...(rec.tips || [])
+    ];
+    for (const item of candidates) {
+      const title=/^the more noise your lure makes, the better\.?$/i.test(String(item.description||'').trim()) ? 'Sound cues' : item.title;
+      const sentences=[];
+      for (let text of tipSentences(item.description)) {
+        // Preserve the option to test sound without the old claim that more is always better.
+        if (/^the more noise your lure makes, the better\.?$/i.test(text)) text='If your lure has a rattle, it provides another sound cue. Compare responses rather than assuming more noise always works better.';
+        for(const sentence of tipSentences(text)) {
+          if (seen.some(previous=>sameAdvice(previous,sentence))) continue;
+          seen.push(sentence);sentences.push(sentence);
+        }
+      }
+      const lead=item.lead && !seen.some(previous=>sameAdvice(previous,item.lead)) ? item.lead : '';
+      if (lead) seen.push(lead);
+      if (!lead && !sentences.length) continue;
+      const topic=tipTopic(title),existing=result.find(tip=>tip.topic===topic);
+      if(existing) existing.description=[existing.description,...sentences].filter(Boolean).join(' ');
+      else result.push({title,lead,description:sentences.join(' '),topic});
+    }
+    return result.map(({topic,...tip})=>tip);
+  }
+
+  const lureAppeal = {};
+  function appeal(keys,text) {keys.split(' ').forEach(key=>{lureAppeal[key]=text;});}
+  appeal('chatterbait','The blade produces a strong vibration while the skirt and trailer give fish a visible, moving profile. This makes it useful for searching along open lanes and vegetation edges, especially when you want a cue beyond appearance alone. It needs room to travel cleanly so weeds do not stop the blade.');
+  appeal('spinnerbait','The rotating blades combine flash and vibration with the softer movement of the skirt and trailer. The wire frame and single main hook make it an option for searching around scattered cover. Blade shape changes the balance between flash, lift and thump, so different spinnerbaits do not all behave the same way.');
+  appeal('inlinespinner beetlespin bucktail largebucktail','A rotating blade supplies repeated flashes and vibration while the body, hair or soft plastic provides a target behind it. This gives you a moving search presentation for covering a stretch of water instead of waiting in one spot. The appeal depends on a freely turning blade rather than simply reeling as fast as possible.');
+  appeal('spoon kastmaster','A spoon’s curved body produces flashes and a wobbling movement that can suggest a small baitfish. It offers a compact search lure for testing different parts of the water column. Its weight and shape affect its sink rate and action, making model choice as important as the retrieve.');
+  appeal('flutterspoon jiggingspoon','The metal body creates flash on the lift and movement as it falls, giving fish something to track between rod movements. It is useful for investigating a relatively small area at depth. A fluttering model spreads its movement farther sideways, while a compact jigging spoon is easier to keep close to vertical.');
+  appeal('crankbait squarebillcrankbait minnowlure','The diving lip gives this lure its depth-seeking, wobbling action and its body presents a baitfish-like target. It lets you search a defined band of water with a repeatable retrieve. The printed diving range and the model’s buoyancy determine which depth and cover it can reasonably reach.');
+  appeal('jerkbait','Short bursts of movement followed by pauses give this lure a stop-start baitfish presentation. The pause keeps it near a target longer than a continuous retrieve and offers fish a chance to approach between movements. Floating, suspending and sinking models provide different options for holding that position.');
+  appeal('liplesscrank rippinrap bladebait','The compact sinking body and tight vibration offer a strong movement cue without relying on a diving lip. This lets the same lure search horizontally or work through a lift-and-fall presentation, depending on the recommendation. Sink time and the chosen movement control which part of the water column it explores.');
+  appeal('jig jigwithminnow jigwithworm','The weighted head puts a compact bait or soft-plastic offering near a chosen depth while leaving room for short hops, swims or pauses. It is useful when you want more control over a small target area than a continuously moving search lure provides. The attached body or permitted bait supplies the shape, movement or scent.');
+  appeal('footballjig flippingjig creaturebait','The bulky soft-plastic or skirted profile can suggest a bottom-oriented meal such as a crayfish. It offers a presentation that can pause beside individual pieces of cover instead of passing them quickly. The head shape and hook arrangement determine whether it is better suited to rock, vegetation or other cover.');
+  appeal('tube','The hollow body and fine tentacles give this bait a compact profile with movement during the fall and near bottom. Depending on its rigging, it can suggest a small baitfish or bottom-oriented prey. It suits controlled presentations where you want to investigate a small area and let the bait settle between movements.');
+  appeal('nedrig','The small soft-plastic body offers a compact target with less bulk and disturbance than many search lures. Its light head allows a controlled fall and short movements close to bottom. This makes it useful for slowing down around a promising area rather than continually moving the bait away.');
+  appeal('dropshot','Placing the hook above a separate weight keeps the bait off bottom while the sinker helps hold position. Small rod movements can work the bait without moving the entire rig very far. It is useful for keeping a compact offering near a specific spot or height instead of making fish chase a fast-moving lure.');
+  appeal('senko','The soft stickbait offers an unhurried fall and a simple profile with relatively little forward travel. That allows it to spend time beside a small target rather than sweeping quickly through an area. Weightless and wacky presentations emphasize the fall, while added weight changes how quickly it passes through the water.');
+  appeal('fluke','The slim soft-plastic body provides a baitfish shape without the diving lip of a hard lure. It can dart and glide on twitches, then settle between movements. This makes it an option when you want a softer, less continuously mechanical presentation around a chosen area.');
+  appeal('swimbait arig','The baitfish-shaped body and moving tail provide a visual swimming target during a steady retrieve. This lets you cover water while maintaining a consistent presentation. An umbrella rig adds the impression of several small baitfish, while a single swimbait offers a simpler, more compact target.');
+  appeal('jiggingrap bondybait','This weighted lure is designed for a controlled vertical presentation, with movement produced by short rod lifts and the following fall or glide. It is useful for investigating an area beneath you instead of searching only with long casts. Its weight and available space determine how easily you can maintain that control.');
+  appeal('bulldawg glidebait','The large baitfish profile offers a substantial target for predatory fish. Pull-and-pause soft plastics add movement on the fall, while a glide bait spends more time moving sideways between taps. Both let you change the pace and leave brief pauses without relying on a continuous straight retrieve.');
+  appeal('frog','A floating frog presents a visible surface target and can pause around openings or the edges of vegetation. Its soft body and hook arrangement suit cover that can foul exposed treble hooks. This is a way to investigate fish willing to rise to the surface, rather than a lure that searches deeper water.');
+  appeal('popper spook','This floating lure creates a surface target that can move and then remain in place. A popper adds a splash and sound from its cupped face; a walking bait creates a side-to-side path. Those pauses let you spend time around a small surface area instead of continuously pulling the lure away.');
+  appeal('plopper noisytopwater creeper','Moving surface parts create a visible wake and a repeated disturbance while the lure travels. That makes it a surface-search option with a different cue from a quiet, pausing bait. Its role is to explore fish willing to respond near the surface, with the model’s moving parts working freely.');
+  appeal('slipbobber','The float holds a baited hook at a chosen setting and gives you a visible indication of movement on the line. It can keep a small offering in one area longer than a steadily retrieved lure. The adjustable stop makes it useful for exploring different bait depths without replacing the entire rig.');
+  appeal('minnow livebait worm spawnsacs','Natural bait offers a familiar food shape and scent, with additional movement when the bait is alive. It provides an alternative to asking fish to chase a fast artificial lure. The rig controls where that offering sits or drifts, allowing a more stationary or current-assisted presentation.');
+  appeal('powerbait doughball bread','A small prepared or natural food bait provides a compact offering that can remain near a chosen spot. Scent and flavour may add attraction, while buoyancy determines whether it rests on bottom, lifts above a weight or floats at the surface. Those different presentations need a bait and rig suited to the intended position.');
+  appeal('cutbait chickenliver stinkbait','This bait offers a scent-based presentation that can stay near a chosen bottom area. It is useful when you want fish to approach a relatively stationary offering instead of pursuing a moving lure. Bait durability and the rig’s ability to hold position matter more here than an animated retrieve.');
+  appeal('bottombouncer lindyrig','The weight and trailing leader separate depth control from the bait’s presentation. This lets you cover water while keeping the offering near bottom rather than repeatedly lifting it far above the area being explored. The useful balance is controlled contact with enough freedom for the trailing bait to move naturally.');
+  appeal('dodgerfly','The attractor adds flash and movement ahead of a smaller trailing offering. This gives a trolling presentation a larger visual cue without requiring the hookbait itself to be large. The attractor, leader and trailing lure work as a system, so their proportions affect the resulting action.');
+  appeal('boilies popupcorn methodfeeder packbait','These presentations put a manageable hookbait near a concentrated food source or feeding area. Durable boilies, buoyant corn and feeder-based bait offer different ways to keep that target available. The rig’s balance determines whether the hookbait rests on bottom or sits above it where it can be approached.');
+  appeal('zigrig','A buoyant hookbait on a fixed-length hooklink explores water above the bottom weight. It offers an alternative to a bottom bait when you want to investigate fish higher in the water column. The hooklink length determines that position, while sufficient buoyancy keeps the hookbait lifted.');
+  appeal('swimbait','The baitfish-shaped body and moving tail provide a visual swimming target during a steady retrieve. This lets you cover water with a consistent presentation rather than repeated sharp rod movements. Changing the rigged weight changes the depth you can explore while retaining the same basic swimming action.');
+  appeal('arig','Several small swimbaits create a grouped baitfish presentation rather than a single target. This gives the rig a larger overall presence for searching open lanes or following baitfish activity you have observed. Its total weight and multiple arms also need more casting space and control than one swimbait.');
+  appeal('popper','The cupped face creates a surface splash and sound, then the floating body can remain near the same spot during a pause. This combines a noticeable disturbance with time for a fish to approach. It is useful for investigating small surface openings without immediately pulling the target away.');
+  appeal('spook','The floating body walks from side to side while making relatively little forward progress. That creates a surface baitfish target with a different rhythm from a straight-swimming lure. Brief pauses let you keep the presentation around a particular opening or edge while you test whether fish will rise.');
+  appeal('bulldawg','The large soft-plastic body offers a substantial baitfish profile, with tail movement during a pull and the following fall. Its stop-start path lets you explore below the surface while changing pace without a continuous fast retrieve. The sinking presentation needs room to fall clear of vegetation or other snags.');
+  appeal('glidebait','The broad side-to-side glide exposes the lure’s baitfish profile while using less forward travel than a straight retrieve. A pause lets it finish that sideways movement before the next tap. This makes it useful for exploring open lanes or edges where the lure has room to glide freely.');
+  appeal('flutterspoon','The broad metal body creates flashes as it swings and flutters during the fall. That gives fish a moving target between rod lifts and lets you investigate an area beneath or close to you. Its wider sideways travel needs more clear space than a compact vertical lure.');
+  appeal('jiggingspoon','The compact weighted body helps maintain a near-vertical presentation while its metal surface flashes on the lift and fall. It is useful for repeatedly exploring a relatively small area at depth. Compared with a broad fluttering spoon, its more controlled path is easier to keep near the same target.');
+  appeal('footballjig','The broad head and skirted or craw-style trailer provide a bottom-oriented profile for investigating rock or other firm structure. The head shape helps support a controlled crawl, while pauses leave the trailer close to a small target. It is useful for slowing down around individual bottom features rather than quickly searching a large area.');
+  appeal('flippingjig','The skirt and trailer provide a bulky target that can drop beside cover and remain there during a pause. Its hook arrangement is intended to help it pass through suitable cover more cleanly than exposed treble hooks. This is a close-target presentation whose usefulness depends on placing it near the feature you want to investigate.');
+  appeal('creaturebait','The appendages give a soft-plastic creature bait a larger, moving outline during the fall and near bottom. It can suggest a bottom-oriented meal without depending on a fast swimming retrieve. A suitable weedless rig lets you pause around individual pieces of cover while keeping the hook point protected.');
+  appeal('boilies','A boilie offers a durable food bait that can stay available near a chosen feeding area. Its firm body can resist small nuisance bites better than a very soft bait. Different buoyancies provide bottom or lifted presentations, so the selected bait and rig balance determine its actual position.');
+  appeal('popupcorn','Buoyant corn-style hookbait offers a small, visible target and can help balance or lift a carp rig. That gives you a way to present the hookbait above light bottom debris rather than burying it in the feed. The final height depends on buoyancy, hook weight and the rest of the rig.');
+  appeal('methodfeeder','The feeder places a compact patch of food close to the hookbait, keeping both parts of the presentation together. This is useful for investigating a chosen bottom area with a repeatable cast. The bait’s consistency and the feeder’s weight determine how well that small feeding spot stays together and in position.');
+  appeal('packbait','Pack bait provides a concentrated food offering around or close to the rig, rather than a moving artificial target. Its role is to create a small feeding area while the hookbait remains nearby. The mix needs to hold through the cast and then release as intended in the water.');
+
+  function reasonDetailsFor(lure,fish,conditions={}) {
+    const profile=profileFor(lure,fish),diagram=diagramFor(lure,fish),paragraphs=[];
+    paragraphs.push(lureAppeal[profile.key] || 'This presentation combines the selected lure’s profile with a controlled path through the water. Its main advantage is giving you a repeatable way to explore an area, then adjust the pace or position based on what you observe.');
+    const context=[];
+    const vibration=['chatterbait','spinnerbait','inlinespinner','beetlespin','bucktail','largebucktail','liplesscrank','rippinrap','bladebait'].includes(profile.key);
+    if(conditions.clarity==='muddy') {
+      context.push(vibration ? 'For the muddy-water setting, vibration supplies another cue when visibility is limited.' : profile.natural ? 'For muddy water, scent adds a cue beyond the bait’s appearance when visibility is limited.' : 'For the muddy-water setting, a clearly presented target and placement near likely holding areas matter more than expecting fish to see it from far away.');
+    } else if(conditions.clarity==='clear') context.push('For clear water, fish have more opportunity to inspect the profile and movement, making a natural-looking target and clean action useful.');
+    if(conditions.temp==='cool') {
+      context.push(['float-fishing','bottom-bait','drop-shot','suspended-hookbait','weightless-fall'].includes(diagram?.id) ? 'In the cool-water setting, its ability to stay near a target gives fish time to approach without a fast chase.' : 'For cool water, a slower working presentation is a starting point, while retaining enough movement for the lure to function properly.');
+    }
+    if(!context.length && ['cloudy','rainy'].includes(conditions.weather) && vibration) context.push('With the selected lower-light weather setting, its movement and vibration provide cues alongside any reflected flash.');
+    if(!context.length && conditions.weather==='windy') context.push('With wind selected, this option still needs enough line and depth control to keep the presentation consistent rather than simply drifting out of position.');
+    if(context.length) paragraphs.push(context.join(' '));
+    return paragraphs;
+  }
+
   const techniqueDiagrams = {"steady-retrieve":{"id":"steady-retrieve","title":"Steady retrieve","steps":["Retrieve","Keep pace","Next cast"],"cues":["Reel steadily and keep the rod still.","Keep enough speed for the lure to work cleanly.","Repeat with another controlled cast."]},"lift-and-drop":{"id":"lift-and-drop","title":"Lift and drop","steps":["Lift","Let fall","Pause"],"cues":["Lift the rod and keep contact with the jig.","Lower the rod and let the jig fall.","Let the jig settle before repeating."]},"twitch-and-pause":{"id":"twitch-and-pause","title":"Twitch and pause","steps":["Twitch","Pause","Next cast"],"cues":["Use a short rod twitch, then recover loose line.","Give the lure time between movements.","Repeat the same twitch-and-pause rhythm."]},"bottom-drag":{"id":"bottom-drag","title":"Bottom drag","steps":["Drag","Pause","Next cast"],"cues":["Move the bait with a short, slow rod sweep.","Pause, then recover loose line without moving the bait.","Repeat the drag-and-pause presentation."]},"weightless-fall":{"id":"weightless-fall","title":"Weightless fall","steps":["Let fall","Pause","Lift gently"],"cues":["Let the bait sink on lightly slack line.","Watch the line while the bait settles.","Lift gently and allow another free fall."]},"walk-the-dog":{"id":"walk-the-dog","title":"Walk the dog","steps":["Tap","Let glide","Next cast"],"cues":["Use short rod-tip taps and recover loose line.","Let the lure walk from side to side.","Repeat the alternating surface path."]},"pop-and-pause":{"id":"pop-and-pause","title":"Pop and pause","steps":["Pop","Pause","Next cast"],"cues":["Use a short twitch to make one surface pop.","Let the lure rest before the next pop.","Repeat with another short pop and pause."]},"surface-retrieve":{"id":"surface-retrieve","title":"Steady surface retrieve","steps":["Reel steadily","Stay on top","Next cast"],"cues":["Reel at a consistent surface-working pace.","Keep the lure upright at the surface.","Repeat along another suitable surface path."]},"float-fishing":{"id":"float-fishing","title":"Float fishing","steps":["Let settle","Hold depth","Watch float"],"cues":["Let the bait and weight settle below the float.","The float setting controls the bait depth.","Watch the float and manage loose line."]},"natural-drift":{"id":"natural-drift","title":"Natural drift","steps":["Let drift","Follow line","Next drift"],"cues":["Let the current carry the bait naturally.","Follow the drift and recover excess loose line.","Reset for another controlled drift."]},"bottom-bait":{"id":"bottom-bait","title":"Stationary bottom bait","steps":["Let sink","Take up slack","Hold position"],"cues":["Allow the bottom rig to settle in position.","Recover loose line without dragging the weight.","Keep the bait presented while watching for a bite."]},"trolling":{"id":"trolling","title":"Trolling","steps":["Troll steadily","Hold speed","Next pass"],"cues":["Pull the lure behind the moving boat.","Maintain a speed that keeps the lure working cleanly.","Repeat the controlled trolling presentation."]},"drop-shot":{"id":"drop-shot","title":"Drop-shot presentation","steps":["Hold weight","Small shakes","Pause"],"cues":["Keep the weight resting on bottom.","Use small rod movements to work the bait above it.","Pause while keeping the rig in position."]},"pull-and-pause":{"id":"pull-and-pause","title":"Pull and pause","steps":["Pull","Let sink","Next cast"],"cues":["Use a deliberate rod sweep to pull the lure forward.","Recover loose line and allow the sinking lure to fall.","Repeat the pull-and-fall sequence."]},"glide-and-pause":{"id":"glide-and-pause","title":"Glide and pause","steps":["Tap","Let glide","Next cast"],"cues":["Use a short tap rather than a continuous pull.","Let the lure finish its sideways glide.","Repeat the broad gliding path."]},"suspended-hookbait":{"id":"suspended-hookbait","title":"Suspended hookbait","steps":["Set weight","Bait rises","Hold depth"],"cues":["Let the weight settle on the lakebed.","A buoyant hookbait lifts on its hooklink.","The hooklink length sets the suspension height."]},"surface-bait":{"id":"surface-bait","title":"Floating surface bait","steps":["Let float","Leave slack","Watch bait"],"cues":["Let a buoyant bait rest on the surface.","Avoid pulling it under with a tight line.","Watch the bait as it moves gently on the surface."]},"diving-retrieve":{"id":"diving-retrieve","title":"Diving-lure retrieve","steps":["Reel down","Hold depth","Next cast"],"cues":["Reel to bring a diving model down.","Maintain its working action at the chosen depth.","Repeat with a model suited to the depth you need."]}};
 
   function diagramFor(lure, fish) {
@@ -288,5 +406,5 @@ window.TackleCoach = (() => {
     }[id] || [1.5,3.8];
     return t < bounds[0] ? 0 : t < bounds[1] ? 1 : 2;
   }
-  return {profileFor, imageFor, fishingDetailsFor, diagramFor, diagramPhase};
+  return {profileFor, imageFor, fishingDetailsFor, fishingTipsFor, reasonDetailsFor, diagramFor, diagramPhase};
 })();
