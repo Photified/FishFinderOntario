@@ -1,6 +1,7 @@
-/* Selected lure details. Asset filename is retained for existing installations. */
+/* Lure layout responds to the card width, not just the screen width. */
 .lake-setups {--tc-line:#2b3e50;--tc-panel:#192a39;--tc-ink:#e2e8f0;--tc-muted:#b6c6d6;--tc-accent:#7dd3fc;--tc-focus:#38bdf8;}
 [data-theme="light"] .lake-setups {--tc-line:#dce3eb;--tc-panel:#f5f7fa;--tc-ink:#252a30;--tc-muted:#53616e;--tc-accent:#315f9b;--tc-focus:#3977bc;}
+.setup-lure-options {container-type:inline-size;container-name:lure-options;}
 .setup-icon {width:18px;height:18px;flex:none;vertical-align:middle;}
 .setup-content .setup-lure {display:block;padding:0;margin:0;border-top:1px solid var(--tc-line);scroll-margin-top:90px;}
 .setup-content .setup-lure>summary {display:grid;grid-template-columns:56px minmax(0,1fr) 18px;align-items:center;gap:12px;padding:12px 0;color:var(--tc-ink);list-style:none;}
@@ -10,22 +11,49 @@
 .setup-lure[open]>summary>.setup-icon {transform:rotate(180deg);}
 .setup-lure-thumb {display:grid;place-items:center;min-width:0;}
 .setup-lure .setup-lure-thumb img {width:56px;height:56px;object-fit:contain;border-radius:6px;background:#fff;}
-.setup-content .setup-lure[open]>summary {grid-template-columns:180px minmax(0,1fr) 18px;padding:12px 0;}
-.setup-lure[open] .setup-lure-thumb img {width:180px;height:128px;}
 .setup-lure-summary {display:block;min-width:0;}
 .setup-lure-name {display:block;font-size:.88rem;font-weight:600;line-height:1.4;overflow-wrap:anywhere;}
-.setup-lure[open] .setup-lure-name {font-size:1rem;}
 .setup-lure-technique {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:.78rem;line-height:1.5;color:var(--tc-muted);margin-top:3px;}
+.setup-content .setup-lure[open] {padding:12px 0 16px;}
+.setup-content .setup-lure[open]>summary {position:relative;display:flex;flex-direction:column;justify-content:center;gap:8px;box-sizing:border-box;padding:16px 26px;margin:0 0 10px;background:#fff;border:1px solid var(--tc-line);border-radius:8px;color:#252a30;}
+.setup-lure[open]>.setup-lure-body {display:grid;}
+.setup-lure[open]>summary>.setup-icon {position:absolute;right:12px;top:14px;color:#315f9b;}
+.setup-lure[open] .setup-lure-name {font-size:1rem;text-align:center;}
+.setup-lure[open] .setup-lure-thumb {width:100%;}
+.setup-lure[open] .setup-lure-thumb img {width:100%;max-width:360px;height:210px;border-radius:0;}
 .setup-lure[open] .setup-lure-technique {display:none;}
-.setup-detail-stack {display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:0 0 16px;}
-.setup-detail-box {min-width:0;background:var(--tc-panel);border:1px solid var(--tc-line);border-radius:8px;padding:13px 15px;}
+.setup-detail-stack {grid-template-columns:minmax(0,1fr);gap:10px;}
+.setup-quick-facts {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:stretch;min-width:0;}
+.setup-detail-size,.setup-detail-rigging {grid-column:1 / -1;}
+.setup-detail-box {box-sizing:border-box;min-width:0;background:var(--tc-panel);border:1px solid var(--tc-line);border-radius:8px;padding:13px 15px;}
 .setup-lure .setup-detail-box h6 {display:flex;align-items:center;gap:8px;margin:0 0 7px;font-size:.82rem;font-weight:600;line-height:1.4;color:var(--tc-ink);}
 .setup-detail-box h6 .setup-icon {width:16px;height:16px;color:var(--tc-accent);}
 .setup-lure .setup-detail-box p {margin:0;font-size:.82rem;line-height:1.6;color:var(--tc-muted);overflow-wrap:anywhere;}
 .setup-lure .setup-detail-box p+p {margin-top:8px;}
 .setup-lure .setup-detail-box .setup-detail-lead {font-weight:500;color:var(--tc-ink);}
+.setup-content .setup-method-notes {border-color:var(--tc-line);margin-top:12px;}
+.setup-content .setup-method-notes summary {color:var(--tc-accent);font-size:.78rem;padding:10px 0;}
+.setup-lure .setup-method-notes h6 {margin-top:12px;}
 .setup-content .setup-color-section {padding:12px 0 14px;border-top:0;}
 .setup-lure summary:focus-visible {outline:3px solid var(--tc-focus);outline-offset:3px;}
-@media(max-width:520px) {.setup-content .setup-lure[open]>summary {grid-template-columns:112px minmax(0,1fr) 16px;gap:10px;}.setup-lure[open] .setup-lure-thumb img {width:112px;height:100px;}.setup-detail-box {padding:12px;}}
-@media(max-width:380px) {.setup-content .setup-lure>summary {grid-template-columns:46px minmax(0,1fr) 16px;gap:8px;}.setup-lure .setup-lure-thumb img {width:46px;height:50px;}.setup-content .setup-lure[open]>summary {grid-template-columns:96px minmax(0,1fr) 16px;gap:8px;}.setup-lure[open] .setup-lure-thumb img {width:96px;height:92px;}}
+/* Native details stays a stacked disclosure in older engines. The enhanced grid
+   flattens the content wrapper only while open, preserving collapsed behaviour. */
+@supports selector(details::details-content) {
+  @container lure-options (min-width:620px) {
+    .setup-content .setup-lure[open] {display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:10px;align-items:stretch;}
+    .setup-lure[open]::details-content {display:contents;}
+    .setup-content .setup-lure[open]>summary {grid-column:1;grid-row:1;min-height:300px;margin:0;}
+    .setup-lure[open]>.setup-lure-body {display:contents;}
+    .setup-lure[open] .setup-quick-facts {grid-column:2;grid-row:1;}
+    .setup-lure[open] .setup-detail-method,.setup-lure[open] .setup-detail-reason {grid-column:1 / -1;}
+    .setup-lure[open] .setup-lure-thumb img {max-width:440px;height:290px;}
+  }
+}
+@container lure-options (max-width:340px) {
+  .setup-detail-rod,.setup-detail-line {grid-column:1 / -1;}
+  .setup-content .setup-lure[open]>summary {padding:12px 20px;}
+  .setup-lure[open] .setup-lure-thumb img {height:170px;}
+  .setup-detail-box {padding:12px;}
+}
+@media(max-width:380px) {.setup-content .setup-lure:not([open])>summary {grid-template-columns:46px minmax(0,1fr) 16px;gap:8px;}.setup-lure:not([open]) .setup-lure-thumb img {width:46px;height:50px;}}
 @media(prefers-reduced-motion:reduce) {.setup-lure>summary>.setup-icon {transition:none;}}

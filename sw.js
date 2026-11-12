@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v123-lure-details';
+const CACHE_NAME = 'fish-finder-v124-lure-layout';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',

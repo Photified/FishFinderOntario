@@ -1,19 +1,28 @@
 # Selected lure details
 
-Selecting a lure enlarges its original image in place and reveals a single stack
-of detail boxes: Size & weight, Rigging, How to fish it, and Why this lure when
-a relevant explanation is available. Suggested colours remain above the options.
-There is one image per lure. The coach and adjustment controls have been removed.
+Selecting a lure reveals a large original image on the left, with Size & weight,
+Rigging, Rod and Line boxes on the right when the lake card has enough width.
+How to fish it spans the full width underneath, followed by Why this lure when an
+explanation is available. The separate Gear section has been removed. Existing
+location advice and extra tips remain available inside How to fish it.
+
+The layout responds to the lake-card width through container queries. Cards under
+620 px stack the image above the detail boxes; rod and line stack individually
+under 340 px. Older engines without native details-content styling use the stacked
+layout. Both light and dark themes are supported. Each lure uses its original
+image once; there is no coach or repeated alternative-bait card.
 
 ## Updated app files
 
-- `lake-setups.js`: stacked detail boxes and conditional recommendation explanations.
+- `lake-setups.js`: integrated lure layout, rod/line boxes and conditional explanations.
 - `tackle-coach.js`: starting sizes, rigging and fuller lure/method instructions.
-- `tackle-coach.css`: stacked boxes, enlarged selected image, light and dark themes.
-- `sw.js`: cache version 123 to refresh these assets on existing installations.
+- `tackle-coach.css`: responsive hero/facts grid, compact fallback and both themes.
+- `sw.js`: cache version 124 to refresh these assets on existing installations.
 
 The asset filenames are retained so `index.html` does not need another change.
 No images, species, recommendation rankings, colours or rules data were changed.
+Rod and line values are the existing species/condition gear recommendations,
+relocated into the selected lure rather than independently generated per lure.
 
 ## Content
 
@@ -47,4 +56,10 @@ All 1,280 recommendation entries across 20 species resolve to existing images,
 size/rigging profiles and fuller fishing instructions. DOM checks passed for the
 stacked boxes, conditional explanations, coach removal, image reuse/enlargement,
 exclusive selection, conditions, refresh, focus, season/bait filters and escaping.
-Browser visual verification was unavailable; no device layout test is claimed.
+Chromium 153 render checks passed at viewport widths 320, 390, 768, 1280 and
+1440 px in light and dark themes (10 configurations), including mobile touch
+emulation. Checks covered wide-column alignment, narrow-card stacking, rod/line
+reflow, full-width fishing instructions, no horizontal overflow, hidden collapsed
+panels, exclusive selection and keyboard Enter/Space operation. Desktop and mobile
+screenshots were visually reviewed. These are browser/emulation checks, not tests
+on physical devices or other browser engines.

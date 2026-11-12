@@ -51,7 +51,9 @@ window.LakeSetups = (() => {
       position:'<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z"/><circle cx="12" cy="10" r="2"/>',
       setup:'<path d="M4 6h16M4 18h16M8 3v6m8 6v6"/>',
       chevron:'<path d="m7 10 5 5 5-5"/>',
-      reason:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>'
+      reason:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>',
+      rod:'<path d="M4 20 19 4M16 7l3-3 1 5M7 16l3 3"/><circle cx="10" cy="16" r="2"/>',
+      line:'<path d="M3 8c3-7 6 7 9 0s6 7 9 0M3 16c3-7 6 7 9 0s6 7 9 0"/>'
     };
     return `<svg class="setup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.setup}</svg>`;
   }
@@ -76,12 +78,19 @@ window.LakeSetups = (() => {
     const fishing = TackleCoach.fishingDetailsFor(lure, state.fish);
     const image = profile.image;
     const explanation = explanationFor(lure, state, rec);
+    const gear = rec.gear || gearMap[state.fish] || {};
+    const fishingNotes = rec.location || rec.tips?.length
+      ? `<details class="setup-method-notes"><summary>More fishing tips</summary>${rec.location ? `<h6>${escape(rec.location.title)}</h6><p>${escape(rec.location.description)}</p>` : ''}${(rec.tips || []).map(tip=>`<h6>${escape(tip.title)}</h6><p>${escape(tip.description)}</p>`).join('')}</details>` : '';
     return `<details class="setup-lure" data-setup-lure="${index}" data-lure-name="${escape(lure.name)}" name="setup-lures-${escape(state.id)}"${state.openLure === lure.name ? ' open' : ''}>
       <summary><span class="setup-lure-thumb">${image ? `<img src="${escape(image)}" alt="" loading="lazy">` : icon('setup')}</span><span class="setup-lure-summary"><span class="setup-lure-name">${escape(lure.name)}</span><span class="setup-lure-technique">${escape(lure.technique)}</span></span>${icon('chevron')}</summary>
       <div class="setup-lure-body setup-detail-stack">
-        ${detailBox('Size & weight','size',`<p>${escape(profile.size)}</p>`)}
-        ${detailBox('Rigging','setup',`<p>${escape(profile.rigging)}</p>`)}
-        ${detailBox('How to fish it','retrieve',`${lure.technique ? `<p class="setup-detail-lead">${escape(lure.technique)}</p>` : ''}<p>${escape(fishing.presentation)}</p><p>${escape(fishing.depth)}</p>`,'setup-detail-method')}
+        <div class="setup-quick-facts">
+          ${detailBox('Size & weight','size',`<p>${escape(profile.size)}</p>`,'setup-detail-size')}
+          ${detailBox('Rigging','setup',`<p>${escape(profile.rigging)}</p>`,'setup-detail-rigging')}
+          ${detailBox('Rod','rod',`<p>${escape(gear.rod || 'Not specified')}</p>`,'setup-detail-rod')}
+          ${detailBox('Line','line',`<p>${escape(gear.line || 'Not specified')}</p>`,'setup-detail-line')}
+        </div>
+        ${detailBox('How to fish it','retrieve',`${lure.technique ? `<p class="setup-detail-lead">${escape(lure.technique)}</p>` : ''}<p>${escape(fishing.presentation)}</p><p>${escape(fishing.depth)}</p>${fishingNotes}`,'setup-detail-method')}
         ${explanation ? detailBox('Why this lure','reason',`<p>${escape(explanation)}</p>`,'setup-detail-reason') : ''}
       </div></details>`;
   }
@@ -104,10 +113,6 @@ window.LakeSetups = (() => {
       ${rec.colors?.length ? `<div class="setup-color-section"><h5>Suggested colours</h5><div class="setup-colors">${rec.colors.map(color => `<span><i style="background:${escape(colorMap[color]?.hex || '#ccc')}" aria-hidden="true"></i>${escape(color)}</span>`).join('')}</div></div>` : '<div class="setup-color-section"><h5>Suggested colours</h5><p class="record-note">No colour preference specified for these recommendations.</p></div>'}
       <div class="setup-lure-options">${rec.lures.map((lure, index)=>lureHTML(lure,index,state,rec)).join('') || '<p class="record-note">Suggestions are unavailable for these selections.</p>'}</div>
       <details class="setup-refine"><summary>Adjust conditions</summary><form class="setup-conditions">${conditionFields}<button type="submit">Update recommendations</button></form></details>
-      <details class="setup-extra"><summary>Gear${rec.specific ? ' & fishing tips' : ' recommendations'}</summary>
-      <h5>Rod</h5><p>${escape(rec.gear?.rod || 'Not specified')}</p><h5>Line</h5><p>${escape(rec.gear?.line || 'Not specified')}</p>
-      ${rec.location ? `<h5>${escape(rec.location.title)}</h5><p>${escape(rec.location.description)}</p>` : ''}
-      ${(rec.tips || []).map(tip => `<h5>${escape(tip.title)}</h5><p>${escape(tip.description)}</p>`).join('')}</details>
       <p class="record-note">Suggestions depend on the species and conditions you choose. Check rules for your waterbody before fishing.</p></div>`;
   }
 
