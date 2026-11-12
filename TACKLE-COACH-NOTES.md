@@ -44,7 +44,7 @@ an illustrative retrieve path rather than a simulation of each moving component.
 - `tackle-animation.js`: reusable SVG scenes and unchanged PNG sprites for all 18 techniques.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
 - `fishing-rules.js`: renders the four lake-information buttons and retains them on date changes.
-- `sw.js`: cache version 131 to refresh these assets on existing installations.
+- `sw.js`: cache version 132 to refresh these assets on existing installations.
 - Original lure PNGs remain in `images/lures/`, with no pixel edits or new image assets.
 
 Existing script and stylesheet filenames are retained.
@@ -73,14 +73,35 @@ playback. Image loading failure leaves the written instructions available; Play
 retries the original image. Titles, three step labels and cues remain HTML text.
 Surface zig-zag and glide demonstrations are labelled as top views.
 
-For the stacked-tip update, replace `lake-setups.js`, `tackle-coach.js`,
-`tackle-coach.css` and `sw.js` in the app's root folder. No new files are needed.
+For the visual-conditions update, replace `lake-setups.js`, `tackle-coach.css`
+and `sw.js` in the app's root folder. No new files or images are needed.
 If PNG animation support is not already installed, use the complete app archive,
 including its `index.html` and `tackle-animation.js`.
 There are no image uploads for this update. The old `images/techniques/` GIF and
 poster folder is no longer referenced and may be removed from an existing install.
 The existing `images/lures/` folder is unchanged. The service worker includes the
 new script and continues caching original lure images on demand.
+
+## Visual conditions picker
+
+The Conditions button sits beside the Smart Tackle Box heading and shows the
+currently applied choices. It opens a native modal with labelled radio tiles:
+Sunny, Cloudy, Rainy, Windy; Clear or Muddy water; Cool or Warm water temperature.
+Each group includes Not sure, preserving the unknown value used by the original
+recommendation logic. Weather uses inline SVG icons, clarity uses labelled
+swatches, and temperature uses thermometer symbols. No image files are added.
+
+Selections stay in the modal until Apply conditions. Cancel, the close button and
+Escape discard the draft. Reopening restores the applied choices. Apply updates
+recommendations and the compact summary, leaving any still-recommended open lure
+selected. Applying unchanged choices preserves the existing lure and animation
+nodes. The chosen conditions apply across species within that lake context;
+other lakes retain their own independent selections. The general advice view
+uses the same picker without requiring a lake.
+
+Native radio groups support arrow-key selection. Dialog focus is constrained and
+returns to the Conditions button on close. Animation playback pauses while the
+picker is open. The modal scrolls on short screens with its actions kept visible.
 
 ## Content
 
@@ -152,3 +173,10 @@ sentences remain inside the generated tip stacks; 216 duplicate tip boxes are
 removed across those selections. The reported clearer-water duplicate is covered
 explicitly, while distinct follow-up advice is retained. Layout checks verify
 default-visible tip boxes, desktop columns/mobile stacks and expanded explanations.
+
+Condition-picker checks cover staged Apply/Cancel/Escape behaviour, all three
+Not sure options, partial settings, restored selections, native radio keyboard
+controls, focus return, per-lake isolation, the general advice view, unchanged
+choice preservation and short-screen action visibility. The original 900
+recommendation selections, 1,280 source entries, tip deduplication and PNG playback
+remain covered by the existing checks.

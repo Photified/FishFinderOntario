@@ -2,7 +2,7 @@
 .lake-setups {--tc-line:#2b3e50;--tc-panel:#192a39;--tc-ink:#e2e8f0;--tc-muted:#b6c6d6;--tc-accent:#7dd3fc;--tc-focus:#38bdf8;}
 [data-theme="light"] .lake-setups {--tc-line:#dce3eb;--tc-panel:#f5f7fa;--tc-ink:#252a30;--tc-muted:#53616e;--tc-accent:#315f9b;--tc-focus:#3977bc;}
 .setup-lake-information {padding:14px 16px;background:var(--tc-panel);border:1px solid var(--tc-line);border-radius:8px;color:var(--tc-ink);}
-.setup-lake-information>h4,.setup-tackle-section>.setup-tackle-title {margin:0 0 12px;font-size:.95rem;font-weight:700;color:var(--tc-ink);}
+.setup-lake-information>h4,.setup-tackle-toolbar>.setup-tackle-title {margin:0 0 12px;font-size:.95rem;font-weight:700;color:var(--tc-ink);}
 .setup-lake-information .lake-section.lake-rules {padding:0;border:0;}
 .setup-lake-information .rules-actions {margin-bottom:0;}
 .setup-lake-season:not(:empty) {margin-top:14px;padding-top:14px;border-top:1px solid var(--tc-line);}
@@ -23,6 +23,44 @@
 .lake-records-content .stocking-rows li {gap:16px;}
 @media(max-width:480px) {.lake-records-content {padding:12px;}}
 .setup-tackle-section {margin-top:20px;}
+.setup-tackle-toolbar {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+.setup-tackle-toolbar>.setup-tackle-title {margin:0;}
+.setup-conditions-open {display:flex;align-items:center;gap:10px;min-height:44px;max-width:100%;padding:9px 12px;border:1px solid var(--rules-button-border);border-radius:6px;background:var(--rules-button-bg);color:var(--rules-button-text);text-align:left;font:inherit;cursor:pointer;}
+.setup-conditions-open>span {min-width:0;}
+.setup-conditions-label {display:block;font-size:.8rem;font-weight:600;line-height:1.4;}
+.setup-conditions-summary {display:block;font-size:.75rem;line-height:1.4;overflow-wrap:anywhere;}
+.setup-conditions-open:focus-visible {outline:3px solid var(--tc-focus);outline-offset:2px;}
+.tackle-conditions-dialog {box-sizing:border-box;width:min(680px,calc(100% - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);padding:0;background:var(--card-bg);color:var(--text-main);overflow:auto;}
+.tackle-conditions-dialog .rules-dialog-header {top:0;}
+.tackle-conditions-dialog .rules-dialog-meta {margin-bottom:8px;overflow-wrap:anywhere;}
+#tackleConditionsHelp {margin:0;font-size:.82rem;line-height:1.5;color:var(--text-muted);}
+.condition-fields {padding:16px 20px 20px;}
+.condition-fieldset {min-width:0;margin:0 0 20px;padding:0;border:0;}
+.condition-fieldset:last-child {margin-bottom:0;}
+.condition-fieldset legend {margin:0 0 10px;padding:0;font-size:.87rem;font-weight:600;}
+.condition-choice-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.condition-weather-grid {grid-template-columns:repeat(5,minmax(0,1fr));}
+.condition-option {position:relative;display:block;min-width:0;cursor:pointer;}
+.condition-option input {position:absolute;top:8px;left:8px;width:1px;height:1px;margin:0;opacity:0;}
+.condition-tile {position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;min-height:80px;padding:12px 10px;border:2px solid var(--popup-border);border-radius:8px;background:var(--card-bg);color:var(--text-main);font-size:.82rem;line-height:1.4;text-align:center;overflow-wrap:anywhere;}
+.condition-option input:checked+.condition-tile {border-color:var(--rules-button-text);background:var(--rules-button-bg);color:var(--rules-button-text);}
+.condition-option input:focus-visible+.condition-tile {outline:3px solid var(--accent);outline-offset:2px;}
+.condition-choice-icon {width:30px;height:30px;flex:none;}
+.condition-sunny .condition-choice-icon,.condition-warm .condition-choice-icon {color:#ba7217;}
+[data-theme="dark"] .condition-sunny .condition-choice-icon,[data-theme="dark"] .condition-warm .condition-choice-icon {color:#f7c46f;}
+.condition-cool .condition-choice-icon {color:#277baf;}
+[data-theme="dark"] .condition-cool .condition-choice-icon {color:#7dd3fc;}
+.condition-water-swatch {display:grid;place-items:center;width:38px;height:30px;border-radius:5px;}
+.condition-water-swatch .condition-choice-icon {width:30px;height:24px;}
+.condition-water-clear {background:#d3edf8;color:#286283;}
+.condition-water-muddy {background:#e7d6b4;color:#79542b;}
+.condition-choice-check {display:none;position:absolute;right:6px;top:4px;font-size:.78rem;font-weight:700;}
+.condition-option input:checked+.condition-tile .condition-choice-check {display:block;}
+.condition-dialog-actions {position:sticky;bottom:0;display:flex;gap:10px;padding:14px 20px;background:var(--card-bg);border-top:1px solid var(--popup-border);z-index:2;}
+.condition-dialog-actions button {flex:1;min-width:0;min-height:44px;padding:9px 14px;border:1px solid var(--rules-button-border);border-radius:6px;background:var(--rules-button-bg);color:var(--rules-button-text);font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;}
+.condition-dialog-actions .condition-apply {flex:1.6;background:#315f9b;color:#fff;border-color:#315f9b;}
+.condition-dialog-actions button:focus-visible {outline:3px solid var(--accent);outline-offset:2px;}
+@media(max-width:520px) {.condition-fields {padding:12px;}.condition-weather-grid,.condition-choice-grid {grid-template-columns:repeat(2,minmax(0,1fr));}.condition-option.is-unknown {grid-column:1 / -1;}.condition-option.is-unknown .condition-tile {min-height:44px;flex-direction:row;padding:8px 12px;}.condition-option.is-unknown .condition-choice-icon {width:22px;height:22px;}.condition-dialog-actions {padding:12px;}}
 .lake-setups {container-type:inline-size;container-name:lake-setup;}
 @container lake-setup (max-width:520px) {.setup-lake-information {padding:12px;}}
 .setup-lure-options {container-type:inline-size;container-name:lure-options;}

@@ -96,6 +96,7 @@ window.LakeSetups = (() => {
 
   function playDiagram(figure, retry = false) {
     if (playingDiagram?.figure === figure) return;
+    if (conditionsDialog?.open) return;
     stopDiagram();
     if (!figure.isConnected || !figure.closest('.setup-lure')?.open) return;
     const controller = controllerFor(figure);
@@ -243,6 +244,82 @@ window.LakeSetups = (() => {
     root.querySelector('.setup-output').innerHTML = content(state);
     const season = root.querySelector('.setup-lake-season');
     if (season) season.innerHTML = speciesInformation(state);
+    const summary = root.querySelector('[data-conditions-summary]');
+    if (summary) summary.textContent = conditionSummary(state);
+  }
+
+  const conditionLabels = {weather:'Weather',clarity:'Water clarity',temp:'Water temperature'};
+  let conditionsDialog = null, conditionsContext = null, conditionsResume = null;
+  function conditionSummary(state) {
+    return Object.entries(state.conditions).filter(([key,value])=>groups[key]?.[value]).map(([key,value])=>groups[key][value].name).join(' · ') || 'Not specified';
+  }
+  function conditionIcon(name) {
+    const shapes = {
+      unknown:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 .5c0 2-2.5 2-2.5 4m0 3v.1"/>',
+      sunny:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
+      cloudy:'<path d="M6 18a4 4 0 1 1 .5-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1 0 9Z"/>',
+      rainy:'<path d="M6 14a3.5 3.5 0 1 1 .5-7A5.5 5.5 0 0 1 17 6a4 4 0 0 1 1 8H6Zm1 3-1 3m6-3-1 3m6-3-1 3"/>',
+      windy:'<path d="M3 8h12a3 3 0 1 0-3-3M3 12h16a2.5 2.5 0 1 1-2.5 2.5M3 16h7a3 3 0 1 1-3 3"/>',
+      water:'<path d="M2 7c3-4 5 4 8 0s5 4 8 0 4 0 4 0M2 12c3-4 5 4 8 0s5 4 8 0 4 0 4 0M2 17c3-4 5 4 8 0s5 4 8 0 4 0 4 0"/>',
+      cool:'<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0ZM12 11v7m-1 0h2M18 5h3m-1.5-1.5v3"/>',
+      warm:'<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0ZM12 8v10m-1 0h2m7-14c-2 2 2 3 0 5m3-5c-2 2 2 3 0 5"/>'
+    };
+    return `<svg class="condition-choice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shapes[name] || shapes.unknown}</svg>`;
+  }
+  function conditionsButton(state) {
+    return `<button type="button" class="setup-conditions-open" data-open-conditions aria-haspopup="dialog" aria-controls="tackleConditionsDialog">${icon('setup')}<span><span class="setup-conditions-label">Conditions</span><span class="setup-conditions-summary" data-conditions-summary>${escape(conditionSummary(state))}</span></span></button>`;
+  }
+  function conditionFields(state) {
+    return Object.entries(conditionLabels).map(([key,label])=>`<fieldset class="condition-fieldset"><legend>${label}</legend><div class="condition-choice-grid${key==='weather' ? ' condition-weather-grid' : ''}">${[...Object.entries(groups[key]),['',{name:'Not sure'}]].map(([value,item])=>{
+      const visual = key==='clarity'&&value ? `<span class="condition-water-swatch condition-water-${value}">${conditionIcon('water')}</span>` : conditionIcon(value || 'unknown');
+      return `<label class="condition-option${!value ? ' is-unknown' : ''}"><input type="radio" name="${key}" value="${escape(value)}"${state.conditions[key]===value ? ' checked' : ''}><span class="condition-tile${value ? ' condition-'+value : ''}">${visual}<span>${escape(item.name)}</span><span class="condition-choice-check" aria-hidden="true">✓</span></span></label>`;
+    }).join('')}</div></fieldset>`).join('');
+  }
+  function openConditions(root,state,trigger) {
+    if (!conditionsDialog) {
+      conditionsDialog=document.createElement('dialog');
+      conditionsDialog.id='tackleConditionsDialog';
+      conditionsDialog.className='simple-dialog tackle-conditions-dialog';
+      conditionsDialog.setAttribute('aria-labelledby','tackleConditionsTitle');
+      conditionsDialog.setAttribute('aria-describedby','tackleConditionsHelp');
+      conditionsDialog.innerHTML='<div class="rules-dialog-header"><div class="dialog-heading"><h2 id="tackleConditionsTitle">Conditions</h2><button type="button" data-conditions-cancel aria-label="Close conditions">✕</button></div><p class="rules-dialog-meta" data-conditions-lake></p><p id="tackleConditionsHelp">Choose what you know. Leave the rest as Not sure.</p></div><form class="setup-conditions-form"><div class="condition-fields"></div><div class="condition-dialog-actions"><button type="button" data-conditions-cancel>Cancel</button><button type="submit" class="condition-apply">Apply conditions</button></div></form>';
+      conditionsDialog.addEventListener('click',event=>{if(event.target.closest('[data-conditions-cancel]'))conditionsDialog.close('cancel');});
+      conditionsDialog.addEventListener('keydown',event=>{
+        if(event.key!=='Tab')return;
+        const controls=[...conditionsDialog.querySelectorAll('button,input')].filter(node=>!node.disabled&&node.getClientRects().length);
+        const first=controls[0],last=controls[controls.length-1];
+        if((event.shiftKey&&document.activeElement===first)||(!event.shiftKey&&document.activeElement===last)){event.preventDefault();(event.shiftKey?last:first).focus();}
+      });
+      conditionsDialog.addEventListener('submit',event=>{
+        event.preventDefault();
+        const active=conditionsContext;
+        if(!active?.root.isConnected||contexts.get(active.state.id)!==active.state){conditionsDialog.close('cancel');return;}
+        const values=new FormData(conditionsDialog.querySelector('form'));
+        const next=Object.fromEntries(Object.keys(groups).map(key=>{const value=values.get(key)||'';return [key,Object.hasOwn(groups[key],value)?value:''];}));
+        if(Object.keys(groups).some(key=>next[key]!==active.state.conditions[key])){
+          active.state.conditions=next;
+          conditionsResume=null;
+          update(active.root,active.state);
+        }
+        conditionsDialog.close('apply');
+      });
+      conditionsDialog.addEventListener('close',()=>{
+        if(conditionsContext?.trigger.isConnected)conditionsContext.trigger.focus({preventScroll:true});
+        const figure=conditionsResume;conditionsResume=null;conditionsContext=null;
+        if(figure?.isConnected&&!reduceMotion()&&figure.dataset.userPaused!=='true'){
+          const rect=figure.getBoundingClientRect();
+          if(rect.bottom>0&&rect.top<window.innerHeight)playDiagram(figure);
+        }
+      });
+      document.body.append(conditionsDialog);
+    }
+    conditionsContext={root,state,trigger};
+    conditionsResume=playingDiagram?.figure || null;
+    stopDiagram();
+    conditionsDialog.querySelector('[data-conditions-lake]').textContent=state.lake?.name || 'Bait and tackle recommendations';
+    conditionsDialog.querySelector('.condition-fields').innerHTML=conditionFields(state);
+    conditionsDialog.showModal();conditionsDialog.scrollTop=0;
+    conditionsDialog.querySelector('[data-conditions-cancel]').focus({preventScroll:true});
   }
 
   function content(state) {
@@ -255,13 +332,10 @@ window.LakeSetups = (() => {
     const intro = rec.specific ? `For ${selected.join(' · ').toLowerCase()}.` :
       selected.length ? `Starting suggestions for ${selected.join(' · ').toLowerCase()}. Unspecified conditions remain open.` :
       'General starting suggestions for this species. Adjust conditions for more tailored advice.';
-    const conditionFields = [['weather','Weather'],['clarity','Water clarity'],['temp','Water temperature']].map(([key,label]) =>
-      `<label>${label}<select name="${key}"><option value="">Not sure / any</option>${Object.entries(groups[key]).map(([value,item]) => `<option value="${value}"${state.conditions[key] === value ? ' selected' : ''}>${escape(item.name)}</option>`).join('')}</select></label>`).join('');
     return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)} bait and tackle recommendations</h4><button type="button" data-setup-action="close" aria-label="Close bait and tackle recommendations">✕</button></div>
       <p class="setup-intro">${escape(intro)}</p>
       ${rec.colors?.length ? `<div class="setup-color-section"><h5>Suggested colours</h5><div class="setup-colors">${rec.colors.map(color => `<span><i style="background:${escape(colorMap[color]?.hex || '#ccc')}" aria-hidden="true"></i>${escape(color)}</span>`).join('')}</div></div>` : '<div class="setup-color-section"><h5>Suggested colours</h5><p class="record-note">No colour preference specified for these recommendations.</p></div>'}
       <div class="setup-lure-options">${rec.lures.map((lure, index)=>lureHTML(lure,index,state,rec)).join('') || '<p class="record-note">Suggestions are unavailable for these selections.</p>'}</div>
-      <details class="setup-refine"><summary>Adjust conditions</summary><form class="setup-conditions">${conditionFields}<button type="submit">Update recommendations</button></form></details>
       <p class="record-note">Suggestions depend on the species and conditions you choose. Check rules for your waterbody before fishing.</p></div>`;
   }
 
@@ -273,7 +347,7 @@ window.LakeSetups = (() => {
     state.records = records;
     if (preferredFish && Object.hasOwn(allowed, preferredFish)) state.fish = preferredFish;
     if (!allowed[state.fish]) state.fish = null;
-    return `<div class="lake-setups" data-setup-context="${escape(id)}">${lakeInformation(state)}<section class="setup-tackle-section" aria-label="Smart Tackle Box"><h4 class="setup-tackle-title">Smart Tackle Box</h4>${Object.keys(allowed).length ? `<h5 class="setup-choice-heading">Choose a fish for bait and tackle recommendations</h5>
+    return `<div class="lake-setups" data-setup-context="${escape(id)}">${lakeInformation(state)}<section class="setup-tackle-section" aria-label="Smart Tackle Box"><div class="setup-tackle-toolbar"><h4 class="setup-tackle-title">Smart Tackle Box</h4>${Object.keys(allowed).length ? conditionsButton(state) : ''}</div>${Object.keys(allowed).length ? `<h5 class="setup-choice-heading">Choose a fish for bait and tackle recommendations</h5>
       <div class="setup-fish-grid">${Object.entries(allowed).map(([key,fish]) => `<button type="button" class="setup-fish" data-setup-fish="${escape(key)}" aria-pressed="${state.fish === key}"><img src="${escape(fish.imageSrc)}" alt="" loading="lazy"><span>${escape(fish.name)}</span></button>`).join('')}</div>
       <div class="setup-output">${content(state)}</div>` : '<p class="record-note">Bait and tackle recommendations are not available for these species records.</p><div class="setup-output"></div>'}</section></div>`;
   }
@@ -283,6 +357,8 @@ window.LakeSetups = (() => {
     if (!root) return;
     const state = contexts.get(root.dataset.setupContext);
     if (!state) return;
+    const conditionsTrigger=event.target.closest('[data-open-conditions]');
+    if(conditionsTrigger){openConditions(root,state,conditionsTrigger);return;}
     const recordButton = event.target.closest('[data-lake-records]');
     if (recordButton) {openRecordDialog(state, recordButton);return;}
     const demoButton = event.target.closest('[data-demo-toggle]');
@@ -324,18 +400,6 @@ window.LakeSetups = (() => {
     state.openLure = root.querySelector('.setup-lure[open]')?.dataset.lureName || null;
     watchDiagram(lure);
   }, true);
-  document.addEventListener('submit', event => {
-    if (!event.target.matches('.setup-conditions')) return;
-    event.preventDefault();
-    const root = event.target.closest('.lake-setups');
-    const state = contexts.get(root.dataset.setupContext);
-    state.conditions = Object.fromEntries(new FormData(event.target));
-    update(root, state);
-    const heading = root.querySelector('.setup-heading h4');
-    heading.tabIndex = -1;
-    heading.focus({preventScroll:true});
-    heading.scrollIntoView({behavior:'smooth',block:'nearest'});
-  });
   function refresh() { document.querySelectorAll('.lake-setups').forEach(root=>{ const state=contexts.get(root.dataset.setupContext);if(state) update(root,state); }); }
   return {render, refresh, escape, getRecommendation, speciesName: id => speciesLabels[id.replace(/[^a-z]/g, '')] || id};
 })();

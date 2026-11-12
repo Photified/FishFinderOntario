@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v131-stacked-fishing-tips';
+const CACHE_NAME = 'fish-finder-v132-visual-conditions';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
