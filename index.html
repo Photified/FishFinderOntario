@@ -1754,12 +1754,9 @@
               </div>
               <div class="lake-info-expanded" ${isSelected ? '' : 'hidden'}>
                 ${isSelected ? `${statsTextHTML}
-                ${FishingRules.render(uniqueId, lake)}
                 <section class="lake-section lake-fish-section">
-                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake, preferredFish)}
-                  <details class="lake-disclosure"><summary>View recorded fish</summary>${recordedFishHTML}</details>
+                  ${LakeSetups.render(tourDemo ? 'tour-example' : uniqueId, getAdvisorFishTypes(lake), lake, preferredFish, {overviewHTML: FishingRules.render(uniqueId, lake), recordedFishHTML, stockingHTML: stockingContentHTML})}
                 </section>
-                <section class="lake-section"><h4>Stocking records</h4>${stockingContentHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'}</section>
                 <section class="lake-section">
                   ${customNote ? `<div class="lake-note-display">${LakeSetups.escape(customNote)}</div>` : ''}
                   ${lake.localNotes ? `<p class="species-list">${lake.localNotes}</p>` : ''}

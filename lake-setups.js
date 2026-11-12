@@ -214,10 +214,33 @@ window.LakeSetups = (() => {
       </div></details>`;
   }
 
+  function speciesInformation(state) {
+    if (!state.fish || !state.allowed[state.fish]) return '';
+    const html = window.FishingRules?.forSpecies(state.lake, state.fish).html || '';
+    return html ? `<h5 class="lake-season-heading">${escape(state.allowed[state.fish].name)} season and limits</h5>${html}` : '';
+  }
+
+  function lakeInformation(state) {
+    if (!state.lake && !state.records) return '';
+    const records = state.records || {};
+    return `<section class="setup-lake-information" aria-label="Lake information"><h4>Lake information</h4>
+      ${records.overviewHTML || ''}<div class="setup-lake-season">${speciesInformation(state)}</div>
+      ${records.recordedFishHTML || records.stockingHTML ? `<div class="lake-records">
+        <details class="lake-disclosure lake-record-disclosure"><summary>View recorded fish</summary>${records.recordedFishHTML || '<p class="record-note">Species records unavailable.</p>'}</details>
+        <details class="lake-disclosure lake-record-disclosure"><summary>Stocking records</summary>${records.stockingHTML || '<p class="record-note">No stocking record in the current Ontario recreational stocking dataset.</p>'}</details>
+      </div>` : ''}</section>`;
+  }
+
+  function update(root, state) {
+    root.querySelector('.setup-output').innerHTML = content(state);
+    const season = root.querySelector('.setup-lake-season');
+    if (season) season.innerHTML = speciesInformation(state);
+  }
+
   function content(state) {
     if (!state.fish || !state.allowed[state.fish]) return '';
     const rule = window.FishingRules?.forSpecies(state.lake, state.fish) || {html:'',blocked:false,allow:()=>true};
-    if(rule.blocked) return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)}</h4><button type="button" data-setup-action="close" aria-label="Close recommendations">✕</button></div>${rule.html}</div>`;
+    if(rule.blocked) return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)}</h4><button type="button" data-setup-action="close" aria-label="Close recommendations">✕</button></div><p class="record-note">Bait and tackle suggestions are hidden for this date. Check the season and limits above.</p></div>`;
     const rec = getRecommendation(state.fish, state.conditions, rule.allow);
     if (!rec.lures.some(lure => lure.name === state.openLure)) state.openLure = null;
     const selected = Object.entries(state.conditions).filter(([,value]) => value).map(([key,value]) => groups[key][value].name);
@@ -227,7 +250,6 @@ window.LakeSetups = (() => {
     const conditionFields = [['weather','Weather'],['clarity','Water clarity'],['temp','Water temperature']].map(([key,label]) =>
       `<label>${label}<select name="${key}"><option value="">Not sure / any</option>${Object.entries(groups[key]).map(([value,item]) => `<option value="${value}"${state.conditions[key] === value ? ' selected' : ''}>${escape(item.name)}</option>`).join('')}</select></label>`).join('');
     return `<div class="setup-content"><div class="setup-heading"><h4>${escape(state.allowed[state.fish].name)} bait and tackle recommendations</h4><button type="button" data-setup-action="close" aria-label="Close bait and tackle recommendations">✕</button></div>
-      ${rule.html}
       <p class="setup-intro">${escape(intro)}</p>
       ${rec.colors?.length ? `<div class="setup-color-section"><h5>Suggested colours</h5><div class="setup-colors">${rec.colors.map(color => `<span><i style="background:${escape(colorMap[color]?.hex || '#ccc')}" aria-hidden="true"></i>${escape(color)}</span>`).join('')}</div></div>` : '<div class="setup-color-section"><h5>Suggested colours</h5><p class="record-note">No colour preference specified for these recommendations.</p></div>'}
       <div class="setup-lure-options">${rec.lures.map((lure, index)=>lureHTML(lure,index,state,rec)).join('') || '<p class="record-note">Suggestions are unavailable for these selections.</p>'}</div>
@@ -235,17 +257,17 @@ window.LakeSetups = (() => {
       <p class="record-note">Suggestions depend on the species and conditions you choose. Check rules for your waterbody before fishing.</p></div>`;
   }
 
-  function render(id, allowed, lake = null, preferredFish = null) {
-    if (!Object.keys(allowed).length) return '<p class="record-note">Bait and tackle recommendations are not available for these species records.</p>';
+  function render(id, allowed, lake = null, preferredFish = null, records = null) {
     let state = contexts.get(id);
     if (!state) {state={id, fish:null, openLure:null, conditions:{weather:'',clarity:'',temp:''}, allowed};contexts.set(id,state);}
     state.allowed = allowed;
     state.lake = lake;
+    state.records = records;
     if (preferredFish && Object.hasOwn(allowed, preferredFish)) state.fish = preferredFish;
     if (!allowed[state.fish]) state.fish = null;
-    return `<div class="lake-setups" data-setup-context="${escape(id)}"><h5 class="setup-choice-heading">Choose a fish for bait and tackle recommendations</h5>
+    return `<div class="lake-setups" data-setup-context="${escape(id)}">${lakeInformation(state)}<section class="setup-tackle-section" aria-label="Smart Tackle Box"><h4 class="setup-tackle-title">Smart Tackle Box</h4>${Object.keys(allowed).length ? `<h5 class="setup-choice-heading">Choose a fish for bait and tackle recommendations</h5>
       <div class="setup-fish-grid">${Object.entries(allowed).map(([key,fish]) => `<button type="button" class="setup-fish" data-setup-fish="${escape(key)}" aria-pressed="${state.fish === key}"><img src="${escape(fish.imageSrc)}" alt="" loading="lazy"><span>${escape(fish.name)}</span></button>`).join('')}</div>
-      <div class="setup-output">${content(state)}</div></div>`;
+      <div class="setup-output">${content(state)}</div>` : '<p class="record-note">Bait and tackle recommendations are not available for these species records.</p><div class="setup-output"></div>'}</section></div>`;
   }
 
   document.addEventListener('click', event => {
@@ -265,14 +287,14 @@ window.LakeSetups = (() => {
       if (state.fish !== fishButton.dataset.setupFish) state.openLure = null;
       state.fish = fishButton.dataset.setupFish;
       root.querySelectorAll('[data-setup-fish]').forEach(button => button.setAttribute('aria-pressed', button.dataset.setupFish === state.fish));
-      root.querySelector('.setup-output').innerHTML = content(state);
+      update(root, state);
       if (root.dataset.setupContext !== 'tour-example') root.querySelector('.setup-content').scrollIntoView({behavior:'smooth',block:'nearest'});
     }
     if (event.target.closest('[data-setup-action="close"]')) {
       const previousFish = state.fish;
       state.fish = null;
       state.openLure = null;
-      root.querySelector('.setup-output').innerHTML = '';
+      update(root, state);
       root.querySelectorAll('[data-setup-fish]').forEach(button => {
         button.setAttribute('aria-pressed','false');
         if (button.dataset.setupFish === previousFish) button.focus({preventScroll:true});
@@ -298,12 +320,12 @@ window.LakeSetups = (() => {
     const root = event.target.closest('.lake-setups');
     const state = contexts.get(root.dataset.setupContext);
     state.conditions = Object.fromEntries(new FormData(event.target));
-    root.querySelector('.setup-output').innerHTML = content(state);
+    update(root, state);
     const heading = root.querySelector('.setup-heading h4');
     heading.tabIndex = -1;
     heading.focus({preventScroll:true});
     heading.scrollIntoView({behavior:'smooth',block:'nearest'});
   });
-  function refresh() { document.querySelectorAll('.lake-setups').forEach(root=>{ const state=contexts.get(root.dataset.setupContext);if(state) root.querySelector('.setup-output').innerHTML=content(state); }); }
+  function refresh() { document.querySelectorAll('.lake-setups').forEach(root=>{ const state=contexts.get(root.dataset.setupContext);if(state) update(root,state); }); }
   return {render, refresh, escape, getRecommendation, speciesName: id => speciesLabels[id.replace(/[^a-z]/g, '')] || id};
 })();

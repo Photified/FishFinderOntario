@@ -1,4 +1,16 @@
-# Selected lure details
+# Lake information and selected lure details
+
+The lake-information box groups the lake rules buttons, selected-species season
+and limits, recorded fish, and stocking history. Recorded fish and stocking
+records are collapsed disclosures, side by side in wide cards and stacked in
+cards under 520 px. Stocking history retains its latest-year and earlier-years
+content. These records remain accessible when no species is selected, the season
+is closed, or no tackle recommendations are available.
+
+Smart Tackle Box is a separate section below, with its species selector, colours,
+lures and setup details. Species selection and fishing-date changes update the
+season and limits above without resetting the records disclosures. Closing tackle
+recommendations clears the selected-species summary while keeping lake records.
 
 Selecting a lure reveals a large original image on the left, with Size & weight,
 Rigging, Rod and Line boxes on the right when the lake card has enough width.
@@ -15,14 +27,15 @@ now includes a representative technique animation, labelled as an example.
 
 ## Updated app files
 
-- `lake-setups.js`: integrated lure layout and visible-card animation playback.
+- `index.html`: passes the existing lake rules and records into the grouped layout.
+- `lake-setups.js`: grouped lake information, lure layout and visible-card playback.
 - `tackle-coach.js`: lure instructions, technique mapping and timed step labels.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
-- `sw.js`: cache version 125 to refresh these assets on existing installations.
+- `sw.js`: cache version 126 to refresh these assets on existing installations.
 - `images/techniques/gifs/`: 18 animated technique diagrams.
 - `images/techniques/posters/`: 18 matching static technique diagrams.
 
-The asset filenames are retained so `index.html` does not need another change.
+Existing script and stylesheet filenames are retained.
 Existing lure images, species, recommendation rankings, colours and rules data
 are unchanged. New technique images are in their own subfolder.
 Rod and line values are the existing species/condition gear recommendations,
@@ -39,10 +52,12 @@ Titles, three step labels and the current cue are HTML text so they remain reada
 in narrow cards. Representative diagrams explain technique, not the exact action
 of every lure model. Existing written instructions remain alongside or below.
 
-Replace `lake-setups.js`, `tackle-coach.js`, `tackle-coach.css` and `sw.js` in the
-same folder as the app's `index.html`. Add `techniques/` inside the existing
-`images/` folder, retaining both `gifs/` and `posters/` subfolders and their names.
-No change to `index.html` or the existing `images/lures/` folder is required.
+For the lake-information grouping update, replace `index.html`, `lake-setups.js`,
+`tackle-coach.css` and `sw.js` together in the app's root folder. If technique
+animations have not yet been installed, also replace `tackle-coach.js` and add
+`techniques/` inside the existing `images/` folder, retaining both `gifs/` and
+`posters/` subfolders and their names.
+No changes to the existing `images/lures/` folder are required.
 
 ## Content
 
@@ -89,3 +104,10 @@ diagrams, including lure-specific casting, jigging and trolling distinctions.
 Chromium checks cover visible playback, actual GIF motion, timed phase labels,
 Play/Stop, replay without redownload, card switching, reduced motion, missing-file
 fallback/retry and no horizontal overflow at all ten configurations above.
+
+Lake-grouping browser checks passed in light and dark themes at 320, 390, 1280
+and 1440 px. Checks use the app's actual lake-card renderer and rule data, covering
+record placement, side-by-side/stacked disclosures, retained open state, earlier
+stocking years, species switching/closing, the rules dialog, season/date refresh,
+unavailable records and no available advisor species. Recommendation checks still
+match all 900 original species/condition selections and all 1,280 lure entries.

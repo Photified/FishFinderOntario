@@ -1,6 +1,24 @@
 /* Lure layout responds to the card width, not just the screen width. */
 .lake-setups {--tc-line:#2b3e50;--tc-panel:#192a39;--tc-ink:#e2e8f0;--tc-muted:#b6c6d6;--tc-accent:#7dd3fc;--tc-focus:#38bdf8;}
 [data-theme="light"] .lake-setups {--tc-line:#dce3eb;--tc-panel:#f5f7fa;--tc-ink:#252a30;--tc-muted:#53616e;--tc-accent:#315f9b;--tc-focus:#3977bc;}
+.setup-lake-information {padding:14px 16px;background:var(--tc-panel);border:1px solid var(--tc-line);border-radius:8px;color:var(--tc-ink);}
+.setup-lake-information>h4,.setup-tackle-section>.setup-tackle-title {margin:0 0 12px;font-size:.95rem;font-weight:700;color:var(--tc-ink);}
+.setup-lake-information .lake-section.lake-rules {padding:0;border:0;}
+.setup-lake-information .rules-actions {margin-bottom:0;}
+.setup-lake-season:not(:empty) {margin-top:14px;padding-top:14px;border-top:1px solid var(--tc-line);}
+.setup-lake-information .lake-season-heading {margin:0 0 10px;font-size:.85rem;font-weight:600;line-height:1.5;}
+.setup-lake-information .species-rules {padding:0;margin:0;border:0;background:transparent;}
+.lake-records {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--tc-line);align-items:start;}
+.lake-record-disclosure {min-width:0;padding:0 12px;background:var(--card-bg);border:1px solid var(--tc-line);border-radius:6px;}
+.lake-record-disclosure>summary {padding:10px 0;box-sizing:border-box;line-height:1.5;overflow-wrap:anywhere;}
+.lake-record-disclosure[open] {padding-bottom:10px;}
+.lake-record-disclosure .record-note {line-height:1.5;overflow-wrap:anywhere;}
+.lake-record-disclosure .recorded-fish-list {columns:1;}
+.lake-record-disclosure>summary:focus-visible {outline:2px solid var(--tc-focus);outline-offset:3px;border-radius:3px;}
+.setup-tackle-section {margin-top:20px;}
+.lake-setups {container-type:inline-size;container-name:lake-setup;}
+@container lake-setup (max-width:520px) {.lake-records {grid-template-columns:minmax(0,1fr);}.setup-lake-information {padding:12px;}}
+@supports not (container-type:inline-size) {.lake-records {grid-template-columns:minmax(0,1fr);}}
 .setup-lure-options {container-type:inline-size;container-name:lure-options;}
 .setup-icon {width:18px;height:18px;flex:none;vertical-align:middle;}
 .setup-content .setup-lure {display:block;padding:0;margin:0;border-top:1px solid var(--tc-line);scroll-margin-top:90px;}
