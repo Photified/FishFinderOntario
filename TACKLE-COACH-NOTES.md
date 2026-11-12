@@ -10,19 +10,39 @@ The layout responds to the lake-card width through container queries. Cards unde
 620 px stack the image above the detail boxes; rod and line stack individually
 under 340 px. Older engines without native details-content styling use the stacked
 layout. Both light and dark themes are supported. Each lure uses its original
-image once; there is no coach or repeated alternative-bait card.
+image once; there is no coach or repeated alternative-bait card. How to fish it
+now includes a representative technique animation, labelled as an example.
 
 ## Updated app files
 
-- `lake-setups.js`: integrated lure layout, rod/line boxes and conditional explanations.
-- `tackle-coach.js`: starting sizes, rigging and fuller lure/method instructions.
-- `tackle-coach.css`: responsive hero/facts grid, compact fallback and both themes.
-- `sw.js`: cache version 124 to refresh these assets on existing installations.
+- `lake-setups.js`: integrated lure layout and visible-card animation playback.
+- `tackle-coach.js`: lure instructions, technique mapping and timed step labels.
+- `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
+- `sw.js`: cache version 125 to refresh these assets on existing installations.
+- `images/techniques/gifs/`: 18 animated technique diagrams.
+- `images/techniques/posters/`: 18 matching static technique diagrams.
 
 The asset filenames are retained so `index.html` does not need another change.
-No images, species, recommendation rankings, colours or rules data were changed.
+Existing lure images, species, recommendation rankings, colours and rules data
+are unchanged. New technique images are in their own subfolder.
 Rod and line values are the existing species/condition gear recommendations,
 relocated into the selected lure rather than independently generated per lure.
+
+## Animation behaviour and installation
+
+Animations load when an open lure diagram becomes visible. Only one plays at a
+time. Play/Stop controls are always available; closing a lure or moving it out of
+view stops playback. Reduced-motion preferences show a static poster until Play
+is selected. Replays restart from the first frame and reuse downloaded bytes.
+The existing service worker caches requested image assets for repeat visits.
+Titles, three step labels and the current cue are HTML text so they remain readable
+in narrow cards. Representative diagrams explain technique, not the exact action
+of every lure model. Existing written instructions remain alongside or below.
+
+Replace `lake-setups.js`, `tackle-coach.js`, `tackle-coach.css` and `sw.js` in the
+same folder as the app's `index.html`. Add `techniques/` inside the existing
+`images/` folder, retaining both `gifs/` and `posters/` subfolders and their names.
+No change to `index.html` or the existing `images/lures/` folder is required.
 
 ## Content
 
@@ -63,3 +83,9 @@ reflow, full-width fishing instructions, no horizontal overflow, hidden collapse
 panels, exclusive selection and keyboard Enter/Space operation. Desktop and mobile
 screenshots were visually reviewed. These are browser/emulation checks, not tests
 on physical devices or other browser engines.
+
+Animation checks cover all 1,280 recommendation entries and all 18 technique
+diagrams, including lure-specific casting, jigging and trolling distinctions.
+Chromium checks cover visible playback, actual GIF motion, timed phase labels,
+Play/Stop, replay without redownload, card switching, reduced motion, missing-file
+fallback/retry and no horizontal overflow at all ten configurations above.

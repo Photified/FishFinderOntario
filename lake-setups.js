@@ -73,9 +73,128 @@ window.LakeSetups = (() => {
     return `<section class="setup-detail-box ${extraClass}"><h6>${icon(symbol)}<span>${escape(title)}</span></h6>${body}</section>`;
   }
 
+  const diagramBlobs = new Map();
+  const observedDiagrams = new Set();
+  let playingDiagram = null;
+  const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+
+  function stopDiagram() {
+    const current = playingDiagram;
+    if (!current) return;
+    playingDiagram = null;
+    clearInterval(current.timer);
+    current.image.onload = null;
+    current.image.onerror = null;
+    current.image.src = current.figure.dataset.demoPoster;
+    current.button.disabled = false;
+    current.button.textContent = 'Play';
+    current.button.setAttribute('aria-pressed','false');
+    current.button.setAttribute('aria-label',`Play ${current.figure.dataset.demoTitle} animation`);
+    current.figure.querySelectorAll('.setup-animation-step').forEach(step=>step.classList.remove('is-active'));
+    if (current.url) URL.revokeObjectURL(current.url);
+  }
+
+  async function playDiagram(figure) {
+    if (playingDiagram?.figure === figure) return;
+    stopDiagram();
+    if (!figure.isConnected || !figure.closest('.setup-lure')?.open) return;
+    const image = figure.querySelector('.setup-animation-image');
+    const button = figure.querySelector('[data-demo-toggle]');
+    const status = figure.querySelector('.setup-animation-status');
+    const current = {figure,image,button,url:null,timer:null};
+    playingDiagram = current;
+    status.textContent = '';
+    button.disabled = true;
+    button.textContent = 'Loading…';
+    const path = figure.dataset.demoGif;
+    try {
+      if (!diagramBlobs.has(path)) {
+        const request = fetch(path).then(response=>{
+          if (!response.ok) throw new Error('Animation unavailable');
+          return response.blob();
+        }).catch(error=>{diagramBlobs.delete(path);throw error;});
+        diagramBlobs.set(path,request);
+      }
+      const blob = await diagramBlobs.get(path);
+      if (playingDiagram !== current || !figure.isConnected || !figure.closest('.setup-lure')?.open) return;
+      current.url = URL.createObjectURL(blob);
+      const fail = () => {
+        if (playingDiagram !== current) return;
+        stopDiagram();
+        status.textContent = 'The animation could not load. You can still use the instructions below.';
+      };
+      image.onerror = fail;
+      image.onload = () => {
+        if (playingDiagram !== current) return;
+        button.disabled = false;
+        button.textContent = 'Stop';
+        button.setAttribute('aria-pressed','true');
+        button.setAttribute('aria-label',`Stop ${figure.dataset.demoTitle} animation`);
+        const started = performance.now();
+        let previous = -1;
+        const tick = () => {
+          const phase = TackleCoach.diagramPhase(figure.dataset.technique,(performance.now()-started)/1000);
+          if (phase === previous) return;
+          previous = phase;
+          figure.querySelectorAll('.setup-animation-step').forEach((step,index)=>step.classList.toggle('is-active',index === phase));
+          figure.querySelector('.setup-animation-cue').textContent = JSON.parse(figure.dataset.demoCues)[phase];
+        };
+        tick();
+        current.timer = setInterval(tick,80);
+      };
+      // A fresh object URL restarts a cached GIF without downloading it again.
+      image.src = current.url;
+    } catch (error) {
+      if (playingDiagram !== current) return;
+      stopDiagram();
+      status.textContent = 'The animation could not load. You can still use the instructions below.';
+    }
+  }
+
+  const diagramVisibility = window.IntersectionObserver ? new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const figure = entry.target;
+      if (!entry.isIntersecting) {
+        if (playingDiagram?.figure === figure) stopDiagram();
+      } else if (figure.closest('.setup-lure')?.open && figure.dataset.userPaused !== 'true' && !reduceMotion()) playDiagram(figure);
+    });
+  },{threshold:.15}) : null;
+
+  function watchDiagram(lure) {
+    const figure = lure.querySelector('.setup-animation');
+    if (!figure) return;
+    if (lure.open) {
+      if (diagramVisibility) {observedDiagrams.add(figure);diagramVisibility.observe(figure);}
+      else if (figure.dataset.userPaused !== 'true' && !reduceMotion()) playDiagram(figure);
+    } else {
+      diagramVisibility?.unobserve(figure);
+      observedDiagrams.delete(figure);
+      if (playingDiagram?.figure === figure) stopDiagram();
+    }
+  }
+
+  if (window.MutationObserver && document.body) new MutationObserver(()=>{
+    if (playingDiagram && !playingDiagram.figure.isConnected) stopDiagram();
+    observedDiagrams.forEach(figure=>{
+      if (!figure.isConnected) {diagramVisibility.unobserve(figure);observedDiagrams.delete(figure);}
+    });
+  }).observe(document.body,{childList:true,subtree:true});
+  document.addEventListener('visibilitychange',()=>{if (document.hidden) stopDiagram();});
+
+  function diagramHTML(diagram) {
+    if (!diagram) return '';
+    return `<figure class="setup-animation" data-technique="${escape(diagram.id)}" data-demo-title="${escape(diagram.title)}" data-demo-gif="${escape(diagram.gif)}" data-demo-poster="${escape(diagram.poster)}" data-demo-cues="${escape(JSON.stringify(diagram.cues))}">
+      <figcaption class="setup-animation-toolbar"><span>${escape(diagram.title)} example</span><button type="button" data-demo-toggle aria-pressed="false" aria-label="Play ${escape(diagram.title)} animation">Play</button></figcaption>
+      <div class="setup-animation-scene"><img class="setup-animation-image" src="${escape(diagram.poster)}" alt="${escape(diagram.title)} technique illustration" width="960" height="780" loading="lazy"></div>
+      <ol class="setup-animation-steps" aria-label="Technique steps">${diagram.steps.map((step,index)=>`<li class="setup-animation-step"><span>${index+1}</span>${escape(step)}</li>`).join('')}</ol>
+      <p class="setup-animation-cue">${escape(diagram.cues[0])}</p><span class="setup-animation-status" role="status"></span>
+    </figure>`;
+  }
+
   function lureHTML(lure, index, state, rec) {
     const profile = TackleCoach.profileFor(lure, state.fish);
     const fishing = TackleCoach.fishingDetailsFor(lure, state.fish);
+    const diagram = TackleCoach.diagramFor(lure, state.fish);
     const image = profile.image;
     const explanation = explanationFor(lure, state, rec);
     const gear = rec.gear || gearMap[state.fish] || {};
@@ -90,7 +209,7 @@ window.LakeSetups = (() => {
           ${detailBox('Rod','rod',`<p>${escape(gear.rod || 'Not specified')}</p>`,'setup-detail-rod')}
           ${detailBox('Line','line',`<p>${escape(gear.line || 'Not specified')}</p>`,'setup-detail-line')}
         </div>
-        ${detailBox('How to fish it','retrieve',`${lure.technique ? `<p class="setup-detail-lead">${escape(lure.technique)}</p>` : ''}<p>${escape(fishing.presentation)}</p><p>${escape(fishing.depth)}</p>${fishingNotes}`,'setup-detail-method')}
+        ${detailBox('How to fish it','retrieve',`<div class="setup-method-layout${diagram ? ' has-animation' : ''}">${diagramHTML(diagram)}<div class="setup-method-copy">${lure.technique ? `<p class="setup-detail-lead">${escape(lure.technique)}</p>` : ''}<p>${escape(fishing.presentation)}</p><p>${escape(fishing.depth)}</p>${fishingNotes}</div></div>`,'setup-detail-method')}
         ${explanation ? detailBox('Why this lure','reason',`<p>${escape(explanation)}</p>`,'setup-detail-reason') : ''}
       </div></details>`;
   }
@@ -134,6 +253,13 @@ window.LakeSetups = (() => {
     if (!root) return;
     const state = contexts.get(root.dataset.setupContext);
     if (!state) return;
+    const demoButton = event.target.closest('[data-demo-toggle]');
+    if (demoButton) {
+      const figure = demoButton.closest('.setup-animation');
+      if (playingDiagram?.figure === figure) {figure.dataset.userPaused = 'true';stopDiagram();}
+      else {figure.dataset.userPaused = 'false';playDiagram(figure);}
+      return;
+    }
     const fishButton = event.target.closest('[data-setup-fish]');
     if (fishButton && state.allowed[fishButton.dataset.setupFish]) {
       if (state.fish !== fishButton.dataset.setupFish) state.openLure = null;
@@ -164,6 +290,7 @@ window.LakeSetups = (() => {
     if (!state) return;
     if (lure.open) root.querySelectorAll('.setup-lure[open]').forEach(other => {if (other !== lure) other.open = false;});
     state.openLure = root.querySelector('.setup-lure[open]')?.dataset.lureName || null;
+    watchDiagram(lure);
   }, true);
   document.addEventListener('submit', event => {
     if (!event.target.matches('.setup-conditions')) return;

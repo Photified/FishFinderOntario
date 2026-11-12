@@ -233,5 +233,60 @@ window.TackleCoach = (() => {
     }
     return {presentation, depth};
   }
-  return {profileFor, imageFor, fishingDetailsFor};
+  const techniqueDiagrams = {"steady-retrieve":{"id":"steady-retrieve","title":"Steady retrieve","steps":["Retrieve","Keep pace","Next cast"],"cues":["Reel steadily and keep the rod still.","Keep enough speed for the lure to work cleanly.","Repeat with another controlled cast."],"gif":"images/techniques/gifs/steady-retrieve.gif","poster":"images/techniques/posters/steady-retrieve.png"},"lift-and-drop":{"id":"lift-and-drop","title":"Lift and drop","steps":["Lift","Let fall","Pause"],"cues":["Lift the rod and keep contact with the jig.","Lower the rod and let the jig fall.","Let the jig settle before repeating."],"gif":"images/techniques/gifs/lift-and-drop.gif","poster":"images/techniques/posters/lift-and-drop.png"},"twitch-and-pause":{"id":"twitch-and-pause","title":"Twitch and pause","steps":["Twitch","Pause","Next cast"],"cues":["Use a short rod twitch, then recover loose line.","Give the lure time between movements.","Repeat the same twitch-and-pause rhythm."],"gif":"images/techniques/gifs/twitch-and-pause.gif","poster":"images/techniques/posters/twitch-and-pause.png"},"bottom-drag":{"id":"bottom-drag","title":"Bottom drag","steps":["Drag","Pause","Next cast"],"cues":["Move the bait with a short, slow rod sweep.","Pause, then recover loose line without moving the bait.","Repeat the drag-and-pause presentation."],"gif":"images/techniques/gifs/bottom-drag.gif","poster":"images/techniques/posters/bottom-drag.png"},"weightless-fall":{"id":"weightless-fall","title":"Weightless fall","steps":["Let fall","Pause","Lift gently"],"cues":["Let the bait sink on lightly slack line.","Watch the line while the bait settles.","Lift gently and allow another free fall."],"gif":"images/techniques/gifs/weightless-fall.gif","poster":"images/techniques/posters/weightless-fall.png"},"walk-the-dog":{"id":"walk-the-dog","title":"Walk the dog","steps":["Tap","Let glide","Next cast"],"cues":["Use short rod-tip taps and recover loose line.","Let the lure walk from side to side.","Repeat the alternating surface path."],"gif":"images/techniques/gifs/walk-the-dog.gif","poster":"images/techniques/posters/walk-the-dog.png"},"pop-and-pause":{"id":"pop-and-pause","title":"Pop and pause","steps":["Pop","Pause","Next cast"],"cues":["Use a short twitch to make one surface pop.","Let the lure rest before the next pop.","Repeat with another short pop and pause."],"gif":"images/techniques/gifs/pop-and-pause.gif","poster":"images/techniques/posters/pop-and-pause.png"},"surface-retrieve":{"id":"surface-retrieve","title":"Steady surface retrieve","steps":["Reel steadily","Stay on top","Next cast"],"cues":["Reel at a consistent surface-working pace.","Keep the lure upright at the surface.","Repeat along another suitable surface path."],"gif":"images/techniques/gifs/surface-retrieve.gif","poster":"images/techniques/posters/surface-retrieve.png"},"float-fishing":{"id":"float-fishing","title":"Float fishing","steps":["Let settle","Hold depth","Watch float"],"cues":["Let the bait and weight settle below the float.","The float setting controls the bait depth.","Watch the float and manage loose line."],"gif":"images/techniques/gifs/float-fishing.gif","poster":"images/techniques/posters/float-fishing.png"},"natural-drift":{"id":"natural-drift","title":"Natural drift","steps":["Let drift","Follow line","Next drift"],"cues":["Let the current carry the bait naturally.","Follow the drift and recover excess loose line.","Reset for another controlled drift."],"gif":"images/techniques/gifs/natural-drift.gif","poster":"images/techniques/posters/natural-drift.png"},"bottom-bait":{"id":"bottom-bait","title":"Stationary bottom bait","steps":["Let sink","Take up slack","Hold position"],"cues":["Allow the bottom rig to settle in position.","Recover loose line without dragging the weight.","Keep the bait presented while watching for a bite."],"gif":"images/techniques/gifs/bottom-bait.gif","poster":"images/techniques/posters/bottom-bait.png"},"trolling":{"id":"trolling","title":"Trolling","steps":["Troll steadily","Hold speed","Next pass"],"cues":["Pull the lure behind the moving boat.","Maintain a speed that keeps the lure working cleanly.","Repeat the controlled trolling presentation."],"gif":"images/techniques/gifs/trolling.gif","poster":"images/techniques/posters/trolling.png"},"drop-shot":{"id":"drop-shot","title":"Drop-shot presentation","steps":["Hold weight","Small shakes","Pause"],"cues":["Keep the weight resting on bottom.","Use small rod movements to work the bait above it.","Pause while keeping the rig in position."],"gif":"images/techniques/gifs/drop-shot.gif","poster":"images/techniques/posters/drop-shot.png"},"pull-and-pause":{"id":"pull-and-pause","title":"Pull and pause","steps":["Pull","Let sink","Next cast"],"cues":["Use a deliberate rod sweep to pull the lure forward.","Recover loose line and allow the sinking lure to fall.","Repeat the pull-and-fall sequence."],"gif":"images/techniques/gifs/pull-and-pause.gif","poster":"images/techniques/posters/pull-and-pause.png"},"glide-and-pause":{"id":"glide-and-pause","title":"Glide and pause","steps":["Tap","Let glide","Next cast"],"cues":["Use a short tap rather than a continuous pull.","Let the lure finish its sideways glide.","Repeat the broad gliding path."],"gif":"images/techniques/gifs/glide-and-pause.gif","poster":"images/techniques/posters/glide-and-pause.png"},"suspended-hookbait":{"id":"suspended-hookbait","title":"Suspended hookbait","steps":["Set weight","Bait rises","Hold depth"],"cues":["Let the weight settle on the lakebed.","A buoyant hookbait lifts on its hooklink.","The hooklink length sets the suspension height."],"gif":"images/techniques/gifs/suspended-hookbait.gif","poster":"images/techniques/posters/suspended-hookbait.png"},"surface-bait":{"id":"surface-bait","title":"Floating surface bait","steps":["Let float","Leave slack","Watch bait"],"cues":["Let a buoyant bait rest on the surface.","Avoid pulling it under with a tight line.","Watch the bait as it moves gently on the surface."],"gif":"images/techniques/gifs/surface-bait.gif","poster":"images/techniques/posters/surface-bait.png"},"diving-retrieve":{"id":"diving-retrieve","title":"Diving-lure retrieve","steps":["Reel down","Hold depth","Next cast"],"cues":["Reel to bring a diving model down.","Maintain its working action at the chosen depth.","Repeat with a model suited to the depth you need."],"gif":"images/techniques/gifs/diving-retrieve.gif","poster":"images/techniques/posters/diving-retrieve.png"}};
+
+  function diagramFor(lure, fish) {
+    const profile = profileFor(lure, fish);
+    const key = profile.key;
+    // Where the recommendation offers alternatives, illustrate the first method.
+    const text = String(lure.technique || '').toLowerCase().split(/\bor\b|alternatively/)[0];
+    let id;
+    const floatRig = /under (?:a |the )?(?:slip )?(?:float|bobber)|slip (?:float|bobber)|beneath.*(?:float|bobber)|float rig/.test(text);
+    const surface = /surface|floating bread|bread crust/.test(text);
+    if (key === 'slipbobber' || floatRig || /bobber/.test(lure.name.toLowerCase())) id = 'float-fishing';
+    else if (key === 'dropshot') id = 'drop-shot';
+    else if (key === 'zigrig') id = 'suspended-hookbait';
+    else if ((/\btroll(?:ing|ed|s)?\b|downrigger|planer board/.test(text) || (/trolling/i.test(lure.name) && !/^\s*cast\b/.test(text))) || ['dodgerfly','bottombouncer'].includes(key)) id = 'trolling';
+    else if (profile.kind === 'drift' || /\bdrift(?:ing)?\b|dead[- ]drift|free[- ]line/.test(text)) id = 'natural-drift';
+    else if (surface && (profile.natural || ['bread','popupcorn','boilies'].includes(key))) id = 'surface-bait';
+    else if (key === 'spook' || /walk[ -](?:the[ -])?dog/.test(text)) id = 'walk-the-dog';
+    else if (key === 'popper') id = 'pop-and-pause';
+    else if (key === 'frog') id = /pop/.test(text) ? 'pop-and-pause' : /walk|twitch|side.to.side/.test(text) ? 'walk-the-dog' : 'surface-retrieve';
+    else if (['plopper','noisytopwater','creeper'].includes(key)) id = 'surface-retrieve';
+    else if (profile.natural || ['carp','bait'].includes(profile.kind)) id = 'bottom-bait';
+    else if (key === 'glidebait') id = 'glide-and-pause';
+    else if (key === 'bulldawg') id = /drag|crawl/.test(text) ? 'bottom-drag' : 'pull-and-pause';
+    else if (key === 'jerkbait' || /twitch|\bdart\b|jerk.and.pause|jerk-and-pause/.test(text)) id = 'twitch-and-pause';
+    else if (['crankbait','squarebillcrankbait','minnowlure'].includes(key)) id = surface ? 'surface-retrieve' : 'diving-retrieve';
+    else if (['senko','fluke'].includes(key) || /weightless|free[- ]fall/.test(text)) id = 'weightless-fall';
+    else {
+      const drag = text.search(/drag|crawl/);
+      const lift = text.search(/yo[ -]?yo|\bhop|\blift|\bjigging\b|\bjig (?:it|them|vertically|slowly|aggressively|near|off|above|along|up)\b|vertical|\brip(?:ping)?\b|flutter.*fall/);
+      if (drag >= 0 && (lift < 0 || drag < lift)) id = 'bottom-drag';
+      else if (lift >= 0 || profile.kind === 'vertical') id = 'lift-and-drop';
+      else if (['bottom','finesse'].includes(profile.kind) && !/swim|steady|straight/.test(text)) id = 'bottom-drag';
+      else id = 'steady-retrieve';
+    }
+    return techniqueDiagrams[id] || null;
+  }
+
+  function diagramPhase(id, seconds) {
+    const t = ((seconds % 4.8) + 4.8) % 4.8;
+    if (['twitch-and-pause','pop-and-pause'].includes(id)) {
+      if (t >= 3.8) return 2;
+      return (t < 1.5 ? t : t - 1.5) < .38 ? 0 : 1;
+    }
+    if (['walk-the-dog','glide-and-pause'].includes(id)) {
+      if (t >= 3.8) return 2;
+      return ((t / 3.8 * (id === 'walk-the-dog' ? 6 : 3)) % 1) < .25 ? 0 : 1;
+    }
+    const bounds = {
+      'lift-and-drop':[1.5,3], 'bottom-drag':[2.1,3.8],
+      'weightless-fall':[2.1,3.2], 'float-fishing':[1.4,2.8],
+      'bottom-bait':[1.5,2.5], 'drop-shot':[1.1,3],
+      'suspended-hookbait':[1.1,2.6], 'surface-bait':[1.4,2.8]
+    }[id] || [1.5,3.8];
+    return t < bounds[0] ? 0 : t < bounds[1] ? 1 : 2;
+  }
+  return {profileFor, imageFor, fishingDetailsFor, diagramFor, diagramPhase};
 })();
