@@ -27,44 +27,53 @@ The layout responds to the lake-card width through container queries. Cards unde
 under 340 px. Older engines without native details-content styling use the stacked
 layout. Both light and dark themes are supported. Each lure uses its original
 image once; there is no coach or repeated alternative-bait card. How to fish it
-now includes a representative technique animation, labelled as an example.
+now animates the selected lure’s existing PNG within a reusable technique scene,
+labelled as an example. The image shows the actual selected tackle; motion is
+an illustrative retrieve path rather than a simulation of each moving component.
 
 ## Updated app files
 
 - `index.html`: passes the existing lake rules and records into the grouped layout.
 - `lake-setups.js`: grouped lake information, record modals and lure playback.
 - `tackle-coach.js`: lure instructions, technique mapping and timed step labels.
+- `tackle-animation.js`: reusable SVG scenes and unchanged PNG sprites for all 18 techniques.
 - `tackle-coach.css`: responsive detail boxes, animation scene and both themes.
 - `fishing-rules.js`: renders the four lake-information buttons and retains them on date changes.
-- `sw.js`: cache version 129 to refresh these assets on existing installations.
-- `images/techniques/gifs/`: 18 animated technique diagrams.
-- `images/techniques/posters/`: 18 matching static technique diagrams.
+- `sw.js`: cache version 130 to refresh these assets on existing installations.
+- Original lure PNGs remain in `images/lures/`, with no pixel edits or new image assets.
 
 Existing script and stylesheet filenames are retained.
 Existing lure images, species, recommendation rankings, colours and rules data
-are unchanged. New technique images are in their own subfolder.
+are unchanged. Source PNG dimensions, alpha bounds and tie points are described
+in the animation module, so no additional image files are required.
 Rod and line values are the existing species/condition gear recommendations,
 relocated into the selected lure rather than independently generated per lure.
 
 ## Animation behaviour and installation
 
-Animations load when an open lure diagram becomes visible. Only one plays at a
-time. Play/Stop controls are always available; closing a lure or moving it out of
-view stops playback. Reduced-motion preferences show a static poster until Play
-is selected. Replays restart from the first frame and reuse downloaded bytes.
-The existing service worker caches requested image assets for repeat visits.
-Titles, three step labels and the current cue are HTML text so they remain readable
-in narrow cards. Representative diagrams explain technique, not the exact action
-of every lure model. Existing written instructions remain alongside or below.
+The selected lure image is reused in all of its applicable technique scenes.
+There are 18 reusable paths, not a separate animation file for each lure. The
+engine keeps the same SVG image element while updating its position, angle and
+supporting rod, line and rig shapes. Complete rig PNGs are shown without adding a
+second copy of their weight or leader. Drop-shot weights remain fixed on bottom.
+Small spoon tilts suggest movement; blade rotation, skirt movement and other
+three-dimensional component actions are not simulated.
 
-For the record-modal update, replace `index.html`, `lake-setups.js`,
-`fishing-rules.js`, `tackle-coach.css` and `sw.js` together in the app's root
-folder. The status, date and zone link share a row when space allows and wrap
-on narrow cards. If technique
-animations have not yet been installed, also replace `tackle-coach.js` and add
-`techniques/` inside the existing `images/` folder, retaining both `gifs/` and
-`posters/` subfolders and their names.
-No changes to the existing `images/lures/` folder are required.
+Only one visible open-lure scene plays at a time, capped at 30 updates per second.
+Play/Pause freezes and resumes the current frame. Closing a lure resets it to a
+readable static pose. Closing/replacing the card, changing fish, leaving the scene
+or hiding the page stops its animation. Reduced-motion preferences show the static
+pose until Play is selected, and changing the preference to reduced motion pauses
+playback. Image loading failure leaves the written instructions available; Play
+retries the original image. Titles, three step labels and cues remain HTML text.
+Surface zig-zag and glide demonstrations are labelled as top views.
+
+Replace `index.html`, `lake-setups.js`, `tackle-coach.js`, `tackle-coach.css` and
+`sw.js` in the app's root folder. Add the new `tackle-animation.js` beside them.
+There are no image uploads for this update. The old `images/techniques/` GIF and
+poster folder is no longer referenced and may be removed from an existing install.
+The existing `images/lures/` folder is unchanged. The service worker includes the
+new script and continues caching original lure images on demand.
 
 ## Content
 
@@ -106,11 +115,13 @@ panels, exclusive selection and keyboard Enter/Space operation. Desktop and mobi
 screenshots were visually reviewed. These are browser/emulation checks, not tests
 on physical devices or other browser engines.
 
-Animation checks cover all 1,280 recommendation entries and all 18 technique
-diagrams, including lure-specific casting, jigging and trolling distinctions.
-Chromium checks cover visible playback, actual GIF motion, timed phase labels,
-Play/Stop, replay without redownload, card switching, reduced motion, missing-file
-fallback/retry and no horizontal overflow at all ten configurations above.
+PNG animation checks cover all 1,280 recommendation entries and all 18 techniques,
+with 101 distinct image/technique combinations. Browser checks sample nine phases
+per combination (909 frames), verifying original PNG identity, reuse of image
+nodes, finite geometry and no clipped visible lure bounds. Desktop/mobile checks
+cover movement, Play/Pause and resume, active steps, card/accordion switching,
+reduced-motion static poses, missing-image fallback/retry, no GIF requests and
+no horizontal overflow in light/dark themes at 320, 390, 768, 1280 and 1440 px.
 
 Lake-grouping browser checks passed in light and dark themes at 320, 390, 1280
 and 1440 px. Checks use the app's actual lake-card renderer and rule data, covering

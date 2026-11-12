@@ -73,82 +73,63 @@ window.LakeSetups = (() => {
     return `<section class="setup-detail-box ${extraClass}"><h6>${icon(symbol)}<span>${escape(title)}</span></h6>${body}</section>`;
   }
 
-  const diagramBlobs = new Map();
+  const diagramControllers = new WeakMap();
   const observedDiagrams = new Set();
   let playingDiagram = null;
   const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
-  function stopDiagram() {
+  function controllerFor(figure) {
+    if (!diagramControllers.has(figure)) {
+      const controller = window.TackleAnimation?.mount(figure);
+      if (controller) diagramControllers.set(figure,controller);
+    }
+    return diagramControllers.get(figure);
+  }
+
+  function paintDiagram(figure, controller) {
+    const phase = controller.draw(controller.elapsed);
+    if (figure.dataset.demoPhase === String(phase)) return;
+    figure.dataset.demoPhase = String(phase);
+    figure.querySelectorAll('.setup-animation-step').forEach((step,index)=>step.classList.toggle('is-active',index === phase));
+    figure.querySelector('.setup-animation-cue').textContent = JSON.parse(figure.dataset.demoCues)[phase];
+  }
+
+  function stopDiagram(reset = false) {
     const current = playingDiagram;
     if (!current) return;
     playingDiagram = null;
-    clearInterval(current.timer);
-    current.image.onload = null;
-    current.image.onerror = null;
-    current.image.src = current.figure.dataset.demoPoster;
-    current.button.disabled = false;
+    cancelAnimationFrame(current.frame);
     current.button.textContent = 'Play';
     current.button.setAttribute('aria-pressed','false');
     current.button.setAttribute('aria-label',`Play ${current.figure.dataset.demoTitle} animation`);
-    current.figure.querySelectorAll('.setup-animation-step').forEach(step=>step.classList.remove('is-active'));
-    if (current.url) URL.revokeObjectURL(current.url);
+    if (reset) {current.controller.elapsed=1.8;current.controller.fresh=true;paintDiagram(current.figure,current.controller);}
   }
 
-  async function playDiagram(figure) {
+  function playDiagram(figure) {
     if (playingDiagram?.figure === figure) return;
     stopDiagram();
     if (!figure.isConnected || !figure.closest('.setup-lure')?.open) return;
-    const image = figure.querySelector('.setup-animation-image');
+    const controller = controllerFor(figure);
+    if (!controller) return;
+    if (figure.dataset.animationError === 'true') controller.retry();
+    if (controller.fresh) {controller.elapsed=0;controller.fresh=false;}
     const button = figure.querySelector('[data-demo-toggle]');
-    const status = figure.querySelector('.setup-animation-status');
-    const current = {figure,image,button,url:null,timer:null};
+    const current = {figure,controller,button,frame:null,last:performance.now(),drawn:0};
     playingDiagram = current;
-    status.textContent = '';
-    button.disabled = true;
-    button.textContent = 'Loading…';
-    const path = figure.dataset.demoGif;
-    try {
-      if (!diagramBlobs.has(path)) {
-        const request = fetch(path).then(response=>{
-          if (!response.ok) throw new Error('Animation unavailable');
-          return response.blob();
-        }).catch(error=>{diagramBlobs.delete(path);throw error;});
-        diagramBlobs.set(path,request);
-      }
-      const blob = await diagramBlobs.get(path);
-      if (playingDiagram !== current || !figure.isConnected || !figure.closest('.setup-lure')?.open) return;
-      current.url = URL.createObjectURL(blob);
-      const fail = () => {
-        if (playingDiagram !== current) return;
-        stopDiagram();
-        status.textContent = 'The animation could not load. You can still use the instructions below.';
-      };
-      image.onerror = fail;
-      image.onload = () => {
-        if (playingDiagram !== current) return;
-        button.disabled = false;
-        button.textContent = 'Stop';
-        button.setAttribute('aria-pressed','true');
-        button.setAttribute('aria-label',`Stop ${figure.dataset.demoTitle} animation`);
-        const started = performance.now();
-        let previous = -1;
-        const tick = () => {
-          const phase = TackleCoach.diagramPhase(figure.dataset.technique,(performance.now()-started)/1000);
-          if (phase === previous) return;
-          previous = phase;
-          figure.querySelectorAll('.setup-animation-step').forEach((step,index)=>step.classList.toggle('is-active',index === phase));
-          figure.querySelector('.setup-animation-cue').textContent = JSON.parse(figure.dataset.demoCues)[phase];
-        };
-        tick();
-        current.timer = setInterval(tick,80);
-      };
-      // A fresh object URL restarts a cached GIF without downloading it again.
-      image.src = current.url;
-    } catch (error) {
+    button.textContent = 'Pause';
+    button.setAttribute('aria-pressed','true');
+    button.setAttribute('aria-label',`Pause ${figure.dataset.demoTitle} animation`);
+    paintDiagram(figure,controller);
+    const tick = now => {
       if (playingDiagram !== current) return;
-      stopDiagram();
-      status.textContent = 'The animation could not load. You can still use the instructions below.';
-    }
+      if (!figure.isConnected || !figure.closest('.setup-lure')?.open || document.hidden || figure.dataset.animationError === 'true') {stopDiagram();return;}
+      controller.elapsed = (controller.elapsed + Math.min((now-current.last)/1000,.1)) % 4.8;
+      current.last = now;
+      // One visible scene, capped at 30 updates/second. The source image node is reused.
+      if (now-current.drawn >= 1000/30) {paintDiagram(figure,controller);current.drawn=now;}
+      current.frame = requestAnimationFrame(tick);
+    };
+    current.frame = requestAnimationFrame(tick);
   }
 
   const diagramVisibility = window.IntersectionObserver ? new IntersectionObserver(entries=>{
@@ -164,12 +145,16 @@ window.LakeSetups = (() => {
     const figure = lure.querySelector('.setup-animation');
     if (!figure) return;
     if (lure.open) {
+      const controller = controllerFor(figure);
+      if (controller) paintDiagram(figure,controller);
       if (diagramVisibility) {observedDiagrams.add(figure);diagramVisibility.observe(figure);}
       else if (figure.dataset.userPaused !== 'true' && !reduceMotion()) playDiagram(figure);
     } else {
       diagramVisibility?.unobserve(figure);
       observedDiagrams.delete(figure);
-      if (playingDiagram?.figure === figure) stopDiagram();
+      if (playingDiagram?.figure === figure) stopDiagram(true);
+      const controller = diagramControllers.get(figure);
+      if (controller) {controller.elapsed=1.8;controller.fresh=true;paintDiagram(figure,controller);}
     }
   }
 
@@ -180,12 +165,15 @@ window.LakeSetups = (() => {
     });
   }).observe(document.body,{childList:true,subtree:true});
   document.addEventListener('visibilitychange',()=>{if (document.hidden) stopDiagram();});
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener?.('change',event=>{if(event.matches)stopDiagram();});
 
-  function diagramHTML(diagram) {
+  function diagramHTML(diagram, profile, name) {
     if (!diagram) return '';
-    return `<figure class="setup-animation" data-technique="${escape(diagram.id)}" data-demo-title="${escape(diagram.title)}" data-demo-gif="${escape(diagram.gif)}" data-demo-poster="${escape(diagram.poster)}" data-demo-cues="${escape(JSON.stringify(diagram.cues))}">
-      <figcaption class="setup-animation-toolbar"><span>${escape(diagram.title)} example</span><button type="button" data-demo-toggle aria-pressed="false" aria-label="Play ${escape(diagram.title)} animation">Play</button></figcaption>
-      <div class="setup-animation-scene"><img class="setup-animation-image" src="${escape(diagram.poster)}" alt="${escape(diagram.title)} technique illustration" width="960" height="780" loading="lazy"></div>
+    const scene = window.TackleAnimation?.markup(diagram,profile,name);
+    if (!scene) return '';
+    return `<figure class="setup-animation" data-technique="${escape(diagram.id)}" data-demo-title="${escape(diagram.title)}" data-demo-cues="${escape(JSON.stringify(diagram.cues))}">
+      <figcaption class="setup-animation-toolbar"><span>${escape(diagram.title)} example${['walk-the-dog','glide-and-pause'].includes(diagram.id) ? ' · top view' : ''}</span><button type="button" data-demo-toggle aria-pressed="false" aria-label="Play ${escape(diagram.title)} animation">Play</button></figcaption>
+      <div class="setup-animation-scene">${scene}</div>
       <ol class="setup-animation-steps" aria-label="Technique steps">${diagram.steps.map((step,index)=>`<li class="setup-animation-step"><span>${index+1}</span>${escape(step)}</li>`).join('')}</ol>
       <p class="setup-animation-cue">${escape(diagram.cues[0])}</p><span class="setup-animation-status" role="status"></span>
     </figure>`;
@@ -209,7 +197,7 @@ window.LakeSetups = (() => {
           ${detailBox('Rod','rod',`<p>${escape(gear.rod || 'Not specified')}</p>`,'setup-detail-rod')}
           ${detailBox('Line','line',`<p>${escape(gear.line || 'Not specified')}</p>`,'setup-detail-line')}
         </div>
-        ${detailBox('How to fish it','retrieve',`<div class="setup-method-layout${diagram ? ' has-animation' : ''}">${diagramHTML(diagram)}<div class="setup-method-copy">${lure.technique ? `<p class="setup-detail-lead">${escape(lure.technique)}</p>` : ''}<p>${escape(fishing.presentation)}</p><p>${escape(fishing.depth)}</p>${fishingNotes}</div></div>`,'setup-detail-method')}
+        ${detailBox('How to fish it','retrieve',`<div class="setup-method-layout${diagram ? ' has-animation' : ''}">${diagramHTML(diagram,profile,lure.name)}<div class="setup-method-copy">${lure.technique ? `<p class="setup-detail-lead">${escape(lure.technique)}</p>` : ''}<p>${escape(fishing.presentation)}</p><p>${escape(fishing.depth)}</p>${fishingNotes}</div></div>`,'setup-detail-method')}
         ${explanation ? detailBox('Why this lure','reason',`<p>${escape(explanation)}</p>`,'setup-detail-reason') : ''}
       </div></details>`;
   }

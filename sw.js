@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-finder-v129-record-modals';
+const CACHE_NAME = 'fish-finder-v130-png-techniques';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -8,6 +8,7 @@ const ASSETS_TO_CACHE = [
   './map-legend.js',
   './lake-setups.js',
   './tackle-coach.js',
+  './tackle-animation.js',
   './tackle-coach.css',
   './crown-land.js',
   './fisheries-zones.js',

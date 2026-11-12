@@ -91,7 +91,7 @@
 .setup-animation-toolbar button:disabled {opacity:.7;cursor:wait;}
 .setup-animation-toolbar button:focus-visible {outline:3px solid var(--tc-focus);outline-offset:2px;}
 .setup-animation-scene {position:relative;aspect-ratio:912 / 535;width:100%;overflow:hidden;border:1px solid var(--tc-line);border-radius:8px;background:#e8f3fa;}
-.setup-lure .setup-animation-scene img {position:absolute;width:105.263157895%;max-width:none;height:auto;left:-2.631578947%;top:-20.560747664%;object-fit:fill;background:transparent;border-radius:0;}
+.setup-animation-scene .setup-animation-svg {display:block;width:100%;height:100%;}
 .setup-animation-steps {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;list-style:none;margin:8px 0 0;padding:0;}
 .setup-animation-step {display:flex;gap:5px;align-items:center;justify-content:center;min-height:38px;padding:6px 4px;border-radius:5px;background:var(--card-bg);color:var(--tc-muted);font-size:.73rem;line-height:1.3;text-align:center;overflow-wrap:anywhere;}
 .setup-animation-step>span {font-size:.7rem;flex:none;}
